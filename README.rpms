@@ -1,0 +1,48 @@
+Installing rpms
+===============
+
+There are three Maxima binary rpms:
+maxima, maxima-exec-cmucl, and maxima-xmaxima.
+
+The maxima and maxima-exec-cmucl rpms must be installed together.
+
+maxima-exec rpms for other Lisp versions can also be installed,
+although you'll probably have to build them yourself.
+
+The maxima-xmaxima rpm is optional. Xmaxima is a Maxima GUI.
+
+
+Building rpms
+=============
+
+You can build rpm files from an unpacked tarball or Git checkout.
+
+(0) Go to the Maxima directory.
+
+    $ cd sandbox/maxima  # or whatever is your top-level maxima directory
+
+(1) Set the version number.
+    
+    Open ./configure.ac and change the AC_INIT line.
+    (This is the only way I know to change the version number.)
+
+    Optionally -- open ./maxima.spec.in and increment the `Release' number.
+    (This number is appended to the version number.)
+
+(2) Select Lisp version.
+
+    Open ./maxima.spec.in.
+
+    Change all `%define enable_<whatever>' to `0'
+    except for the selected Lisp; make that `1'.
+
+    Change all `%define <whatever>_flags' to `--disable-<whatever>'
+    except for the selected Lisp; make that `--enable-<whatever>'.
+
+(3) Build rpms.
+
+    $ make rpm
+    
+    The maxima.spec file that is generated during this process builds
+    four binary rpms:
+    maxima, maxima-emacs, maxima-xmaxima, and maxima-exec-<whatever>.

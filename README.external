@@ -1,0 +1,25 @@
+The following external tools are needed to build and/or use Maxima:
+
+1) A supported Lisp implementation. See README-lisps.md.
+
+2) To build Maxima in the standard manner, Bourne shell and make are
+   required. See INSTALL.
+
+3) Maxima can also be built using nothing except Lisp. See
+   INSTALL.lisp.
+
+4) Plotting uses gnuplot, <http://gnuplot.sourceforge.net>, by
+   default. Plotting can also be done with Maxima's xmaxima
+   application.
+
+5) xmaxima requires Tcl/Tk, preferably version 8.5 or later.
+   xmaxima is both one possible interface to  Maxima and a plotting
+   program. As a graphical interface it is not required but as a
+   plotting program it is required by some commands (plotdf, ploteq
+   and scene).
+
+6) drawdf requires Vtk and its bindings for Tcl/Tk.
+ 
+7) The scene command requires python-vtk
+ 
+8) Building Maxima from GIT additionally requires the GNU autotools.

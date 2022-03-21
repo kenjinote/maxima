@@ -1,0 +1,476 @@
+@c Language=Russian
+@c Encoding=UTF-8
+@c File=Elliptic.texi
+@c OriginalRevision=1.11
+@c TranslatedBy: (c) 2007-09-23 Alexey V. Beshenov <al@beshenov.ru>
+
+@menu
+* Эллиптические функции и интегралы в Maxima::
+* Функции и переменные для эллиптических функций::
+* Функции и переменные для эллиптических интегралов::
+@end menu
+
+@node Эллиптические функции и интегралы в Maxima, Функции и переменные для эллиптических функций, , Top
+@comment  node-name,  next,  previous,  up
+
+@section Эллиптические функции и интегралы в Maxima
+
+Maxima поддерживает работу с эллиптическими функциями Якоби, а также полными и
+неполными эллиптическими интегралами - как символьную манипуляцию, так и
+численные расчеты. Определение этих функций и множество их свойств можно
+найти в главах 16, 17 справочника Abramowitz, Stegun. Мы используем определения
+и отношения из книги Абрамовица и Стиган там, где это возможно.
+
+В частности, все эллиптические функции и нтегралы используют параметр
+@math{m} вместо модуля @math{k} или амплитуды @math{\alpha}. Это единственное расхождение
+с Амбрамовицем и Стиган, которые используют для эллиптических функций амплитуду.
+Действуют следующие отношения:
+@ifinfo
+@math{m = k^2} и @math{k = \sin(\alpha)}
+@end ifinfo
+@tex
+$$m = k^2$$ и $$k = \sin\alpha $$
+@end tex
+
+В первую очередь упор делался на символьные вычисления с эллиптическими функциями
+и интегралами. Поэтому известно большинство производных для функций и интегралов.
+Однако, если в какчестве параметра заданы числа с плавающей точкой, то возвращается численное значение.
+
+Поддержка большинства других свойств эллиптических функций и интегралов, помимо
+выражения их производных, еще не реализована.
+
+Несколько примеров для эллиптических функций:
+@c ===beg===
+@c jacobi_sn (u, m);
+@c jacobi_sn (u, 1);
+@c jacobi_sn (u, 0);
+@c diff (jacobi_sn (u, m), u);
+@c diff (jacobi_sn (u, m), m);
+@c ===end===
+@example
+(%i1) jacobi_sn (u, m);
+(%o1)                    jacobi_sn(u, m)
+(%i2) jacobi_sn (u, 1);
+(%o2)                        tanh(u)
+(%i3) jacobi_sn (u, 0);
+(%o3)                        sin(u)
+(%i4) diff (jacobi_sn (u, m), u);
+(%o4)            jacobi_cn(u, m) jacobi_dn(u, m)
+(%i5) diff (jacobi_sn (u, m), m);
+(%o5) jacobi_cn(u, m) jacobi_dn(u, m)
+
+      elliptic_e(asin(jacobi_sn(u, m)), m)
+ (u - ------------------------------------)/(2 m)
+                     1 - m
+
+            2
+   jacobi_cn (u, m) jacobi_sn(u, m)
+ + --------------------------------
+              2 (1 - m)
+@end example
+
+Несколько примеров для эллиптических интегралов:
+@c ===beg===
+@c elliptic_f (phi, m);
+@c elliptic_f (phi, 0);
+@c elliptic_f (phi, 1);
+@c elliptic_e (phi, 1);
+@c elliptic_e (phi, 0);
+@c elliptic_kc (1/2);
+@c makegamma (%);
+@c diff (elliptic_f (phi, m), phi);
+@c diff (elliptic_f (phi, m), m);
+@c ===end===
+@example
+(%i1) elliptic_f (phi, m);
+(%o1)                  elliptic_f(phi, m)
+(%i2) elliptic_f (phi, 0);
+(%o2)                          phi
+(%i3) elliptic_f (phi, 1);
+                               phi   %pi
+(%o3)                  log(tan(--- + ---))
+                                2     4
+(%i4) elliptic_e (phi, 1);
+(%o4)                       sin(phi)
+(%i5) elliptic_e (phi, 0);
+(%o5)                          phi
+(%i6) elliptic_kc (1/2);
+                                     1
+(%o6)                    elliptic_kc(-)
+                                     2
+(%i7) makegamma (%);
+                                 2 1
+                            gamma (-)
+                                   4
+(%o7)                      -----------
+                           4 sqrt(%pi)
+(%i8) diff (elliptic_f (phi, m), phi);
+                                1
+(%o8)                 ---------------------
+                                    2
+                      sqrt(1 - m sin (phi))
+(%i9) diff (elliptic_f (phi, m), m);
+       elliptic_e(phi, m) - (1 - m) elliptic_f(phi, m)
+(%o9) (-----------------------------------------------
+                              m
+
+                                 cos(phi) sin(phi)
+                             - ---------------------)/(2 (1 - m))
+                                             2
+                               sqrt(1 - m sin (phi))
+@end example
+
+Поддержку эллиптических функций и интегралов реализовал Реймонд Той, и его код
+доступен под лицензии GPL, как и весь код Maxima.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+
+@node Функции и переменные для эллиптических функций, Функции и переменные для эллиптических интегралов, Эллиптические функции и интегралы в Maxima, Top
+@comment  node-name,  next,  previous,  up
+
+@section Функции и переменные для эллиптических функций
+
+@deffn {Функция} jacobi_sn (@var{u}, @var{m})
+Эллиптическая функция Якоби @math{sn(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} jacobi_cn (@var{u}, @var{m})
+Эллиптическая функция Якоби @math{cn(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} jacobi_dn (@var{u}, @var{m})
+Эллиптическая функция Якоби @math{dn(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} jacobi_ns (@var{u}, @var{m})
+Эллиптическая функция Якоби @math{ns(u,m) = 1/sn(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} jacobi_sc (@var{u}, @var{m})
+Эллиптическая функция Якоби @math{sc(u,m) = sn(u,m)/cn(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} jacobi_sd (@var{u}, @var{m})
+Эллиптическая функция Якоби @math{sd(u,m) = sn(u,m)/dn(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} jacobi_nc (@var{u}, @var{m})
+Эллиптическая функция Якоби @math{nc(u,m) = 1/cn(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} jacobi_cs (@var{u}, @var{m})
+Эллиптическая функция Якоби @math{cs(u,m) = cn(u,m)/sn(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} jacobi_cd (@var{u}, @var{m})
+Эллиптическая функция Якоби @math{cd(u,m) = cn(u,m)/dn(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} jacobi_nd (@var{u}, @var{m})
+Эллиптическая функция Якоби @math{nc(u,m) = 1/cn(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} jacobi_ds (@var{u}, @var{m})
+Эллиптическая функция Якоби @math{ds(u,m) = dn(u,m)/sn(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} jacobi_dc (@var{u}, @var{m})
+Эллиптическая функция Якоби @math{dc(u,m) = dn(u,m)/cn(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} inverse_jacobi_sn (@var{u}, @var{m})
+Обратная эллиптическая функция Якоби для @math{sn(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} inverse_jacobi_cn (@var{u}, @var{m})
+Обратная эллиптическая функция Якоби для @math{cn(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} inverse_jacobi_dn (@var{u}, @var{m})
+Обратная эллиптическая функция Якоби для @math{dn(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} inverse_jacobi_ns (@var{u}, @var{m})
+Обратная эллиптическая функция Якоби для @math{ns(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} inverse_jacobi_sc (@var{u}, @var{m})
+Обратная эллиптическая функция Якоби для @math{sc(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} inverse_jacobi_sd (@var{u}, @var{m})
+Обратная эллиптическая функция Якоби для @math{sd(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} inverse_jacobi_nc (@var{u}, @var{m})
+Обратная эллиптическая функция Якоби для @math{nc(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} inverse_jacobi_cs (@var{u}, @var{m})
+Обратная эллиптическая функция Якоби для @math{cs(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} inverse_jacobi_cd (@var{u}, @var{m})
+Обратная эллиптическая функция Якоби для @math{cd(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} inverse_jacobi_nd (@var{u}, @var{m})
+Обратная эллиптическая функция Якоби для @math{nc(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} inverse_jacobi_ds (@var{u}, @var{m})
+Обратная эллиптическая функция Якоби для @math{ds(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+@deffn {Функция} inverse_jacobi_dc (@var{u}, @var{m})
+Обратная эллиптическая функция Якоби для @math{dc(u,m)}.
+
+@opencatbox{Категории:}
+@category{Эллиптические функции}
+@closecatbox
+@end deffn
+
+
+@node Функции и переменные для эллиптических интегралов, Функции и переменные для эллиптических функций, Top
+@comment  node-name,  next,  previous,  up
+
+@section Функции и переменные для эллиптических интегралов
+
+@anchor{elliptic_f}
+@deffn {Функция} elliptic_f (@var{phi}, @var{m})
+Неполный эллиптический интеграл первого рода, заданный в виде
+
+@ifhtml
+@math{integrate(1/sqrt(1 - m*sin(x)^2), x, 0, phi)}
+@end ifhtml
+@ifinfo
+@math{integrate(1/sqrt(1 - m*sin(x)^2), x, 0, phi)}
+@end ifinfo
+
+@tex
+$$\int_0^\phi {{d\theta}\over{\sqrt{1 - m\sin^2\theta}}}$$
+@end tex
+
+См. также @ref{elliptic_e} и @ref{elliptic_kc}.
+
+@opencatbox{Категории:}
+@category{Эллиптические интегралы}
+@closecatbox
+@end deffn
+
+@anchor{elliptic_e}
+@deffn {Функция} elliptic_e (@var{phi}, @var{m})
+Неполный эллиптический интеграл второго рода, заданный в виде
+
+@ifhtml
+@math{elliptic_e(u, m) = integrate(sqrt(1 - m*sin(x)^2), x, 0, phi)}
+@end ifhtml
+@ifinfo
+@math{elliptic_e(u, m) = integrate(sqrt(1 - m*sin(x)^2), x, 0, phi)}
+@end ifinfo
+@tex
+$$\int_0^\phi \sqrt{1 - m\sin^2\theta} d\theta$$
+@end tex
+
+См. также @ref{elliptic_e} и @ref{elliptic_ec}.
+
+@opencatbox{Категории:}
+@category{Эллиптические интегралы}
+@closecatbox
+@end deffn
+
+@anchor{elliptic_eu}
+@deffn {Функция} elliptic_eu (@var{u}, @var{m})
+Неполный эллиптический интеграл второго рода, заданный в виде
+
+@ifhtml
+@math{integrate(dn(v,m)^2,v,0,u) = integrate(sqrt(1-m*t^2)/sqrt(1-t^2), t, 0, tau)}
+
+где @math{tau = sn(u,m)} 
+@end ifhtml
+@ifinfo
+@math{integrate(dn(v,m)^2,v,0,u) = integrate(sqrt(1-m*t^2)/sqrt(1-t^2), t, 0, tau)}
+
+где @math{tau = sn(u,m)} 
+@end ifinfo
+@tex
+$$\int_0^u {\rm dn}(v, m) dv  = \int_0^\tau \sqrt{{1-m t^2}\over{1-t^2}} dt$$
+
+где $\tau = {\rm sn}(u, m)$
+@end tex
+
+
+Это связано с @math{elliptic_e} отношением
+@ifinfo
+@math{elliptic_eu(u, m) = elliptic_e(asin(sn(u,m)),m)}
+@end ifinfo
+@tex
+$$E(u,m) = E(\phi, m)$$
+
+где $\phi = \sin^{-1} {\rm sn}(u, m)$
+@end tex
+См. также @ref{elliptic_e}.
+
+@opencatbox{Категории:}
+@category{Эллиптические интегралы}
+@closecatbox
+@end deffn
+
+@deffn {Функция} elliptic_pi (@var{n}, @var{phi}, @var{m})
+Неполный эллиптический интеграл третьего рода, заданный в виде
+
+@ifhtml
+@math{integrate(1/(1-n*sin(x)^2)/sqrt(1 - m*sin(x)^2), x, 0, phi)}
+@end ifhtml
+@ifinfo
+@math{integrate(1/(1-n*sin(x)^2)/sqrt(1 - m*sin(x)^2), x, 0, phi)}
+@end ifinfo
+@tex
+$$\int_0^\phi {{d\theta}\over{(1-n\sin^2 \theta)\sqrt{1 - m\sin^2\theta}}}$$
+@end tex
+
+Для Maxima известна только производная по @math{phi}.
+
+@opencatbox{Категории:}
+@category{Эллиптические интегралы}
+@closecatbox
+@end deffn
+
+@anchor{elliptic_kc}
+@deffn {Функция} elliptic_kc (@var{m})
+Полный эллиптический интеграл первого рода, заданный в виде
+
+@ifhtml
+@math{integrate(1/sqrt(1 - m*sin(x)^2), x, 0, %pi/2)}
+@end ifhtml
+@ifinfo
+@math{integrate(1/sqrt(1 - m*sin(x)^2), x, 0, %pi/2)}
+@end ifinfo
+
+@tex
+$$\int_0^{{\pi}\over{2}} {{d\theta}\over{\sqrt{1 - m\sin^2\theta}}}$$
+@end tex
+Для конкретных значений @math{m} значение интеграла выражается через гамма-функцию.
+Для вычисления используйте @code{makegamma}.
+
+@opencatbox{Категории:}
+@category{Эллиптические интегралы}
+@closecatbox
+@end deffn
+
+@anchor{elliptic_ec}
+@deffn {Функция} elliptic_ec (@var{m})
+Полный эллиптический интеграл второго рода, заданный в виде
+
+@ifhtml
+@math{integrate(sqrt(1 - m*sin(x)^2), x, 0, %pi/2)}
+@end ifhtml
+@ifinfo
+@math{integrate(sqrt(1 - m*sin(x)^2), x, 0, %pi/2)}
+@end ifinfo
+
+@tex
+$$\int_0^{{\pi}\over{2}} \sqrt{1 - m\sin^2\theta} d\theta$$
+@end tex
+Для конкретных значений @math{m} значение интеграла выражается через гамма-функцию.
+Для вычисления используйте @code{makegamma}.
+
+@opencatbox{Категории:}
+@category{Эллиптические интегралы}
+@closecatbox
+@end deffn
+

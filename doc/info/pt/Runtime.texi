@@ -1,0 +1,218 @@
+@c /Runtime.texi/1.18/Sat Jul  8 08:15:05 2006/-ko/
+@menu
+* Introdução a Ambiente em Tempo de Execução::  
+* Interrupções::                  
+* Definições para Ambiente em Tempo de Execução::  
+@end menu
+
+
+@node Introdução a Ambiente em Tempo de Execução, Interrupções, Ambiente em Tempo de Execução, Ambiente em Tempo de Execução
+@section Introdução a Ambiente em Tempo de Execução
+@c THIS DISCUSSION OF maxima-init.mac REPLACES AN EARLIER WRITE-UP. !!!
+@c HOWEVER IT SEEMS THAT THIS TEXT REALLY WANTS TO BE UNDER A DIFFERENT HEADING. !!!
+@code{maxima-init.mac} é um ficheiro que é chamado automaticamente
+quando o Maxima inicia.  Pode usar @code{maxima-init.mac} para
+personalizar o seu ambiente no Maxima.  @code{maxima-init.mac}, se existir,
+é tipicamente colocado no directório chamado por
+@code{maxima_userdir}, embora possa estar em qualquer outro directório
+procurado pela função @code{file_search}.
+
+Aqui está um exemplo do ficheiro @code{maxima-init.mac}:
+
+@example
+setup_autoload ("specfun.mac", ultraspherical, assoc_legendre_p);
+showtime:all;
+@end example
+
+Nesse Exemplo, @code{setup_autoload} diz ao Maxima para chamar o
+ficheiro especificado (@code{specfun.mac}) se qualquer das
+funções (@code{ultraspherical}, @code{assoc_legendre_p})
+forem chamadas sem estarem definidas.  Dessa forma, não precisa de se
+lembrar de chamar o ficheiro antes das funções.
+
+A declaração @code{showtime: all} diz ao Maxima para
+activar a opção @code{showtime}.  O ficheiro
+@code{maxima-init.mac} pode conter quaisquer outras
+atribuições ou outras declarações do
+Maxima.
+
+@node Interrupções, Definições para Ambiente em Tempo de Execução, Introdução a Ambiente em Tempo de Execução, Ambiente em Tempo de Execução
+
+@section Interrupções
+
+O utilizador pode parar uma computação que consome muito
+tempo com o caractere ^C (control-C).  A ação padrão
+é parar a computação e mostrar outra linha de comando
+do utilizador.  Nesse caso, não é possível continuar a
+computação interrompida.
+
+Se a variável @code{*debugger-hook*} é escolhida para @code{nil},
+através do comando
+
+@example
+:lisp (setq *debugger-hook* nil)
+@end example
+
+@noindent
+então na ocasião do recebimento do ^C, Maxima iniciará o depurador
+Lisp, e o utilizador pode usar o depurador para inspecionar o ambiente
+Lisp.  A computação interrompida pode ser retomada
+através do comando @code{continue} no depurador Lisp.  O método de
+retorno para ao Maxima partindo do depurador Lisp (outro como executando
+a computação para complementação) é
+diferente para cada versão do Lisp.
+
+Em sistemas Unix, o caratere ^Z (control-Z) faz com que Maxima
+pare tudo e aguarde em segundo plano, e o controle é retornado para a linha de comando do shell.
+O comando @code{fg} faz com que o Maxima
+retorne ao primeiro plano e continue a partir do ponto no qual foi interrompido.
+
+@c end concepts Ambiente em Tempo de Execução
+@node Definições para Ambiente em Tempo de Execução,  , Interrupções, Ambiente em Tempo de Execução
+@section Definições para Ambiente em Tempo de Execução
+
+@c NEEDS EXPANSION AND CLARIFICATION
+@defvr {Declaração} feature
+Maxima compreende dois tipos distintos de recurso,
+recursos do sistema e recursos aplicados a expressões matemáticas.
+Veja Também @code{status} para informações sobre recursos do sistema.
+Veja Também @code{features} e @code{featurep} para informações sobre recursos matemáticos.
+@c PROPERTIES, DECLARATIONS FALL UNDER THIS HEADING AS WELL
+@c OTHER STUFF ??
+
+@code{feature} por si mesmo não é o nome de uma função ou variável.
+
+@end defvr
+
+@c NEEDS CLARIFICATION, ESPECIALLY WRT THE EXTENT OF THE FEATURE SYSTEM
+@c (I.E. WHAT KINDS OF THINGS ARE FEATURES ACCORDING TO featurep)
+@deffn {Função} featurep (@var{a}, @var{f})
+Tenta determinar se o objecto @var{a} tem o
+recurso @var{f} na base dos factos dentro base de dados corrente.  Se possue,
+é retornado @code{true}, de outra forma é retornado @code{false}.
+
+Note que @code{featurep} retorna @code{false} quando nem @var{f}
+nem a negação de @var{f} puderem ser estabelecidas.
+
+@code{featurep} avalia seus argumentos.
+
+Veja também @code{declare} e @code{features}.
+       
+@example
+(%i1) declare (j, even)$
+(%i2) featurep (j, integer);
+(%o2)                           true
+@end example
+
+@end deffn
+
+@defvr {Variável de sistema} maxima_tempdir
+
+@code{maxima_tempdir} nomeia o directório no qual Maxima cria alguns ficheiros temporários.
+Em particular, ficheiros temporários para impressão são criados no @code{maxima_tempdir}.
+
+O valor inicial de @code{maxima_tempdir} é o directório do utilizador,
+se o maxima puder localizá-lo; de outra forma Maxima supõe um directório adequado.
+
+A @code{maxima_tempdir} pode ser atribuído uma sequência de caracteres que corresponde a um directório.
+
+@end defvr
+
+@defvr {Variável de sistema} maxima_userdir
+
+@code{maxima_userdir} nomeia um directório no qual Maxima espera encontrar seus próprios ficheiros e os do ficheiros do Lisp.
+(Maxima procura em alguns outros directórios também;
+@code{file_search_maxima} e @code{file_search_lisp} possuem a lista completa.)
+
+O valor inicial de @code{maxima_userdir} é um subdirectório do directório do utilizador,
+se Maxima puder localizá-lo; de outra forma Maxima supõe um directório adequado.
+
+A @code{maxima_userdir} pode ser atribuído uma sequência de caracteres que corresponde a um directório.
+Todavia, fazendo uma atribuição a @code{maxima_userdir} não muda automaticamente o valor de
+@code{file_search_maxima} e de @code{file_search_lisp};
+Essas variáveis devem ser modificadas separadamente.
+
+@end defvr
+
+@deffn {Função} room ()
+@deffnx {Função} room (true)
+@deffnx {Função} room (false)
+Mostra uma descrição do estado de armazenamento e
+gerenciamento de pilha no Maxima. @code{room} chama a função Lisp de
+mesmo nome.
+
+@itemize @bullet
+@item
+@code{room ()} mostra uma descrição moderada.
+@item
+@code{room (true)} mostra uma descrição detalhada.
+@item
+@code{room (false)} mostra uma descrição resumida.
+@end itemize
+
+@end deffn
+
+@deffn {Função} status (feature)
+@deffnx {Função} status (feature, @var{recurso_ativo})
+@deffnx {Função} status (status)
+Retorna informações sobre a presença ou ausência de certos
+recursos dependentes do sistema operacional.
+
+@itemize @bullet
+@item
+@code{status (feature)} retorna uma lista dos recursos do sistema.
+Inclui a versão do Lisp, tipo de sistema operacional, etc.
+A lista pode variar de um tipo de Lisp para outro.
+@item @code{status (feature, @var{recurso_ativo})} retorna @code{true} se @var{recurso_ativo}
+está na lista de ítens retornada através de @code{status (feature)} e @code{false} de outra forma.
+@code{status} não avalia o argumento @var{recurso_ativo}.
+O operador apóstrofo-apóstrofo, @code{'@w{}'}, evita a avaliação.
+Um recurso cujo nome contém um caractere especial, tal como um hífem,
+deve ser fornecido como um argumento em forma de sequência de caracteres. Por Exemplo,
+@code{status (feature, "ansi-cl")}.
+@item
+@code{status (status)} retorna uma lista de dois elementos @code{[feature, status]}.
+@code{feature} e @code{status} são dois argumentos aceitos pela função @code{status};
+Não está claro se essa lista tem significância adicional.
+@end itemize
+
+A variável @code{features} contém uma lista de recursos que se aplicam a
+expressões matemáticas. Veja @code{features} e @code{featurep} para maiores informações.
+
+@end deffn
+
+@deffn {Função} time (%o1, %o2, %o3, ...)
+Retorna uma lista de tempos, em segundos, usados para calcular as linhas
+de saída @code{%o1}, @code{%o2}, @code{%o3}, .... O tempo retornado é uma estimativa do Maxima do
+tempo interno de computação, não do tempo decorrido. @code{time} pode somente
+ser aplicado a variáveis(rótulos) de saída de linha; para quaisquer outras variáveis, @code{time}
+retorna @code{unknown} (tempo desconhecido).
+
+Escolha @code{showtime: true} para fazer com que Maxima moste o tempo de computação
+e o tempo decorrido a cada linha de saída.
+
+@end deffn
+
+@deffn {Função} timedate ()
+Retorna uma sequência de caracteres representando a data e hora atuais.
+A sequência de caracteres tem o formato @code{HH:MM:SS Dia, mm/dd/aaaa (GMT-n)},
+Onde os campos são
+horas, minutos, segundos, dia da semana, mês, dia do mês, ano, e horas que diferem da hora GMT.
+
+O valor de retorno é uma sequência de caracteres Lisp.
+
+Exemplo:
+
+@c ===beg===
+@c d: timedate ();
+@c print ("timedate mostra o tempo actual", d)$
+@c ===end===
+@example
+(%i1) d: timedate ();
+(%o1) 08:05:09 Wed, 11/02/2005 (GMT-7)
+(%i2) print ("timedate mostra o tempo actual", d)$
+timedate reports current time 08:05:09 Wed, 11/02/2005 (GMT-7)
+@end example
+
+@end deffn
+

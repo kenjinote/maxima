@@ -1,0 +1,1737 @@
+@c English version 2011-08-10.
+@menu
+* Introducción a la línea de comandos::
+* Funciones y variables para la línea de comandos::
+* Funciones y variables para la impresión::
+@end menu
+
+
+
+
+
+
+
+
+
+
+@node Introducción a la línea de comandos, Funciones y variables para la línea de comandos, Línea de comandos, Línea de comandos
+
+@section Introducción a la línea de comandos
+
+
+@subheading Consola
+
+Existen distintos interfaces para Maxima, tales como wxMaxima, Xmaxima, Imaxima
+y la consola o terminal de texto.
+
+La consola trabaja en modo texto, al tiempo que para introducir instrucciones
+con ayuda de un menú y obtener resultados en modo gráfico es necesario instalar
+otros interfaces.
+
+A lo largo de este manual se utilizará la consola, la cual está disponible en
+cualquiera de los sistemas operativos en los que trabaja Maxima. El usuario puede
+introducir todas las funciones de Maxima desde la consola; en el modo texto, los
+resultados se devolverán normalmente en un formato ASCII bidimensional, mientras
+que los gráficos necesitan de un programa adicional tal como Gnuplot.
+
+@subheading Entrada, Evaluación, Simplificación y Salida
+
+Desde que el usuario introduce una solicitud de cálculo hasta que obtiene el
+resultado en la consola, se desarrolla un proceso que consta de cuatro fases:
+
+@enumerate
+@item
+Bien sea desde un teclado o desde un fichero se lee una expresión que el
+analizador sintáctico se encargará de transformar en una cierta representación
+interna. En esta primera fase, se utilizan principalmente operadores tales
+como "+", "/" o "do".
+
+@item
+La expresión leída por el analizador sintáctico es evaluada
+durante la segunda fase. Las variables se substituyen por sus valores y se
+ejecutan funciones tales como la derivación o la integración. El resultado 
+de esta fase es una expresión evaluada.
+
+@item
+La expresión evaluada de la fase anterior se simplifica en esta tercera fase,
+en la que una expresión tal como @code{a+a} se reduce a @code{2*a}, o
+@code{sin(%pi/2)} se simplifica a @code{1}.
+
+@item
+Tras la tercera fase se dispone de una expresión que ha sido evaluada y
+posteriormente simplificada. Ya en la cuarta y última fase, se prepara
+el resultado para ser mostrado a través de la consola.
+@end enumerate
+
+El usuario puede tomar el control en cualquiera de las cuatro fases recién
+descritas. En diferentes capítulos de este manual se detallan estas posibilidades,
+pero en éste se describen aquellas instrucciones relacionadas con las fases
+primera y cuarta, relacionadas con la entrada y salida a través de la consola.
+Los capítulos sobre Evaluación y Simplificación tratan
+de las otras dos fases intermedias.
+
+@subheading Marcas
+
+Maxima almacena todas las entradas con la marca @code{%i} seguida de un
+número entero en orden creciente, así como las salidas o resultados con la
+marca @code{%o} también seguida de un número de orden. Además,
+ciertas funciones utilizan la marca intermedia @code{%t}. Otras variables
+del sistema almacenan el último resultado devuelto por Maxima o la
+última entrada efectuada por el usuario. Los siguientes símbolos
+indican variables y funciones para la gestión de las marcas:
+
+@verbatim
+   __          _        
+   %           %%           %th
+   inchar      linechar     outchar
+   linenum     nolabels
+@end verbatim
+
+@subheading Listas informativas
+
+Maxima gestiona listas informativas, cuyos nombres se guardan en la variable
+del sistema @code{infolists}. En el presente capítulo se
+describen las listas @code{labels}, @code{values} y @code{myoptions}.
+Los siguientes símbolos indican variables y funciones
+relacionadas con las listas informativas y variables opcionales.
+
+@verbatim
+   infolists     labels        values 
+   myoptions     optionset
+@end verbatim
+
+Otras listas informativas, que se describirán en otros capítulos,
+son:
+
+@verbatim
+   functions      arrays         macros
+   rules          aliases        dependencies 
+   gradefs        props          let_rule_packages
+   structures     namespaces  
+@end verbatim
+
+@subheading Borrado y reiniciación
+
+A fin de establecer el contexto en el que trabaje Maxima, en el que
+no haya variables o funciones definidas, o en el que se eliminen
+hipótesis, propiedades o definiciones concretas, se dispone de las
+siguientes funciones:
+
+@verbatim
+   kill     reset     reset_verbosely
+@end verbatim
+
+@subheading Otras instrucciones
+
+Se puede acceder a la documentación con los símbolos
+@code{?} y @code{??}. En caso de que se utilice @code{?} a modo
+de prefijo de un símbolo, éste se interpretará como
+símbolo de Lisp. Hay instrucciones para terminar una sesión de 
+Maxima o para cambiar a una sesión de Lisp. También es posible conocer el tiempo
+que ha necesitado Maxima para realizar un cálculo. Para este tipo de cuestiones,
+Maxima dispone de las siguientes instrucciones:
+
+@verbatim
+   ?            ??
+   playback     prompt     showtime
+   quit         to_lisp
+@end verbatim
+
+Las funciones @code{read} und @code{readonly} imprimen texto en la consola y
+leen la información introducida por el usuario.
+
+@subheading Salida por consola
+
+Antes de mostrar un resultado, se transforma su representación interna 
+a otra externa. Por ejemplo, la representación interna de @code{sqrt(x)}
+es @code{x^(1/2)}, y ambos formatos pueden ser devueltos por Maxima en
+función del valor que guarde la variable opcional @code{sqrtdispflag}.
+
+Los siguientes símbolos y variables opcionales controlan
+la salida de resultados por consola:
+
+@verbatim
+   %edispflag         absboxchar       display2d
+   display_format_internal             exptdispflag
+   expt               nexpt            ibase
+   linel              lispdisp         negsumdispflag
+   obase              pfeformat        powerdisp
+   sqrtdispflag       stardisp         ttyoff
+@end verbatim
+
+Con las siguientes funciones es posible formatear los resultados:
+
+@verbatim
+   disp               display          dispterms
+   grind              ldisp            ldisplay
+   print
+@end verbatim
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Funciones y variables para la línea de comandos, Funciones y variables para la impresión, Introducción a la línea de comandos, Línea de comandos
+
+@section Funciones y variables para la línea de comandos
+
+
+@defvr {Variable del sistema} __
+@ifinfo
+@vrindex Expresión actual de entrada
+@end ifinfo
+
+@code{__} es la expresión de entrada que está siendo actualmente evaluada.
+Esto es, mientras se está evaluando una expresión de entrada, 
+@code{__} es igual a @var{expr}.
+
+A @code{__} se le asigna la expresión de entrada antes de que ésta sea 
+simplificada o evaluada. Sin embargo, el valor de @code{__} es simplificado,
+pero no evaluado, cuando su valor es mostrado en el terminal.
+
+La variable @code{__} es reconocida por  @code{batch} y por @code{load}.
+Cuando un fichero es procesado por @code{batch}, la variable @code{__}
+tiene el mismo significado que en el modo interactivo.
+Cuando un fichero es procesado por @code{load}, a la variable @code{__}
+se le asigna la última expresión introducida, bien desde el modo
+interactivo, bien en un fichero por lotes; en ningún caso se le asigna 
+a @code{__} una expresión de entrada del fichero que está siendo procesado.
+En particular, si @code{load (@var{filename})} es ejecutado desde el modo
+interactivo, entonces @code{__} almacena la expresión @code{load (@var{filename})}
+mientras el fichero está siendo procesado.
+
+Véanse también @code{_} y @code{%}.
+
+Ejemplos:
+
+@c ===beg===
+@c print ("I was called as", __);
+@c foo (__);
+@c g (x) := (print ("Current input expression =", __), 0);
+@c [aa : 1, bb : 2, cc : 3];
+@c (aa + bb + cc)/(dd + ee + g(x));
+@c ===end===
+@example
+(%i1) print ("I was called as", __);
+I was called as print(I was called as, __) 
+(%o1)              print(I was called as, __)
+(%i2) foo (__);
+(%o2)                     foo(foo(__))
+(%i3) g (x) := (print ("Current input expression =", __), 0);
+(%o3) g(x) := (print("Current input expression =", __), 0)
+(%i4) [aa : 1, bb : 2, cc : 3];
+(%o4)                       [1, 2, 3]
+(%i5) (aa + bb + cc)/(dd + ee + g(x));
+                            cc + bb + aa
+Current input expression = -------------- 
+                           g(x) + ee + dd
+                                6
+(%o5)                        -------
+                             ee + dd
+@end example
+
+@end defvr
+
+
+
+
+
+@defvr {Variable del sistema} _
+@ifinfo
+@vrindex Entrada anterior
+@end ifinfo
+
+El símbolo @code{_} representa la última expresión de entrada (esto es, @code{%i1}, @code{%i2}, @code{%i3}, ...).
+
+Al símbolo @code{_} se le asigna la expresión de entrada antes de que ésta sea simplificada o evaluada. Sin embargo, el valor de @code{_} se simplifica (pero no se evalúa) cuando se muestra en el terminal.
+
+La variable @code{_} es reconocida por  @code{batch} y por @code{load}.
+Cuando un fichero es procesado por @code{batch}, la variable @code{_}
+tiene el mismo significado que en el modo interactivo.
+Cuando un fichero es procesado por @code{load}, a la variable @code{_}
+se le asigna la última expresión introducida, bien desde el modo
+interactivo, bien en un fichero por lotes; en ningún caso se le asigna 
+a @code{_} una expresión de entrada del fichero que está siendo procesado.
+
+Véanse también @code{__} y @code{%}.
+
+Ejemplos:
+
+@c ===beg===
+@c 13 + 29;
+@c :lisp $_
+@c _;
+@c sin (%pi/2);
+@c :lisp $_
+@c _;
+@c a: 13$
+@c b: 29$
+@c a + b;
+@c :lisp $_
+@c _;
+@c a + b;
+@c ev (_);
+@c ===end===
+@example
+(%i1) 13 + 29;
+(%o1)                          42
+(%i2) :lisp $_
+((MPLUS) 13 29)
+(%i2) _;
+(%o2)                          42
+(%i3) sin (%pi/2);
+(%o3)                           1
+(%i4) :lisp $_
+((%SIN) ((MQUOTIENT) $%PI 2))
+(%i4) _;
+(%o4)                           1
+(%i5) a: 13$
+(%i6) b: 29$
+(%i7) a + b;
+(%o7)                          42
+(%i8) :lisp $_
+((MPLUS) $A $B)
+(%i8) _;
+(%o8)                         b + a
+(%i9) a + b;
+(%o9)                          42
+(%i10) ev (_);
+(%o10)                         42
+@end example
+
+@end defvr
+
+
+
+@defvr {Variable del sistema} %
+@ifinfo
+@vrindex Salida anterior
+@end ifinfo
+
+El símbolo @code{%} representa la expresión de salida (esto es, @code{%o1}, @code{%o2}, @code{%o3}, ...)
+más reciente calculada por Maxima, independientemente de que la haya mostrado o no.
+
+La variable @code{%} es reconocida por  @code{batch} y por @code{load}.
+Cuando un fichero es procesado por @code{batch}, la variable @code{%}
+tiene el mismo significado que en el modo interactivo.
+Cuando un fichero es procesado por @code{load}, a la variable @code{%}
+se le asigna la última expresión introducida, bien desde el modo
+interactivo, bien en un fichero por lotes; en ningún caso se le asigna 
+a @code{%} una expresión de entrada del fichero que está siendo procesado.
+
+Véanse también @code{_}, @code{%%} y @code{%th}.
+
+@end defvr
+
+
+
+
+@defvr {Variable del sistema} %%
+@ifinfo
+@vrindex Resultado anterior en una sentencia compuesta
+@end ifinfo
+
+En una sentencia compuesta, como @code{block}, @code{lambda} o 
+@code{(@var{s_1}, ..., @var{s_n})}, @code{%%} es el valor de la sentencia previa.
+
+La variable @code{%%} no estÃ¡ definida cuando se utiliza en la primera sentencia,
+o fuera de una sentencia compuesta.
+
+@code{%%} se puede utilizar con @code{batch} y @code{load}, manteniendo en ambos
+casos el mismo significado que en el modo interactivo.
+
+Véase también @code{%}
+
+Ejemplos:
+
+Los siguientes dos ejemplos devuelven el mismo resultado.
+
+@example
+(%i1) block (integrate (x^5, x), ev (%%, x=2) - ev (%%, x=1));
+                               21
+(%o1)                          --
+                               2
+(%i2) block ([prev], prev: integrate (x^5, x),
+               ev (prev, x=2) - ev (prev, x=1));
+                               21
+(%o2)                          --
+                               2
+
+@end example
+
+Una sentencia compuesta puede contener otras sentencias compuestas.
+Independientemente de que una sentencia sea simple o compuesta, @code{%%} es 
+el valor de la sentencia previa.
+
+@example
+(%i3) block (block (a^n, %%*42), %%/6);
+                                 n
+(%o3)                         7 a
+@end example
+
+Dentro de una sentencia compuesta, el valor de @code{%%} puede inspeccionarse
+en un punto de interrupción que se abra ejecutando la función @code{break}.
+Por ejemplo, escribiendo @code{%%;} en el siguiente ejemplo se obtiene @code{42}.
+
+@example
+(%i4) block (a: 42, break ())$
+
+Entering a Maxima break point. Type 'exit;' to resume.
+_%%;
+42
+_
+@end example
+@end defvr
+
+
+
+@deffn {Función} %th (@var{i})
+@ifinfo
+@fnindex i-ésima salida anterior
+@end ifinfo
+
+Es el valor de la expresión de la @var{i}-ésima salida anterior.
+Esto es, si la siguiente expresión a calcular es la salida @var{n}-ésima,
+@code{%th (@var{m})} es la salida  (@var{n} - @var{m})-ésima.
+
+@code{%th} es reconocido por @code{batch} y @code{load}, interpretándose
+de la misma manera que se acaba de indicar. Cuando un fichero es procesado
+por @code{load}, @code{%th} se refiere a los cálculos más recientes;
+@code{%th} no hace referencia a las expresiones de salida incluidas en el
+propio fichero que se está procesando.
+
+Véanse también @code{%} y @code{%%}
+
+Ejemplo:
+
+@code{%th} es útil en ficheros @code{batch} para hacer referencia a grupos de resultados
+recién obtenidos.  En este ejemplo se asigna a @code{s} la suma de los cinco resultados.
+
+@example
+(%i1) 1;2;3;4;5;
+(%o1)                           1
+(%o2)                           2
+(%o3)                           3
+(%o4)                           4
+(%o5)                           5
+(%i6) block (s: 0, for i:1 thru 5 do s: s + %th(i), s);
+(%o6)                          15
+@end example
+@end deffn
+
+
+
+@deffn {Símbolo especial} ?
+@ifinfo
+@fnindex Busca en la documentaci&oacute;n
+@end ifinfo
+
+Como prefijo de una función o nombre de variable, @code{?} significa que el nombre es de Lisp, no de Maxima.
+Por ejemplo, @code{?round} representa la función de Lisp @code{ROUND}.
+Véase @code{Lisp y Maxima} para más información.
+
+La notación @code{? word} (un símbolo de interrogación
+seguido de una palabra y separados por un espacio)
+equivale a @code{describe ("word")}.
+El símbolo de interrogación debe escribirse al
+comienzo de la línea de entrada; en caso contrario
+no se reconoce como una solicitud de documentación.
+
+@end deffn
+
+@deffn {Símbolo especial} ??
+@ifinfo
+@fnindex Busca coincidencias inexactas en la documentaci&oacute;n
+@end ifinfo
+
+La notación @code{?? palabra} (@code{??} seguido de un espacio
+y una palabra) equivale a @code{describe("palabra", inexact)}.
+El símbolo de interrogación debe escribirse al
+comienzo de la línea de entrada; en caso contrario
+no se reconoce como una solicitud de documentación.
+
+@end deffn
+
+
+
+@defvr {Variable opcional} inchar
+Valor por defecto: @code{%i}
+
+La variable @code{inchar} es el prefijo de las etiquetas de las
+expresiones introducidas por el usuario. Maxima crea automáticamente 
+una etiqueta para cada expresión de entrada concatenando @code{inchar} 
+y @code{linenum}.
+
+A @code{inchar} se le puede asignar cualquier símbolo 
+o cadena, no necesariamente un caracácter sencillo. Puesto que
+internamente Maxima solo tiene en cuenta el primer carácter del
+prefijo, los prefijos @code{inchar}, @code{outchar} y @code{linechar}
+deben comenzar con caracteres diferentes; en caso contrario, sentencias
+como @code{kill(inlables)} pueden dar resultados inesperados.
+
+Véase también @code{labels}.
+
+Ejemplo:
+
+@c ===beg===
+@c inchar: "input";
+@c expand((a+b)^3);
+@c ===end===
+@example
+(%i1) inchar: "input";
+(%o1)                         input
+(input2) expand((a+b)^3);
+                     3        2      2      3
+(%o2)               b  + 3 a b  + 3 a  b + a
+(input3)
+@end example
+
+@end defvr
+
+
+@defvr {Variable del sistema} infolists
+Valor por defecto: @code{[]}
+
+La variable @code{infolists} es una lista con los nombres de todas las listas que guardan información sobre Maxima. Estas son:
+
+@table @code
+@item labels
+Todas las etiquetas @code{%i}, @code{%o} y @code{%t} con valores asignados.
+@item values
+Todos los átomos que son variables de usuario, no opciones de Maxima creadas con  @code{:} o @code{::}.
+@item functions
+Todas las funciones de usuario creadas con @code{:=} o @code{define}.
+@item arrays
+Arreglos declarados y no declarados, creados por @code{:}, @code{::} o @code{:=}.
+@c AREN'T THERE OTHER MEANS OF CREATING ARRAYS ??
+@item macros
+Cualquier macro definida por el usuario.
+@item myoptions
+Todas las opciones inicializadas por el usuario, independientemente de que posteriormente hayan sido devueltas a sus valores por defecto.
+@item rules
+Reglas de patrones y simplificación definidas por el usuario, creadas con @code{tellsimp}, @code{tellsimpafter}, @code{defmatch} o @code{defrule}.
+@item aliases
+Átomos que tienen un "alias" definido por el usuario, creado por las funciones @code{alias}, @code{ordergreat} o @code{orderless} o por haber declarado el átomo como @code{noun} (nombre) con @code{declare}.
+@item dependencies
+Átomos que tienen dependencias funcionales, creados por las funciones @code{depends} o @code{gradef}.
+@item gradefs
+Funciones que tienen derivadas definidas por el usuario, creadas por la función @code{gradef}.
+@item props
+Todos los átomos que tengan cualquier propiedad que no sea de las mencionadas hasta ahora, como las establecidas por @code{atvalue}, @code{matchdeclare}, etc., así como propiedadas especificadas en la función @code{declare}.
+@item let_rule_packages
+Todos los paquetes de reglas @code{let} definidos por el usuario, junto con el paquete especial @code{default_let_rule_package}; @code{default_let_rule_package} es el nombre del paquete de reglas utilizado cuando no se use ningún otro especificado por el usuario.
+@end table
+
+@end defvr
+
+
+
+@deffn {Función} kill (@var{a_1}, ..., @var{a_n})
+@deffnx {Función} kill (labels)
+@deffnx {Función} kill (inlabels, outlabels, linelabels)
+@deffnx {Función} kill (@var{n})
+@deffnx {Función} kill ([@var{m}, @var{n}])
+@deffnx {Función} kill (values, functions, arrays, ...)
+@deffnx {Función} kill (all)
+@deffnx {Función} kill (allbut (@var{a_1}, ..., @var{a_n}))
+Elimina todas las asignaciones (valor, función, arreglo o regla) hechas a los
+argumentos @var{a_1}, ..., @var{a_n}.
+Un argumento @var{a_k} puede ser un símbolo o el elemento
+de un array. Si @var{a_k} es elemento de un array, @code{kill} elimina la
+asignación hecha a este elemento sin afectar al resto del array.
+
+Se reconocen varios argumentos especiales. 
+Se pueden combinar diferentes clases de argumentos, 
+como por ejemplo, @code{kill (inlabels, functions, allbut (foo, bar))}.
+
+La instrucción @code{kill (labels)} borra todas las asignaciones asociadas
+a las etiquetas de entrada, de salida e intermedias creadas hasta el
+momento. La instrucción @code{kill (inlabels)} elimina únicamente
+las asignaciones de las etiquetas de entrada que comienzan con el
+valor actual de @code{inchar}. Del mismo modo, @code{kill (outlabels)}
+elimina únicamente las asignaciones de las etiquetas de salida
+que comienzan con el valor actual de @code{outchar}. Finalmente,
+@code{kill (linelabels)} elimina únicamente las asignaciones
+de las etiquetas de las expresiones intermedias
+que comienzan con el valor actual de @code{linechar}.
+
+La instrucción @code{kill (@var{n})}, siendo @var{n} un entero,
+elimina las asignaciones de las últimas @var{n} etiquetas, tanto
+de entrada como de salida.
+
+La instrucción @code{kill ([@var{m}, @var{n}])} elimina las asignaciones
+hechas a las etiquetas de entrada y salida desde la @var{m} hasta la@var{n}.
+
+La instrucción @code{kill (@var{infolist})}, siendo @var{infolist} 
+cualquier elemento de @code{infolists} (como @code{values}, @code{functions} 
+o @code{arrays}), elimina todas las asignaciones hechas a los elementos de
+@var{infolist}. Véase también @code{infolists}.
+
+La instrucción @code{kill (all)} elimina todas las asignaciones de
+todas las variables, pero no reinicia las variables globales a sus
+valores por defecto. Véase también @code{reset}.
+
+La instrucción @code{kill (allbut (@var{a_1}, ..., @var{a_n}))}
+elimina las asignaciones hechas a todas las variables,
+excepto a @var{a_1}, ..., @var{a_n}; la instrucción
+@code{kill (allbut (@var{infolist}))} elimina todas las asignaciones,
+excepto las de los elementos de @var{infolist}, pudiendo ser @var{infolist}
+igual a @code{values}, @code{functions}, @code{arrays}, etc.
+
+La memoria reservada para una asignación no se libera hasta que
+no se vacíen todos los símbolos
+asociados con esta asignación; por ejemplo, para liberar la memoria
+del valor de un símbolo es necesario eliminar tanto
+la asignación de la etiqueta de salida que muestra el resultado,
+como la del propio símbolo.
+
+La función @code{kill} no evalua sus argumentos. 
+El operador comilla-comilla, @code{'@w{}'}, obliga a que se realice la evaluación.
+
+La llamada @code{kill (@var{symbol})} elimina todas las propiedades de @var{symbol}.
+Por el contrario, @code{remvalue}, @code{remfunction}, @code{remarray} y @code{remrule}
+eliminan propiedades específicas. 
+
+@code{kill} siempre devuelve @code{done}, incluso cuando alguno de sus 
+argumentos carecía de asignación previa. 
+
+@end deffn
+
+
+
+@deffn {Función} labels (@var{symbol})
+@deffnx {Variable del sistema} labels
+Retorna la lista de etiquetas de entrada, salida o de expresiones intermedias las cuales empiezan con @var{symbol}. 
+Típicamente @var{symbol} es el valor de las variables @code{inchar}, @code{outchar} o @code{linechar}. 
+El caractér de etiqueta puede ser pasado con o sin signo de porcentaje, 
+así, por ejemplo, @code{i} y @code{%i} producen el mismo resultado.  
+
+Si ninguna etiqueta empieza con @var{symbol}, @code{labels} retorna a una
+lista vacía. 
+
+La función @code{labels} no evalua su argumento.
+El operador comilla-comilla, @code{'@w{}'}, obliga a que se realice la evaluación.
+Por ejemplo, 
+@code{labels (''inchar)} devuelve las etiquetas de entrada que empiezan con el caractér de etiqueta de entrada actual. 
+
+La variable @code{labels} es una lista de las etiquetas de entrada, salida y expresiones intermedias, incluyendo todas las etiquetas anteriores en el caso de que @code{inchar}, @code{outchar} o @code{linechar} hayan sido redefinidas. 
+
+Por defecto, Maxima muestra el resultado de cada expresión introducida por el usuario, asignando al resultado una etiqueta de salida. 
+La salida (es decir el resultado) puede ser suprimida terminando la expresión de entrada con un @code{$} (signo de dólar) en vez de un @code{;} (punto y coma). 
+En este caso, se crea la etiqueta de salida y se le asigna el resultado, aunque éste no se muestre; aún así, la etiqueta puede ser referenciada de la misma forma que se hace con aquéllas cuyos resultados sí son mostrados.
+
+Véanse también: @code{%}, @code{%%} y @code{%th}. 
+
+Las etiquetas de expresiones intermedias pueden ser generadas por algunas funciones. El interruptor @code{programmode} controla si @code{solve} y algunas otras funciones generan etiquetas de expresiones intermedias en vez de retornar una lista de expresiones. 
+Algunas otras funciones, tales como @code{ldisplay}, siempre generan etiquetas de expresiones intermedias. 
+ 
+
+Véase también: @code{inchar}, @code{outchar}, @code{linechar} y @code{infolists}.
+
+@end deffn
+
+
+
+
+@defvr {Variable opcional} linechar
+Valor por defecto: @code{%t}
+
+La variable @code{linechar} es el prefijo de las etiquetas que
+genera Maxima para expresiones intermedias. Cuando sea necesario,
+Maxima creará una etiqueta para cada expresión intermedia 
+concatenando @code{linechar} y @code{linenum}.
+
+A @code{linechar} se le puede asignar cualquier símbolo 
+o cadena, no necesariamente un caracácter sencillo. Puesto que
+internamente Maxima solo tiene en cuenta el primer carácter del
+prefijo, los prefijos @code{inchar}, @code{outchar} y @code{linechar}
+deben comenzar con caracteres diferentes; en caso contrario, sentencias
+como @code{kill(inlables)} pueden dar resultados inesperados.
+
+Las expresiones intermedias pueden ser mostradas o no.
+Véanse también @code{programmode} y @code{labels}.
+
+@end defvr
+
+
+
+@defvr {Variable del sistema} linenum
+El número de la línea del par de expresiones de entrada y salida actuales. 
+@end defvr
+
+
+
+@defvr {Variable del sistema} myoptions
+Valor por defecto: @code{[]}
+
+@code{myoptions} es la lista de todas las opciones que nunca fueron reconfiguradas por el usuario, aunque éstas hayan sido reconfiguradas a su valor por defecto. 
+
+@end defvr
+
+
+@defvr {Variable opcional} nolabels
+Valor por defecto: @code{false}
+
+Cuando @code{nolabels} vale @code{true},
+las etiquetas de entrada y salida 
+(@code{%i} y @code{%o}, respectivamente)
+son mostradas, pero a éstas no se les 
+asignan los resultados; además, las etiquetas no se
+incorporan a la lista @code{labels}.
+Puesto que a las etiquetas no se les asignan resultados, 
+el colector de basura puede recuperar la memoria ocupada
+por éstos.
+
+En el caso contrario, a las etiquetas de entrada y salida se les asignan los resultados correspondientes y son añadidas a la lista @code{labels}.
+
+Las etiquetas de expresiones intermedias (@code{%t}) no se ven afectadas por la variable @code{nolabels};
+independientemente de que @code{nolabels} valga @code{true} o @code{false}, a las etiquetas de expresiones intermedias se les asignan siempre valores, además de ser añadidas a la lista @code{labels}.
+
+Véanse también @code{batch}, @code{batchload} y @code{labels}. 
+
+@end defvr
+
+
+@defvr {Variable opcional} optionset
+Valor por defecto: @code{false}
+
+Cuando @code{optionset} tiene como valor @code{true}, Maxima imprime un
+mensaje cada vez que una opción de Maxima es reconfigurada. Esto es 
+muy útil si el usuario duda con frecuencia de la correctitud de alguna
+opción y quiere estar seguro de la variable a la que él asignó un
+valor fue verdaramente una variable opción (o interruptor). 
+
+Ejemplo:
+
+@example
+(%i1) optionset:true;
+assignment: assigning to option optionset
+(%o1)                         true
+(%i2) gamma_expand:true;
+assignment: assigning to option gamma_expand
+(%o2)                         true
+@end example
+@end defvr
+
+
+@defvr {Variable opcional} outchar
+Valor por defecto: @code{%o}
+
+La variable @code{outchar} es el prefijo de las etiquetas de las 
+expresiones calculadas por Maxima. Maxima crea automáticamente 
+una etiqueta para cada expresión calculada concatenando @code{outchar}
+y @code{linenum}.
+
+A @code{outchar} se le puede asignar cualquier símbolo 
+o cadena, no necesariamente un caracácter sencillo. Puesto que
+internamente Maxima solo tiene en cuenta el primer carácter del
+prefijo, los prefijos @code{inchar}, @code{outchar} y @code{linechar}
+deben comenzar con caracteres diferentes; en caso contrario, sentencias
+como @code{kill(inlables)} pueden dar resultados inesperados.
+
+Véase también @code{labels}.
+
+Ejemplo:
+
+@c ===beg===
+@c outchar: "output";
+@c expand((a+b)^3);
+@c ===end===
+@example
+(%i1) outchar: "output";
+(output1)                    output
+(%i2) expand((a+b)^3);
+                     3        2      2      3
+(output2)           b  + 3 a b  + 3 a  b + a
+(%i3)
+@end example
+@end defvr
+
+
+
+@deffn {Función} playback ()
+@deffnx {Función} playback (@var{n})
+@deffnx {Función} playback ([@var{m}, @var{n}])
+@deffnx {Función} playback ([@var{m}])
+@deffnx {Función} playback (input)
+@deffnx {Función} playback (slow)
+@deffnx {Función} playback (time)
+@deffnx {Función} playback (grind)
+Muestra las entradas, salidas y expresiones intermedias 
+sin recalcularlas. 
+@code{playback} sólo muestra las expresiones asociadas con etiquetas; 
+cualquier otra salida (tal como texto impreso por @code{print} o @code{describe}, o mensajes de error) no es mostrada. 
+Véase también: @code{labels}. 
+
+@code{playback} no evalua sus argumentos. 
+El operador comilla-comilla, @code{'@w{}'}, obliga a que se realice la evaluación.
+@code{playback} siempre devuelve @code{done}. 
+
+@code{playback ()} (sin argumentos) muestra todas las entradas, salidas y expresiones intermedias generadas hasta el momento. 
+Una expresión de salida es mostrada incluso si ésta fue suprimida por el caracter de terminación @code{$}, cuando fue originalmente calculada. 
+
+@code{playback (@var{n})}  muestra las @var{n} expresiones más recientes. Cada entrada, salida y expresión intermedia cuenta como una. 
+
+@code{playback ([@var{m}, @var{n}])} muestra entradas, salidas y expresiones intermedias con los números desde @var{m} hasta @var{n}, ambos inclusive. 
+
+@code{playback ([@var{m}])} es equivalente a @code{playback ([@var{m}, @var{m}])};
+esto usualmente imprime un par de expresiones de entrada y salida. 
+
+@code{playback (input)} muestra todas las expresiones de entrada generadas hasta el momento. 
+
+@code{playback (slow)} hace pausas entre expresiones y
+espera a que el usuario pulse la tecla @code{enter} para continuar. 
+Esto es un comportamiento similar a @code{demo}. 
+
+@c WHAT DOES THE FOLLOWING MEAN ???
+@c HAY QUE ESPERAR PARA ACLARAR ESTA PARTE
+@code{playback (slow)} es muy útil en conjunción con @code{save} o
+@code{stringout} cuando se crea un archivo secundario de almacenamiento con el objetivo de elegir cuidadosamente las expresiones realmente útiles. 
+
+@c @code{playback (slow)} is useful in conjunction with @code{save} or @code{stringout}
+@c when creating a secondary-storage file in order to pick out useful expressions.
+
+@code{playback (time)} muestra el tiempo de computo por cada expresión. 
+
+@c DON'T BOTHER TO MENTION OBSOLETE OPTIONS !!!
+@c The arguments @code{gctime} and @code{totaltime} have the same effect as @code{time}.
+
+@code{playback (grind)} muestra las expresiones de entrada 
+en el mismo formato como la función @code{grind}. 
+Las expresiones de salida no se ven afectadas por la opción 
+@code{grind}. 
+Vea @code{grind}. 
+Los argumentos pueden ser combinados, por ejemplo, 
+@code{playback ([5, 10], grind, time, slow)}.
+@c APPEARS TO BE input INTERSECT (UNION OF ALL OTHER ARGUMENTS). CORRECT ???
+
+@end deffn
+
+
+@defvr {Variable opcional} prompt
+Valor por defecto: @code{_}
+
+@code{prompt} es el símbolo del prompt de la función @code{demo}, 
+del modo @code{playback (slow)} y del bucle de interrupción de Maxima (el que se invoca con @code{break}). 
+
+@end defvr
+
+
+
+
+@deffn {Función} quit ()
+Termina una sesión de Maxima. 
+Nótese que la función debe ser invocada como @code{quit();} o @code{quit()$}, no como @code{quit}. 
+
+Para parar un cálculo muy demorado 
+pulse @code{Control-C}. 
+La acción por defecto es retornar a prompt de Maxima. 
+Si @code{*debugger-hook*} tiene como valor @code{nil},
+pulsar @code{Control-C} abrirá el depurador de Lisp. 
+Vea también: @code{debugging}. 
+
+@end deffn
+
+
+@deffn {Función} read (@var{expr_1}, ..., @var{expr_n})
+Imprime @var{expr_1}, ..., @var{expr_n} y a continuación lee una expresión desde la consola y devuelve la expresión evaluada. La expresión termina con un punto y coma @code{;} o con el símbolo de dólar @code{$}.
+
+Véase también @code{readonly}.
+
+@example
+(%i1) foo: 42$ 
+(%i2) foo: read ("foo vale", foo, " -- nuevo valor.")$
+foo vale 42  -- nuevo valor. 
+(a+b)^3;
+(%i3) foo;
+                                     3
+(%o3)                         (b + a)
+@end example
+
+@end deffn
+
+
+
+@deffn {Función} readonly (@var{expr_1}, ..., @var{expr_n})
+Imprime @var{expr_1}, ..., @var{expr_n} y a continuación lee una expresión desde la consola y devuelve la expresión sin evaluar. La expresión termina con un punto y coma @code{;} o con el símbolo de dólar @code{$}.
+
+@example
+(%i1) aa: 7$
+(%i2) foo: readonly ("Introducir expresion:");
+Introducir expresion: 
+2^aa;
+                                  aa
+(%o2)                            2
+(%i3) foo: read ("Introducir expresion:");
+Introducir expresion: 
+2^aa;
+(%o3)                            128
+@end example
+
+Véase también @code{read}.
+
+@end deffn
+
+
+
+@deffn {Función} reset ()
+Reconfigura muchas variables y opciones globales y algunas otras variables a sus valores por defecto. 
+
+@code{reset} procesa las variables que se encuentran en la lista Lisp 
+@code{*variable-initial-values*}. 
+La macro Lisp @code{defmvar} pone las variables en ésta lista (entre otras acciones). 
+Muchas, pero no todas, las variables y opciones globales son definidas por @code{defmvar}, y algunas variables definidas por @code{defmvar} no son ni variables ni opciones globales. 
+
+@end deffn
+
+
+@defvr {Variable opcional} showtime
+Valor por defecto: @code{false}
+
+Cuando @code{showtime} tiene como valor @code{true}, el tiempo de cálculo y el tiempo de retardo se imprimen junto con la salida de cada expresión. 
+
+El tiempo de cálculo se almacena siempre, de manera que @code{time} y @code{playback} puedan mostrar el tiempo de cálculo incluso cuando @code{showtime} vale @code{false}.
+
+Véase también @code{timer}.
+
+@end defvr
+
+
+@deffn {Function} to_lisp ()
+Entra en el intérprete Lisp bajo Maxima. @code{(to-maxima)} retorna de nuevo a Maxima. 
+
+Ejemplo:
+
+Define una función y entra en el nivel Lisp. La definición
+se consulta en la lista de propiedades, luego se extrae la definición
+de la función, se factoriza y almacena el resultado en la variable @code{$result}.
+Esta variable se puede utilizar luego una vez se haya vuelto al nivel
+de Maxima.
+
+@example
+(%i1) f(x):=x^2+x;
+                                         2
+(%o1)                           f(x) := x  + x
+(%i2) to_lisp();
+Type (to-maxima) to restart, ($quit) to quit Maxima.
+
+MAXIMA> (symbol-plist '$f)
+(MPROPS (NIL MEXPR ((LAMBDA) ((MLIST) $X) ((MPLUS) ((MEXPT) $X 2) $X))))
+MAXIMA> (setq $result ($factor (caddr (mget '$f 'mexpr))))
+((MTIMES SIMP FACTORED) $X ((MPLUS SIMP IRREDUCIBLE) 1 $X))
+MAXIMA> (to-maxima)
+Returning to Maxima
+(%o2)                                true
+(%i3) result;
+(%o3)                              x (x + 1)
+@end example
+@end deffn
+
+
+
+@defvr {Variable del sistema} values
+Valor inicial: @code{[]}
+
+@code{values} es una lista de todas las variables que el usuario ha creado
+(no incluye las opciones de Maxima ni los interruptores). 
+La lista comprende los símbolos a los que se ha asignado un
+valor mediante @code{:} o @code{::}.
+
+Si el valor de una variable se borra con cualquiera de las instrucciones
+@code{kill}, @code{remove} o @code{remvalue}, dicha variable desaparece
+de la lista @code{values}.
+
+Véase @code{functions} para una lista de funciones definidas por el
+usuario.
+
+Ejemplos:
+
+Primero, @code{values} muestra los símbolos @code{a}, 
+@code{b} y @code{c}, pero no @code{d}, pues no tiene valor asignado,
+ni la función de usuario @code{f}. Luego los valores de las variables se
+borran y @code{values} queda como una lista vacía.
+
+@c ===beg===
+@c [a:99, b:: a-90, c:a-b, d, f(x):=x^2];
+@c values;
+@c [kill(a), remove(b,value), remvalue(c)];
+@c values;
+@c ===end===
+@example
+(%i1) [a:99, b::a-90, c:a-b, d, f(x):= x^2];
+                                                  2
+(%o1)                     [99, 9, 90, d, f(x) := x ]
+(%i2) values;
+(%o2)                              [a, b, c]
+(%i3) [kill(a), remove(b,value), remvalue(c)];
+(%o3)                          [done, done, [c]]
+(%i4) values;
+(%o4)                                 []
+@end example
+
+@end defvr
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Funciones y variables para la impresión, , Funciones y variables para la línea de comandos, Línea de comandos
+
+@section Funciones y variables para la impresión
+
+
+@defvr {Variable opcional} %edispflag
+Valor por defecto: @code{false}
+
+Si @code{%edispflag} vale @code{true}, Maxima muestra @code{%e} elevado
+a un exponente negativo como un cociente. Por ejemplo, @code{%e^-x} se
+muestra como @code{1/%e^x}. Véase también @code{exptdispflag}.
+
+Ejemplo:
+
+@c ===beg===
+@c %e^-10;
+@c %edispflag:true$
+@c %e^-10;
+@c ===end===
+@example
+(%i1) %e^-10;
+                               - 10
+(%o1)                        %e
+(%i2) %edispflag:true$
+(%i3) %e^-10;
+                               1
+(%o3)                         ----
+                                10
+                              %e
+@end example
+@end defvr
+
+
+
+@defvr {Variable opcional} absboxchar
+Valor por defecto: @code{!}
+
+La variable @code{absboxchar} es el carácter utilizado para representar el valor absoluto de una expresión que ocupa más de una línea de altura.
+
+Ejemplo:
+
+@example
+(%i1) abs((x^3+1));
+                            ! 3    !
+(%o1)                       !x  + 1!
+@end example
+@end defvr
+
+
+@deffn {Función} disp (@var{expr_1}, @var{expr_2}, ...)
+
+Es como @code{display} pero sólo se muestran los valores de
+los argumentos, no las ecuaciones. Es útil para argumentos 
+complicados que no tienen nombre o en situaciones en las que 
+solamente es de interés el valor del argumento pero no su nombre.
+
+Véanse también @code{ldisp} y @code{print}.
+
+Ejemplos:
+
+@c ===beg===
+@c b[1,2]:x-x^2$
+@c x:123$
+@c disp(x, b[1,2], sin(1.0));
+@c ===end===
+@example
+(%i1) b[1,2]:x-x^2$
+(%i2) x:123$
+(%i3) disp(x, b[1,2], sin(1.0));
+                               123
+
+                                  2
+                             x - x
+
+                        .8414709848078965
+
+(%o3)                         done
+@end example
+@end deffn
+
+
+@deffn {Función} display (@var{expr_1}, @var{expr_2}, ...)
+
+Muestra las ecuaciones cuyos miembros izquierdos son 
+@var{expr_i} sin evaluar y cuyos miembros derechos son los 
+valores de las expresiones. Esta función es útil en los 
+bloques y en las sentencias @code{for} para mostrar resultados 
+intermedios.  Los argumentos de @code{display} suelen ser átomos, 
+variables subindicadas o llamadas a funciones.
+
+Véanse también @code{ldisplay}, @code{disp} y @code{ldisp}.
+
+Ejemplos:
+
+@c ===beg===
+@c b[1,2]:x-x^2$
+@c x:123$
+@c display(x, b[1,2], sin(1.0));
+@c ===end===
+@example
+(%i1) b[1,2]:x-x^2$
+(%i2) x:123$
+(%i3) display(x, b[1,2], sin(1.0));
+                             x = 123
+
+                                      2
+                         b     = x - x
+                          1, 2
+
+                  sin(1.0) = .8414709848078965
+
+(%o3)                         done
+@end example
+@end deffn
+
+
+@defvr {Variable opcional} display2d
+Valor por defecto: @code{true}
+
+Si @code{display2d} vale @code{false}, la salida por consola es
+una cadena unidimensional, en lugar de una expresión bidimensional.
+
+Véase también @code{leftjust} para cambiar la justificación a
+la izquierda o el centrado de la ecuación.
+
+Ejemplo:
+
+@c ===beg===
+@c x/(x^2+1);
+@c display2d:false$
+@c x/(x^2+1);
+@c ===end===
+@example
+(%i1) x/(x^2+1);
+                               x
+(%o1)                        ------
+                              2
+                             x  + 1
+(%i2) display2d:false$
+(%i3) x/(x^2+1);
+(%o3) x/(x^2+1)
+@end example
+@end defvr
+
+
+@defvr {Variable opcional} display_format_internal
+Valor por defecto: @code{false}
+
+Si @code{display_format_internal} vale @code{true},
+las expresiones se muestran sin ser transformadas de manera que oculten su representación matemática interna. Se representa lo que la función @code{inpart} devolvería, en oposición a @code{part}.
+
+Ejemplos:
+
+@example
+User     part       inpart
+a-b;      a - b     a + (- 1) b
+
+           a            - 1
+a/b;       -         a b
+           b
+                       1/2
+sqrt(x);   sqrt(x)    x
+
+          4 X        4
+X*4/3;    ---        - X
+           3         3
+@end example
+
+@end defvr
+
+
+@deffn {Función} dispterms (@var{expr})
+Muestra @var{expr} en partes, una debajo de la otra.
+Esto es, primero se muestra el operador de @var{expr}, luego 
+cada término si se trata de una suma, o cada factor si es un 
+producto, o si no se muestra separadamente la parte de una expresión 
+más general. Es útil si @var{expr} es demasiado grande para 
+representarla de otra forma.  Por ejemplo, si @code{P1}, @code{P2}, ...  
+son expresiones muy grandes, entonces el programa de representación 
+puede superar el espacio de almacenamiento tratando de mostrar 
+@code{P1 + P2 + ...} todo junto.  Sin embargo, @code{dispterms (P1 + P2 + ...)} 
+muestra @code{P1}, debajo  @code{P2}, etc.  Cuando una expresión exponencial 
+es demasiado ancha para ser representada como @code{A^B}, si no se utiliza 
+@code{dispterms}, entonces aparecerá como @code{expt (A, B)} (o como 
+@code{ncexpt (A, B)}, en lugar de @code{A^^B}).
+
+Ejemplo:
+
+@example
+(%i1) dispterms(2*a*sin(x)+%e^x);
+
++
+
+2 a sin(x)
+
+  x
+%e
+
+(%o1)                         done
+@end example
+@end deffn
+
+
+@deffn {Símbolo especial} expt (@var{a}, @var{b})
+@deffnx {Símbolo especial} ncexpt (@var{a}, @var{b})
+Si una expresión exponencial es demasiado ancha para ser mostrada como @code{@var{a}^@var{b}} aparecerá como @code{expt (@var{a}, @var{b})} (o como @code{ncexpt (@var{a}, @var{b})} en lugar de @code{@var{a}^^@var{b}}).
+
+@c THIS SEEMS LIKE A BUG TO ME. expt, ncexpt SHOULD BE RECOGNIZED SINCE MAXIMA
+@c ITSELF PRINTS THEM SOMETIMES. THESE SHOULD JUST SIMPLIFY TO ^ AND ^^, RESPECTIVELY.
+Las funciones @code{expt} y @code{ncexpt} no se reconocen en una entrada.
+
+@end deffn
+
+
+@defvr {Variable opcional} exptdispflag
+Valor por defecto: @code{true}
+
+Si @code{exptdispflag} vale @code{true}, Maxima muestra las expresiones con 
+exponentes negativos como cocientes. Véase también @code{%edispflag}.
+
+Ejemplo:
+
+@example
+(%i1) exptdispflag:true;
+(%o1)                         true
+(%i2) 10^-x;
+                                1
+(%o2)                          ---
+                                 x
+                               10
+(%i3) exptdispflag:false;
+(%o3)                         false
+(%i4) 10^-x;
+                                - x
+(%o4)                         10
+@end example
+
+@end defvr
+
+
+@deffn {Función} grind (@var{expr})
+@deffnx {Variable opcional} grind
+La función @code{grind} imprime @var{expr}
+en la consola en un formato admisible como entrada para Maxima. La función 
+@code{grind} devuelve siempre @code{done}.
+
+Cuando @var{expr} es el nombre de una función o macro, @code{grind}
+muestra la definición de la función o de la macro en lugar de sólo
+su nombre.
+
+Véase también @code{string}, que devuelve una cadena en lugar de imprimir la salida. La función
+@code{grind} intenta imprimir la expresión de forma que sea lago más sencilla de leer que la salida de @code{string}.
+
+Cuando la variable @code{grind} vale @code{true},
+la salida de @code{string} y @code{stringout} tienen el mismo formato que la de @code{grind};
+en caso contrario no se formatea la salida de esas funciones.
+El valor por defecto de la variable @code{grind} es @code{false}.
+
+La variable @code{grind} también se puede utilizar como  argumento en @code{playback}.
+Si @code{grind} está presente,
+@code{playback} imprime las expresiones de entrada en el mismo formato que lo hace la función @code{grind};
+en caso contrario no se formatean la expresiones de entrada.
+
+La función @code{grind} evalúa sus argumentos.
+
+Ejemplos:
+
+@c ===beg===
+@c aa + 1729;
+@c grind (%);
+@c [aa, 1729, aa + 1729];
+@c grind (%);
+@c matrix ([aa, 17], [29, bb]);
+@c grind (%);
+@c set (aa, 17, 29, bb);
+@c grind (%);
+@c exp (aa / (bb + 17)^29);
+@c grind (%);
+@c expr: expand ((aa + bb)^10);
+@c grind (expr);
+@c string (expr);
+@c cholesky (A):= block ([n : length (A), L : copymatrix (A),
+@c   p : makelist (0, i, 1, length (A))], 
+@c   for i thru n do for j : i thru n do
+@c   (x : L[i, j], x : x - sum (L[j, k] * L[i, k], k, 1, i - 1), 
+@c   if i = j then @c   p[i] : 1 / sqrt(x) else L[j, i] : x * p[i]), 
+@c   for i thru n do L[i, i] : 1 / p[i],
+@c   for i thru n do for j : i + 1 thru n do L[i, j] : 0, L)$
+@c grind (cholesky);
+@c string (fundef (cholesky));
+@c ===end===
+@example
+(%i1) aa + 1729;
+(%o1)                       aa + 1729
+(%i2) grind (%);
+aa+1729$
+(%o2)                         done
+(%i3) [aa, 1729, aa + 1729];
+(%o3)                 [aa, 1729, aa + 1729]
+(%i4) grind (%);
+[aa,1729,aa+1729]$
+(%o4)                         done
+(%i5) matrix ([aa, 17], [29, bb]);
+                           [ aa  17 ]
+(%o5)                      [        ]
+                           [ 29  bb ]
+(%i6) grind (%);
+matrix([aa,17],[29,bb])$
+(%o6)                         done
+(%i7) set (aa, 17, 29, bb);
+(%o7)                   @{17, 29, aa, bb@}
+(%i8) grind (%);
+@{17,29,aa,bb@}$
+(%o8)                         done
+(%i9) exp (aa / (bb + 17)^29);
+                                aa
+                            -----------
+                                     29
+                            (bb + 17)
+(%o9)                     %e
+(%i10) grind (%);
+%e^(aa/(bb+17)^29)$
+(%o10)                        done
+(%i11) expr: expand ((aa + bb)^10);
+         10           9        2   8         3   7         4   6
+(%o11) bb   + 10 aa bb  + 45 aa  bb  + 120 aa  bb  + 210 aa  bb
+         5   5         6   4         7   3        8   2
+ + 252 aa  bb  + 210 aa  bb  + 120 aa  bb  + 45 aa  bb
+        9        10
+ + 10 aa  bb + aa
+(%i12) grind (expr);
+bb^10+10*aa*bb^9+45*aa^2*bb^8+120*aa^3*bb^7+210*aa^4*bb^6
+     +252*aa^5*bb^5+210*aa^6*bb^4+120*aa^7*bb^3+45*aa^8*bb^2
+     +10*aa^9*bb+aa^10$
+(%o12)                        done
+(%i13) string (expr);
+(%o13) bb^10+10*aa*bb^9+45*aa^2*bb^8+120*aa^3*bb^7+210*aa^4*bb^6\
++252*aa^5*bb^5+210*aa^6*bb^4+120*aa^7*bb^3+45*aa^8*bb^2+10*aa^9*\
+bb+aa^10
+(%i14) cholesky (A):= block ([n : length (A), L : copymatrix (A),
+  p : makelist (0, i, 1, length (A))], for i thru n do
+  for j : i thru n do
+  (x : L[i, j], x : x - sum (L[j, k] * L[i, k], k, 1, i - 1),
+  if i = j then p[i] : 1 / sqrt(x) else L[j, i] : x * p[i]),
+  for i thru n do L[i, i] : 1 / p[i],
+  for i thru n do for j : i + 1 thru n do L[i, j] : 0, L)$
+(%i15) grind (cholesky);
+cholesky(A):=block(
+         [n:length(A),L:copymatrix(A),
+          p:makelist(0,i,1,length(A))],
+         for i thru n do
+             (for j from i thru n do
+                  (x:L[i,j],x:x-sum(L[j,k]*L[i,k],k,1,i-1),
+                   if i = j then p[i]:1/sqrt(x)
+                       else L[j,i]:x*p[i])),
+         for i thru n do L[i,i]:1/p[i],
+         for i thru n do (for j from i+1 thru n do L[i,j]:0),L)$
+(%o15)                        done
+(%i16) string (fundef (cholesky));
+(%o16) cholesky(A):=block([n:length(A),L:copymatrix(A),p:makelis\
+t(0,i,1,length(A))],for i thru n do (for j from i thru n do (x:L\
+[i,j],x:x-sum(L[j,k]*L[i,k],k,1,i-1),if i = j then p[i]:1/sqrt(x\
+) else L[j,i]:x*p[i])),for i thru n do L[i,i]:1/p[i],for i thru \
+n do (for j from i+1 thru n do L[i,j]:0),L)
+@end example
+@end deffn
+
+
+
+
+@defvr {Variable opcional} ibase
+Valor por defecto: @code{10}
+
+@code{ibase} es la base en la que Maxima lee valores enteros.
+
+A @code{ibase} se le puede asignar cualquier entero entre
+2 y 36 (base decimal), ambos inclusive.
+Si @code{ibase} es mayor que 10,
+las cifras a utilizar serán los dígitos de
+0 a 9, junto con las letras del alfabeto A, B, C, ..., 
+tantas como sean necesarias para completar la base @code{ibase}.
+Las letras se interpretarán como cifras sólo cuando el 
+primer dígito sea un valor entre 9.
+Es indiferente hacer uso de letras mayúsculas o minúsculas.
+Las cifras para la base 36, la mayor posible, son los 
+dígitos numéricos de 0 a 9 y las letras desde
+la A hasta la Z.
+
+Cualquiera que sea el valor de @code{ibase}, si un entero termina
+con un punto decimal, se interpretará en base 10.
+
+Véase también @code{obase}.
+
+Ejemplos:
+
+@code{ibase} menor que 10.
+
+@c ===beg===
+@c ibase : 2 $
+@c obase;
+@c 1111111111111111;
+@c ===end===
+@example
+(%i1) ibase : 2 $
+(%i2) obase;
+(%o2)                          10
+(%i3) 1111111111111111;
+(%o3)                         65535
+@end example
+
+@code{ibase} mayor que 10.
+Las letras se interpretan como dígitos sólo
+si el primer dígito es una cifra entre 0 y 9.
+
+@c ===beg===
+@c ibase : 16 $
+@c obase;
+@c 1000;
+@c abcd;
+@c symbolp (abcd);
+@c 0abcd;
+@c symbolp (0abcd);
+@c ===end===
+@example
+(%i1) ibase : 16 $
+(%i2) obase;
+(%o2)                          10
+(%i3) 1000;
+(%o3)                         4096
+(%i4) abcd;
+(%o4)                         abcd
+(%i5) symbolp (abcd);
+(%o5)                         true
+(%i6) 0abcd;
+(%o6)                         43981
+(%i7) symbolp (0abcd);
+(%o7)                         false
+@end example
+
+Independientemente del valor de @code{ibase}, si el entero
+termina con un punto decimal, se interpretará en base
+diez.
+
+@c ===beg===
+@c ibase : 36 $
+@c obase;
+@c 1234;
+@c 1234.;
+@c ===end===
+@example
+(%i1) ibase : 36 $
+(%i2) obase;
+(%o2)                          10
+(%i3) 1234;
+(%o3)                         49360
+(%i4) 1234.;
+(%o4)                         1234
+@end example
+@end defvr
+
+
+
+@deffn {Función} ldisp (@var{expr_1}, ..., @var{expr_n})
+Muestra las expresiones @var{expr_1}, ..., @var{expr_n} en la consola con el formato de salida;
+@code{ldisp} asigna una etiqueta a cada argumento y devuelve la lista de etiquetas.
+
+Véanse también @code{disp}, @code{display} y @code{ldisplay}.
+
+@example
+(%i1) e: (a+b)^3;
+                                   3
+(%o1)                       (b + a)
+(%i2) f: expand (e);
+                     3        2      2      3
+(%o2)               b  + 3 a b  + 3 a  b + a
+(%i3) ldisp (e, f);
+                                   3
+(%t3)                       (b + a)
+
+                     3        2      2      3
+(%t4)               b  + 3 a b  + 3 a  b + a
+
+(%o4)                      [%t3, %t4]
+(%i4) %t3;
+                                   3
+(%o4)                       (b + a)
+(%i5) %t4;
+                     3        2      2      3
+(%o5)               b  + 3 a b  + 3 a  b + a
+@end example
+
+@end deffn
+
+
+
+@deffn {Función} ldisplay (@var{expr_1}, ..., @var{expr_n})
+Muestra las expresiones @var{expr_1}, ..., @var{expr_n} en la consola con el formato de salida.
+Cad expresión se muestra como una ecuación de la forma @code{lhs = rhs}
+en la que @code{lhs} es uno de los argumentos de @code{ldisplay}
+y @code{rhs} su valor. Normalmente, cada argumento será el nombre de una variable. La función
+@code{ldisp} asigna una etiqueta a cada ecuación y devuelve la lista de etiquetas.
+
+Véanse también @code{disp}, @code{display} y @code{ldisp}.
+
+@example
+(%i1) e: (a+b)^3;
+                                   3
+(%o1)                       (b + a)
+(%i2) f: expand (e);
+                     3        2      2      3
+(%o2)               b  + 3 a b  + 3 a  b + a
+(%i3) ldisplay (e, f);
+                                     3
+(%t3)                     e = (b + a)
+
+                       3        2      2      3
+(%t4)             f = b  + 3 a b  + 3 a  b + a
+
+(%o4)                      [%t3, %t4]
+(%i4) %t3;
+                                     3
+(%o4)                     e = (b + a)
+(%i5) %t4;
+                       3        2      2      3
+(%o5)             f = b  + 3 a b  + 3 a  b + a
+@end example
+
+@end deffn
+
+
+@defvr {Variable opcional} linel
+Valor por defecto: @code{79}
+
+La variable @code{linel} es la anchura (medida en número de caracteres) de la consola que se le da a Maxima para que muestre las expresiones. A @code{linel} se le puede asignar cualquier valor, pero si éste es muy pequeño o grande resultará de poca utilidad. El texto que impriman las funciones internas de Maxima, como los mensajes de error y las salidas de la función @code{describe}, no se ve afectado por el valor de @code{linel}.
+
+@end defvr
+
+
+@defvr {Variable opcional} lispdisp
+Valor por defecto: @code{false}
+
+Si @code{lispdisp} vale @code{true}, los símbolos de Lisp se muestran precedidos del carácter de interrogación @code{?}. En caso contrario, los símbolos de Lisp se muestran sin esta marca.
+
+Ejemplos:
+
+@c ===beg===
+@c lispdisp: false$
+@c ?foo + ?bar;
+@c lispdisp: true$
+@c ?foo + ?bar;
+@c ===end===
+@example
+(%i1) lispdisp: false$
+(%i2) ?foo + ?bar;
+(%o2)                       foo + bar
+(%i3) lispdisp: true$
+(%i4) ?foo + ?bar;
+(%o4)                      ?foo + ?bar
+@end example
+
+@end defvr
+
+
+@defvr {Variable opcional} negsumdispflag
+Valor por defecto: @code{true}
+
+Si @code{negsumdispflag} vale @code{true}, @code{x - y} se muestra como @code{x - y}
+en lugar de @code{- y + x}.  Dándole el valor @code{false} se realiza un análisis adicional para que no se representen de forma muy diferente dos expresiones similares.  Una aplicación puede ser para que @code{a + %i*b} y @code{a - %i*b} se representen ambas de la misma manera.
+
+@end defvr
+
+
+@defvr {Variable opcional} obase
+Valor por defecto: @code{10}
+
+@code{obase} es la base en la que Maxima imprime los números enteros.
+
+A @code{obase} se le puede asignar cualquier entero entre
+2 y 36 (base decimal), ambos inclusive.
+Si @code{obase} es mayor que 10,
+las cifras a utilizar serán los dígitos de
+0 a 9, junto con las letras del alfabeto A, B, C, ..., 
+tantas como sean necesarias para completar la base @code{obase}.
+Si el primer dígito resulta ser una letra, se le
+añadirá el cero como prefijo.
+Las cifras para la base 36, la mayor posible, son los 
+dígitos numéricos de 0 a 9 y las letras desde
+la A hasta la Z.
+
+Véase también @code{ibase}.
+
+Ejemplos:
+
+@c ===beg===
+@c obase : 2;
+@c 2^8 - 1;
+@c obase : 8;
+@c 8^8 - 1;
+@c obase : 16;
+@c 16^8 - 1;
+@c obase : 36;
+@c 36^8 - 1;
+@c ===end===
+@example
+(%i1) obase : 2;
+(%o1)                          10
+(%i2) 2^8 - 1;
+(%o10)                      11111111
+(%i3) obase : 8;
+(%o3)                          10
+(%i4) 8^8 - 1;
+(%o4)                       77777777
+(%i5) obase : 16;
+(%o5)                          10
+(%i6) 16^8 - 1;
+(%o6)                       0FFFFFFFF
+(%i7) obase : 36;
+(%o7)                          10
+(%i8) 36^8 - 1;
+(%o8)                       0ZZZZZZZZ
+@end example
+@end defvr
+
+
+@defvr {Variable opcional} pfeformat
+Valor por defecto: @code{false}
+
+Si @code{pfeformat} vale @code{true}, una fracción de enteros será mostrada con el carácter de barra inclinada @code{/} entre ellos.
+
+
+@example
+(%i1) pfeformat: false$
+(%i2) 2^16/7^3;
+                              65536
+(%o2)                         -----
+                               343
+(%i3) (a+b)/8;
+                              b + a
+(%o3)                         -----
+                                8
+(%i4) pfeformat: true$ 
+(%i5) 2^16/7^3;
+(%o5)                       65536/343
+(%i6) (a+b)/8;
+(%o6)                      1/8 (b + a)
+@end example
+
+@end defvr
+
+
+@defvr {Variable opcional} powerdisp
+Valor por defecto: @code{false}
+
+Si @code{powerdisp} vale @code{true}, se muestran las sumas con sus términos ordenados de menor a mayor potencia. Así, un polinomio se presenta como una serie de potencias truncada con el término constante al principio y el de mayor potencia al final.
+
+Por defecto, los términos de una suma se muestran en el orden de las potencias decrecientes.
+
+Ejemplo:
+
+@example
+(%i1) powerdisp:true;
+(%o1)                         true
+(%i2) x^2+x^3+x^4;
+                           2    3    4
+(%o2)                     x  + x  + x
+(%i3) powerdisp:false;
+(%o3)                         false
+(%i4) x^2+x^3+x^4;
+                           4    3    2
+(%o4)                     x  + x  + x
+@end example
+@end defvr
+
+
+@deffn {Función} print (@var{expr_1}, ..., @var{expr_n})
+Evalúa y muestra las expresiones  @var{expr_1}, ..., @var{expr_n} secuencialmente de izquierda a derecha, comenzando la impresión por el borde izquierdo de la consola.
+
+El valor devuelto por @code{print} es el valor de su último argumento. La función @code{print} no genera etiquetas para las expresiones intermedias.
+
+Véanse también @code{display}, @code{disp}, @code{ldisplay} y @code{ldisp}, que muestran una expresión por línea, mientras que @code{print} trata de mostrar dos o más expresiones por línea.
+
+Para mostrar el contenido de un archivo véase @code{printfile}.
+
+@example
+(%i1) r: print ("(a+b)^3 is", expand ((a+b)^3), "log (a^10/b) is",
+      radcan (log (a^10/b)))$
+            3        2      2      3
+(a+b)^3 is b  + 3 a b  + 3 a  b + a  log (a^10/b) is 
+
+                                              10 log(a) - log(b) 
+(%i2) r;
+(%o2)                  10 log(a) - log(b)
+(%i3) disp ("(a+b)^3 is", expand ((a+b)^3), "log (a^10/b) is",
+      radcan (log (a^10/b)))$
+                           (a+b)^3 is
+
+                     3        2      2      3
+                    b  + 3 a b  + 3 a  b + a
+
+                         log (a^10/b) is
+
+                       10 log(a) - log(b)
+@end example
+
+@end deffn
+
+
+@defvr {Variable opcional} sqrtdispflag
+Valor por defecto: @code{true}
+
+Si @code{sqrtdispflag} vale @code{false}, hará que @code{sqrt} se muestre con el exponente 1/2.
+@c AND OTHERWISE ... ??
+@end defvr
+
+
+@defvr {Variable opcional} stardisp
+Valor por defecto: @code{false}
+
+Si @code{stardisp} vale @code{true}, la multiplicación se muestra con un asterisco @code{*} entre los operandos.
+
+@end defvr
+
+
+@defvr {Variable opcional} ttyoff
+Valor por defecto: @code{false}
+
+Si @code{ttyoff} vale @code{true}, no se muestran las expresiones resultantes, pero éstas se calculan de todos modos y se les asignan etiquetas. Véase @code{labels}.
+
+El texto que escriban las funciones internas de Maxima, tales como los mensajes de error y las salidas de @code{describe},
+no se ven afectadas por @code{ttyoff}.
+
+@end defvr
+

@@ -1,0 +1,7 @@
+1. If Maxima GUI doesn't work read the section 
+   of the readme on firewall.
+
+2. If not only Maxima GUI but also command line 
+   Maxima doesn't work read the section of the readme 
+   on Data Execution Prevention (DEP).
+

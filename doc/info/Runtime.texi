@@ -1,0 +1,661 @@
+@menu
+* Introduction for Runtime Environment::  
+* Interrupts::                  
+* Functions and Variables for Runtime Environment::  
+@end menu
+
+@c -----------------------------------------------------------------------------
+@node Introduction for Runtime Environment, Interrupts, Runtime Environment, Runtime Environment
+@section Introduction for Runtime Environment
+@c -----------------------------------------------------------------------------
+
+@c THIS DISCUSSION OF maxima-init.mac REPLACES AN EARLIER WRITE-UP. !!!
+@c HOWEVER IT SEEMS THAT THIS TEXT REALLY WANTS TO BE UNDER A DIFFERENT HEADING. !!!
+@code{maxima-init.mac} is a file which is loaded automatically when Maxima
+starts.  You can use @code{maxima-init.mac} to customize your Maxima
+environment.  @code{maxima-init.mac}, if it exists, is typically placed in the
+directory named by @code{maxima_userdir},
+although it can be in any directory searched by the function @code{file_search}.
+
+Here is an example @code{maxima-init.mac} file:
+
+@example
+setup_autoload ("specfun.mac", ultraspherical, assoc_legendre_p);
+showtime:all;
+@end example
+
+In this example, @code{setup_autoload} tells Maxima to load the
+specified file
+(@code{specfun.mac}) if any of the functions (@code{ultraspherical},
+@code{assoc_legendre_p}) are called but not yet defined.
+Thus you needn't remember to load the file before calling the functions.
+
+The statement @code{showtime: all} tells Maxima to set the @code{showtime}
+variable.  The @code{maxima-init.mac} file can contain any other assignments or
+other Maxima statements.
+
+@opencatbox{Categories:}
+@category{Session management}
+@closecatbox
+
+@c -----------------------------------------------------------------------------
+@node Interrupts, Functions and Variables for Runtime Environment, Introduction for Runtime Environment, Runtime Environment
+@section Interrupts
+@c -----------------------------------------------------------------------------
+
+The user can stop a time-consuming computation with the
+^C (control-C) character.
+The default action is to stop the computation
+and print another user prompt.
+In this case, it is not possible to restart a stopped computation.
+
+If the Lisp variable @code{*debugger-hook*} is set to @code{nil}, by executing
+
+@example
+:lisp (setq *debugger-hook* nil)
+@end example
+
+@noindent
+then upon receiving ^C, Maxima will enter the Lisp debugger,
+and the user may use the debugger to inspect the Lisp environment.
+The stopped computation can be restarted by entering
+@code{continue} in the Lisp debugger.
+The means of returning to Maxima from the Lisp debugger
+(other than running the computation to completion)
+is different for each version of Lisp.
+
+On Unix systems, the character ^Z (control-Z) causes Maxima
+to stop altogether, and control is returned to the shell prompt.
+The @code{fg} command causes Maxima
+to resume from the point at which it was stopped.
+
+@opencatbox{Categories:}
+@category{Console interaction}
+@closecatbox
+
+@c end concepts Runtime Environment
+
+@c -----------------------------------------------------------------------------
+@node Functions and Variables for Runtime Environment,  , Interrupts, Runtime Environment
+@section Functions and Variables for Runtime Environment
+@c -----------------------------------------------------------------------------
+
+@c -----------------------------------------------------------------------------
+@anchor{maxima_tempdir}
+@defvr {System variable} maxima_tempdir
+
+@code{maxima_tempdir} names the directory in which Maxima creates some temporary
+files.  In particular, temporary files for plotting are created in
+@code{maxima_tempdir}.
+
+The initial value of @code{maxima_tempdir} is the user's home directory, if
+Maxima can locate it; otherwise Maxima makes a guess about a suitable directory.
+
+@code{maxima_tempdir} may be assigned a string which names a directory.
+
+@opencatbox{Categories:}
+@category{Global variables}
+@closecatbox
+@end defvr
+
+@c -----------------------------------------------------------------------------
+@anchor{maxima_userdir}
+@defvr {System variable} maxima_userdir
+
+@code{maxima_userdir} names a directory which Maxima searches to find Maxima and
+Lisp files.  (Maxima searches some other directories as well;
+@code{file_search_maxima} and @code{file_search_lisp} are the complete lists.)
+
+The initial value of @code{maxima_userdir} is a subdirectory of the user's home
+directory, if Maxima can locate it; otherwise Maxima makes a guess about a
+suitable directory.
+
+@code{maxima_userdir} may be assigned a string which names a directory.
+However, assigning to @code{maxima_userdir} does not automatically change
+@code{file_search_maxima} and @code{file_search_lisp};
+those variables must be changed separately.
+
+@opencatbox{Categories:}
+@category{Global variables}
+@closecatbox
+@end defvr
+
+@c -----------------------------------------------------------------------------
+@anchor{room}
+@deffn  {Function} room @
+@fname{room} () @
+@fname{room} (true) @
+@fname{room} (false)
+
+Prints out a description of the state of storage and
+stack management in Maxima.  @code{room} calls the Lisp function of 
+the same name.
+
+@itemize @bullet
+@item
+@code{room ()} prints out a moderate description.
+@item
+@code{room (true)} prints out a verbose description.
+@item
+@code{room (false)} prints out a terse description.
+@end itemize
+
+@opencatbox{Categories:}
+@category{Debugging}
+@closecatbox
+@end deffn
+
+@c -----------------------------------------------------------------------------
+@anchor{sstatus}
+@deffn {Function} sstatus (@var{keyword}, @var{item})
+
+When @var{keyword} is the symbol @code{feature}, @var{item} is put on the list
+of system features.  After @code{sstatus (keyword, item)} is executed,
+@code{status (feature, item)} returns @code{true}.  If @var{keyword} is the
+symbol @code{nofeature}, @var{item} is deleted from the list of system features.
+This can be useful for package writers, to keep track of what features they have
+loaded in.
+
+See also @mrefdot{status}
+
+@opencatbox{Categories:}
+@category{Programming}
+@closecatbox
+@end deffn
+
+@c -----------------------------------------------------------------------------
+@anchor{status}
+@deffn  {Function} status @
+@fname{status} (@code{feature}) @
+@fname{status} (@code{feature}, @var{item})
+
+Returns information about the presence or absence of certain system-dependent 
+features.
+
+@itemize @bullet
+@item
+@code{status (feature)} returns a list of system features. These include Lisp 
+version, operating system type, etc. The list may vary from one Lisp type to 
+another.
+
+@item 
+@code{status (feature, item)} returns @code{true} if @var{item} is on the
+list of items returned by @code{status (feature)} and @code{false} otherwise.
+@code{status} quotes the argument @var{item}. The quote-quote operator 
+@code{'@w{}'} defeats quotation. A feature whose name contains a special 
+character, such as a hyphen, must be given as a string argument. For example,
+@code{status (feature, "ansi-cl")}.
+@end itemize
+
+See also @mrefdot{sstatus}
+
+The variable @code{features} contains a list of features which apply to 
+mathematical expressions. See @code{features} and @code{featurep} for more 
+information.
+
+@opencatbox{Categories:}
+@category{Programming}
+@closecatbox
+@end deffn
+
+@c NEEDS CLARIFICATION
+
+@c -----------------------------------------------------------------------------
+@anchor{system}
+@deffn {Function} system (@var{command})
+
+Executes @var{command} as a separate process.  The command is passed to the
+default shell for execution.  @code{system} is not supported by all operating
+systems, but generally exists in Unix and Unix-like environments.
+
+Supposing @code{_hist.out} is a list of frequencies which you wish to plot as a
+bar graph using @code{xgraph}.
+
+@example
+(%i1) (with_stdout("_hist.out",
+           for i:1 thru length(hist) do (
+             print(i,hist[i]))),
+       system("xgraph -bar -brw .7 -nl < _hist.out"));
+@end example
+
+In order to make the plot be done in the background (returning control to
+Maxima) and remove the temporary file after it is done do:
+
+@example
+system("(xgraph -bar -brw .7 -nl < _hist.out;  rm -f _hist.out)&")
+@end example
+@end deffn
+
+@c -----------------------------------------------------------------------------
+@anchor{time}
+@deffn {Function} time (%o1, %o2, %o3, @dots{})
+
+Returns a list of the times, in seconds, taken to compute the output lines
+@code{%o1}, @code{%o2}, @code{%o3}, @dots{} The time returned is Maxima's
+estimate of the internal computation time, not the elapsed time.  @code{time}
+can only be applied to output line variables; for any other variables,
+@code{time} returns @code{unknown}.
+
+Set @code{showtime: true} to make Maxima print out the computation time 
+and elapsed time with each output line.
+
+@opencatbox{Categories:}
+@category{Debugging}
+@closecatbox
+@end deffn
+
+@c -----------------------------------------------------------------------------
+@anchor{timedate}
+@deffn {Function} timedate @
+@fname{timedate} (@var{T}, @var{tz_offset}) @
+@fname{timedate} (@var{T}) @
+@fname{timedate} ()
+
+@code{timedate(@var{T}, @var{tz_offset})} returns a string
+representing the time @var{T} in the time zone @var{tz_offset}.
+The string format is @code{YYYY-MM-DD HH:MM:SS.NNN[+|-]ZZ:ZZ}
+(using as many digits as necessary to represent the fractional part)
+if @var{T} has a nonzero fractional part,
+or @code{YYYY-MM-DD HH:MM:SS[+|-]ZZ:ZZ} if its fractional part is zero.
+
+@var{T} measures time, in seconds, since midnight, January 1, 1900,
+in the GMT time zone.
+
+@var{tz_offset} measures the offset of the time zone, in hours,
+east (positive) or west (negative) of GMT.
+@var{tz_offset} must be an integer, rational, or float between -24 and 24, inclusive.
+If @var{tz_offset} is not a multiple of 1/60, 
+it is rounded to the nearest multiple of 1/60.
+
+@code{timedate(@var{T})} is equivalent to @code{timedate(@var{T}, @var{tz_offset})}
+with @var{tz_offset} equal to the offset of the local time zone.
+
+@code{timedate()} is equivalent to @code{timedate(absolute_real_time())}.
+That is, it returns the current time in the local time zone.
+
+Example:
+
+@code{timedate} with no argument returns a string representing the current time and date.
+
+@c ===beg===
+@c d : timedate ();
+@c print ("timedate reports current time", d) $
+@c ===end===
+@example
+(%i1) d : timedate ();
+(%o1)                      2010-06-08 04:08:09+01:00
+(%i2) print ("timedate reports current time", d) $
+timedate reports current time 2010-06-08 04:08:09+01:00
+@end example
+
+@code{timedate} with an argument returns a string representing the argument.
+
+@c ===beg===
+@c timedate (0);
+@c timedate (absolute_real_time () - 7*24*3600);
+@c ===end===
+@example
+(%i1) timedate (0);
+(%o1)                      1900-01-01 01:00:00+01:00
+(%i2) timedate (absolute_real_time () - 7*24*3600);
+(%o2)                      2010-06-01 04:19:51+01:00
+@end example
+
+@code{timedate} with optional timezone offset.
+
+@c ===beg===
+@c timedate (1000000000, -9.5);
+@c ===end===
+@example
+(%i1) timedate (1000000000, -9.5);
+(%o1)               1931-09-09 16:16:40-09:30
+@end example
+
+@opencatbox{Categories:}
+@category{Time and date functions}
+@closecatbox
+@end deffn
+
+@c -----------------------------------------------------------------------------
+@anchor{parse_timedate}
+@deffn  {Function} parse_timedate @
+@fname{parse_timedate} (@var{S})
+
+Parses a string @var{S} representing a date or date and time of day
+and returns the number of seconds since midnight, January 1, 1900 GMT.
+If there is a nonzero fractional part, the value returned is a rational number,
+otherwise, it is an integer.
+@code{parse_timedate} returns @code{false}
+if it cannot parse @var{S} according to any of the allowed formats.
+
+The string @var{S} must have one of the following formats,
+optionally followed by a timezone designation:
+
+@itemize @bullet
+@item
+@code{YYYY-MM-DD[ T]hh:mm:ss[,.]nnn}
+@item
+@code{YYYY-MM-DD[ T]hh:mm:ss}
+@item
+@code{YYYY-MM-DD}
+@end itemize
+
+where the fields are year, month, day, hours, minutes, seconds, and fraction of a second,
+and square brackets indicate acceptable alternatives.
+The fraction may contain one or more digits.
+
+Except for the fraction of a second,
+each field must have exactly the number of digits indicated:
+four digits for the year, and two for the month, day of the month, hours, minutes, and seconds.
+
+A timezone designation must have one of the following forms:
+
+@itemize @bullet
+@item
+@code{[+-]hh:mm}
+@item
+@code{[+-]hhmm}
+@item
+@code{[+-]hh}
+@item
+@code{Z}
+@end itemize
+
+where @code{hh} and @code{mm} indicate hours and minutes east (@code{+}) or west (@code{-}) of GMT.
+The timezone may be from +24 hours (inclusive) to -24 hours (inclusive).
+
+A literal character @code{Z} is equivalent to @code{+00:00} and its variants,
+indicating GMT.
+
+If no timezone is indicated,
+the time is assumed to be in the local time zone.
+
+Any leading or trailing whitespace (space, tab, newline, and carriage return) is ignored,
+but any other leading or trailing characters cause @code{parse_timedate} to fail and return @code{false}.
+
+See also @mref{timedate} and @mrefdot{absolute_real_time}
+
+Examples:
+
+Midnight, January 1, 1900, in the local time zone, in each acceptable format.
+The result is the number of seconds the local time zone
+is ahead (negative result) or behind (positive result) GMT.
+In this example, the local time zone is 8 hours behind GMT.
+
+@c ===beg===
+@c parse_timedate ("1900-01-01 00:00:00,000");
+@c parse_timedate ("1900-01-01 00:00:00.000");
+@c parse_timedate ("1900-01-01T00:00:00,000");
+@c parse_timedate ("1900-01-01T00:00:00.000");
+@c parse_timedate ("1900-01-01 00:00:00");
+@c parse_timedate ("1900-01-01T00:00:00");
+@c parse_timedate ("1900-01-01");
+@c ===end===
+@example
+(%i1) parse_timedate ("1900-01-01 00:00:00,000");
+(%o1)                         28800
+(%i2) parse_timedate ("1900-01-01 00:00:00.000");
+(%o2)                         28800
+(%i3) parse_timedate ("1900-01-01T00:00:00,000");
+(%o3)                         28800
+(%i4) parse_timedate ("1900-01-01T00:00:00.000");
+(%o4)                         28800
+(%i5) parse_timedate ("1900-01-01 00:00:00");
+(%o5)                         28800
+(%i6) parse_timedate ("1900-01-01T00:00:00");
+(%o6)                         28800
+(%i7) parse_timedate ("1900-01-01");
+(%o7)                         28800
+@end example
+
+Midnight, January 1, 1900, GMT, in different indicated time zones.
+
+@c ===beg===
+@c parse_timedate ("1900-01-01 19:00:00+19:00");
+@c parse_timedate ("1900-01-01 07:00:00+07:00");
+@c parse_timedate ("1900-01-01 01:00:00+01:00");
+@c parse_timedate ("1900-01-01Z");
+@c parse_timedate ("1899-12-31 21:00:00-03:00");
+@c parse_timedate ("1899-12-31 13:00:00-11:00");
+@c parse_timedate ("1899-12-31 08:00:00-16:00");
+@c ===end===
+@example
+(%i1) parse_timedate ("1900-01-01 19:00:00+19:00");
+(%o1)                           0
+(%i2) parse_timedate ("1900-01-01 07:00:00+07:00");
+(%o2)                           0
+(%i3) parse_timedate ("1900-01-01 01:00:00+01:00");
+(%o3)                           0
+(%i4) parse_timedate ("1900-01-01Z");
+(%o4)                           0
+(%i5) parse_timedate ("1899-12-31 21:00:00-03:00");
+(%o5)                           0
+(%i6) parse_timedate ("1899-12-31 13:00:00-11:00");
+(%o6)                           0
+(%i7) parse_timedate ("1899-12-31 08:00:00-16:00");
+(%o7)                           0
+@end example
+
+@opencatbox{Categories:}
+@category{Time and date functions}
+@closecatbox
+@end deffn
+
+@c -----------------------------------------------------------------------------
+@anchor{encode_time}
+@deffn {Function} encode_time @
+@fname{encode_time} (@var{year}, @var{month}, @var{day}, @var{hours}, @var{minutes}, @var{seconds}, @var{tz_offset}) @
+@fname{encode_time} (@var{year}, @var{month}, @var{day}, @var{hours}, @var{minutes}, @var{seconds})
+
+Given a time and date specified by
+@var{year}, @var{month}, @var{day}, @var{hours}, @var{minutes}, and @var{seconds},
+@code{encode_time} returns the number of seconds (possibly including a fractional part)
+since midnight, January 1, 1900 GMT.
+
+@var{year} must be an integer greater than or equal to 1899.
+However, 1899 is allowed only if the resulting encoded time is greater than or equal to 0.
+
+@var{month} must be an integer from 1 to 12, inclusive.
+
+@var{day} must be an integer from 1 to @var{n}, inclusive,
+where @var{n} is the number of days in the month specified by @var{month}.
+
+@var{hours} must be an integer from 0 to 23, inclusive.
+
+@var{minutes} must be an integer from 0 to 59, inclusive.
+
+@var{seconds} must be an integer, rational, or float
+greater than or equal to 0 and less than 60.
+When @var{seconds} is not an integer,
+@code{encode_time} returns a rational,
+such that the fractional part of the return value is equal to the fractional part of @var{seconds}.
+Otherwise, @var{seconds} is an integer, and the return value is likewise an integer.
+
+@var{tz_offset} measures the offset of the time zone, in hours,
+east (positive) or west (negative) of GMT.
+@var{tz_offset} must be an integer, rational, or float between -24 and 24, inclusive.
+If @var{tz_offset} is not a multiple of 1/3600, 
+it is rounded to the nearest multiple of 1/3600.
+
+If @var{tz_offset} is not present, the offset of the local time zone is assumed.
+
+See also @mrefdot{decode_time}
+
+Examples:
+
+@c ===beg===
+@c encode_time (1900, 1, 1, 0, 0, 0, 0);
+@c encode_time (1970, 1, 1, 0, 0, 0, 0);
+@c encode_time (1970, 1, 1, 8, 30, 0, 8.5);
+@c encode_time (1969, 12, 31, 16, 0, 0, -8);
+@c encode_time (1969, 12, 31, 16, 0, 1/1000, -8);
+@c % - 2208988800;
+@c ===end===
+@example
+(%i1) encode_time (1900, 1, 1, 0, 0, 0, 0);
+(%o1)                           0
+(%i2) encode_time (1970, 1, 1, 0, 0, 0, 0);
+(%o2)                      2208988800
+(%i3) encode_time (1970, 1, 1, 8, 30, 0, 8.5);
+(%o3)                      2208988800
+(%i4) encode_time (1969, 12, 31, 16, 0, 0, -8);
+(%o4)                      2208988800
+(%i5) encode_time (1969, 12, 31, 16, 0, 1/1000, -8);
+                          2208988800001
+(%o5)                     -------------
+                              1000
+(%i6) % - 2208988800;
+                               1
+(%o6)                         ----
+                              1000
+@end example
+
+@opencatbox{Categories:}
+@category{Time and date functions}
+@closecatbox
+@end deffn
+
+@c -----------------------------------------------------------------------------
+@anchor{decode_time}
+@deffn {Function} decode_time @
+@fname{decode_time} (@var{T}, @var{tz_offset}) @
+@fname{decode_time} (@var{T})
+
+Given the number of seconds (possibly including a fractional part)
+since midnight, January 1, 1900 GMT,
+returns the date and time as represented by a list comprising
+the year, month, day of the month, hours, minutes, seconds, and time zone offset.
+
+@var{tz_offset} measures the offset of the time zone, in hours,
+east (positive) or west (negative) of GMT.
+@var{tz_offset} must be an integer, rational, or float between -24 and 24, inclusive.
+If @var{tz_offset} is not a multiple of 1/3600, 
+it is rounded to the nearest multiple of 1/3600.
+
+If @var{tz_offset} is not present, the offset of the local time zone is assumed.
+
+See also @mrefdot{encode_time}
+
+Examples:
+
+@c ===beg===
+@c decode_time (0, 0);
+@c decode_time (0);
+@c decode_time (2208988800, 9.25);
+@c decode_time (2208988800);
+@c decode_time (2208988800 + 1729/1000, -6);
+@c decode_time (2208988800 + 1729/1000);
+@c ===end===
+@example
+(%i1) decode_time (0, 0);
+(%o1)               [1900, 1, 1, 0, 0, 0, 0]
+(%i2) decode_time (0);
+(%o2)             [1899, 12, 31, 16, 0, 0, - 8]
+(%i3) decode_time (2208988800, 9.25);
+                                          37
+(%o3)              [1970, 1, 1, 9, 15, 0, --]
+                                          4
+(%i4) decode_time (2208988800);
+(%o4)             [1969, 12, 31, 16, 0, 0, - 8]
+(%i5) decode_time (2208988800 + 1729/1000, -6);
+                                      1729
+(%o5)           [1969, 12, 31, 18, 0, ----, - 6]
+                                      1000
+(%i6) decode_time (2208988800 + 1729/1000);
+                                      1729
+(%o6)           [1969, 12, 31, 16, 0, ----, - 8]
+                                      1000
+@end example
+
+@opencatbox{Categories:}
+@category{Time and date functions}
+@closecatbox
+@end deffn
+
+@c -----------------------------------------------------------------------------
+@anchor{absolute_real_time}
+@deffn {Function} absolute_real_time ()
+
+Returns the number of seconds since midnight, January 1, 1900 GMT.
+The return value is an integer.
+
+See also @mref{elapsed_real_time} and @mrefdot{elapsed_run_time}
+
+Example:
+
+@c ===beg===
+@c absolute_real_time ();
+@c 1900 + absolute_real_time () / (365.25 * 24 * 3600);
+@c ===end===
+@example
+(%i1) absolute_real_time ();
+(%o1)                      3385045277
+(%i2) 1900 + absolute_real_time () / (365.25 * 24 * 3600);
+(%o2)                   2007.265612087104
+@end example
+
+@opencatbox{Categories:}
+@category{Time and date functions}
+@closecatbox
+@end deffn
+
+@c -----------------------------------------------------------------------------
+@anchor{elapsed_real_time}
+@deffn {Function} elapsed_real_time ()
+
+Returns the number of seconds (including fractions of a second)
+since Maxima was most recently started or restarted.
+The return value is a floating-point number.
+
+See also @mref{absolute_real_time} and @mrefdot{elapsed_run_time}
+
+Example:
+
+@c ===beg===
+@c elapsed_real_time ();
+@c expand ((a + b)^500)$
+@c elapsed_real_time ();
+@c ===end===
+@example
+(%i1) elapsed_real_time ();
+(%o1)                       2.559324
+(%i2) expand ((a + b)^500)$
+(%i3) elapsed_real_time ();
+(%o3)                       7.552087
+@end example
+
+@opencatbox{Categories:}
+@category{Time and date functions}
+@closecatbox
+@end deffn
+
+@c -----------------------------------------------------------------------------
+@anchor{elapsed_run_time}
+@deffn {Function} elapsed_run_time ()
+
+Returns an estimate of the number of seconds (including fractions of a second)
+which Maxima has spent in computations since Maxima was most recently started
+or restarted.  The return value is a floating-point number.
+
+See also @mref{absolute_real_time} and @mrefdot{elapsed_real_time}
+
+Example:
+
+@c ===beg===
+@c elapsed_run_time ();
+@c expand ((a + b)^500)$
+@c elapsed_run_time ();
+@c ===end===
+@example
+(%i1) elapsed_run_time ();
+(%o1)                         0.04
+(%i2) expand ((a + b)^500)$
+(%i3) elapsed_run_time ();
+(%o3)                         1.26
+@end example
+
+@opencatbox{Categories:}
+@category{Time and date functions}
+@closecatbox
+@end deffn
+

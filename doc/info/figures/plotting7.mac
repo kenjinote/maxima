@@ -1,0 +1,2 @@
+plot2d (sec(x), [x,-2,2], [y,-20,20], [pdf_file,"./plotting7.pdf"]);
+plot2d (sec(x), [x,-2,2], [y,-20,20], [png_file,"./plotting7.png"]);

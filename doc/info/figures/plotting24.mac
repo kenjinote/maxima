@@ -1,0 +1,7 @@
+plot3d (5, [theta,0,%pi], [phi,0,2*%pi], same_xyz, nolegend,
+  [transform_xy, spherical_to_xyz], [mesh_lines_color,blue],
+  [palette,[gradient,"#1b1b4e", "#8c8cf8"]], [pdf_file,"./plotting24.pdf"]);
+plot3d (5, [theta,0,%pi], [phi,0,2*%pi], same_xyz, nolegend,
+  [transform_xy, spherical_to_xyz], [mesh_lines_color,blue],
+  [palette,[gradient,"#1b1b4e", "#8c8cf8"]], [png_file,"./plotting24.png"]);
+

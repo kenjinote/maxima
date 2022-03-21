@@ -1,0 +1,1640 @@
+@c /Ctensor.texi/1.31/Sun Jul 30 08:49:51 2006/-ko/
+@menu
+* Introdução a ctensor::     
+* Definições para ctensor::     
+@end menu
+
+@node Introdução a ctensor, Definições para ctensor, ctensor, ctensor
+@section Introdução a ctensor
+
+@code{ctensor} é um pacote de manipulação de
+componentes.  Para usar o pacote @code{ctensor}, digite
+@code{load(ctensor)}.  Para começar uma sessão iterativa
+com @code{ctensor}, digite @code{csetup()}. O primeiro que será pedido
+pelo pacote é a dimensão a ser manipulada. Se a dimensão for 2, 3
+ou 4 então a lista de coordenadas padrão é @code{[x,y]},
+@code{[x,y,z]} ou @code{[x,y,z,t]} respectivamente.  Esses nomes podem
+ser mudados através da atribuição de uma nova lista de
+coordenadas para a variável @code{ct_coords} (descrita abaixo) e o
+utilizador é questionado sobre isso. Deve ter o cuidado de evitar
+conflitos de nomes de coordenadas com outras definições
+de objectos.
+
+No próximo passo, o utilizador informa a métrica ou directamente ou
+de um ficheiro especificando sua posição ordinal. Como
+um exemplo de um ficheiro de métrica comum, veja
+@file{share/tensor/metrics.mac}. A métrica é armazenada na matriz
+LG. Finalmente, o inverso da métrica é calculado e armazenado na
+matriz UG. Se tem a opção de realizar todos os
+cálculos em séries de potência.
+
+A seguir, mostramos um exemplo de protocolo para a métrica estática,
+esfericamente simétrica (coordenadas padrão) que será aplicada ao
+problema de derivação das equações de
+vácuo de Einstein (que levam à solução de
+Schwarzschild). Muitas das funções em @code{ctensor}
+irão ser mostradas como exemplos para a métrica padrão.
+
+@example
+(%i1) load(ctensor);
+(%o1)      /usr/local/lib/maxima/share/tensor/ctensor.mac
+(%i2) csetup();
+Enter the dimension of the coordinate system: 
+4;
+Do you wish to change the coordinate names?
+n;
+Do you want to
+1. Enter a new metric?
+
+2. Enter a metric from a file?
+
+3. Approximate a metric with a Taylor series?
+1;
+
+Is the matrix  1. Diagonal  2. Symmetric  3. Antisymmetric  4. General
+Answer 1, 2, 3 or 4
+1;
+Row 1 Column 1:
+a;
+Row 2 Column 2:
+x^2;
+Row 3 Column 3:
+x^2*sin(y)^2;
+Row 4 Column 4:
+-d;
+
+Matrix entered.
+Enter functional dependencies with the DEPENDS function or 'N' if none 
+depends([a,d],x);
+Do you wish to see the metric? 
+y;
+                          [ a  0       0        0  ]
+                          [                        ]
+                          [     2                  ]
+                          [ 0  x       0        0  ]
+                          [                        ]
+                          [         2    2         ]
+                          [ 0  0   x  sin (y)   0  ]
+                          [                        ]
+                          [ 0  0       0       - d ]
+(%o2)                                done
+(%i3) christof(mcs);
+                                            a
+                                             x
+(%t3)                          mcs        = ---
+                                  1, 1, 1   2 a
+
+                                             1
+(%t4)                           mcs        = -
+                                   1, 2, 2   x
+
+                                             1
+(%t5)                           mcs        = -
+                                   1, 3, 3   x
+
+                                            d
+                                             x
+(%t6)                          mcs        = ---
+                                  1, 4, 4   2 d
+
+                                              x
+(%t7)                          mcs        = - -
+                                  2, 2, 1     a
+
+                                           cos(y)
+(%t8)                         mcs        = ------
+                                 2, 3, 3   sin(y)
+
+                                               2
+                                          x sin (y)
+(%t9)                      mcs        = - ---------
+                              3, 3, 1         a
+
+(%t10)                   mcs        = - cos(y) sin(y)
+                            3, 3, 2
+
+                                            d
+                                             x
+(%t11)                         mcs        = ---
+                                  4, 4, 1   2 a
+(%o11)                               done
+
+@end example
+
+@c end concepts ctensor
+@node Definições para ctensor,  , Introdução a ctensor, ctensor
+
+@section Definições para ctensor
+
+@subsection Inicialização e configuração
+
+@deffn {Função} csetup ()
+É uma função no pacote @code{ctensor} (component
+tensor) que inicializa o pacote e permite ao utilizador inserir uma
+métrica interativamente. Veja @code{ctensor} para mais detalhes.
+@end deffn
+
+@deffn {Função} cmetric (@var{dis})
+@deffnx {Função} cmetric ()
+É uma função no pacote @code{ctensor} que calcula o
+inverso da métrica e prepara o pacote para cálculos adiante.
+
+Se @code{cframe_flag} for @code{false}, a função calcula
+a métrica inversa @code{ug} a partir da matriz @code{lg} (definida
+pelo utilizador). O determinante da métrica é também calculado e
+armazenado na variável @code{gdet}. Mais adiante, o pacote determina
+se a métrica é diagonal e escolhe o valor de @code{diagmetric}
+conforme a determinação. Se o argumento opcional
+@var{dis} estiver presente e não for @code{false}, a
+saída é mostrada ao utilizador pela linha de comando
+para que ele possa ver o inverso da métrica.
+
+Se @code{cframe_flag} for @code{true}, a função espera
+que o valor de @code{fri} (a matriz referencial inversa) e @code{lfg} (a
+métrica do referencial) sejam definidas. A partir dessas, a matriz do
+referencial @code{fr} e a métrica do referencial inverso @code{ufg}
+são calculadas.
+
+@end deffn
+
+@deffn {Função} ct_coordsys (@var{sistema_de_coordenadas}, @var{extra_arg})
+@deffnx {Função} ct_coordsys (@var{sistema_de_coordenadas})
+Escolhe um sistema de coordenadas predefinido e uma métrica. O
+argumento @var{sistema_de_coordenadas} pode ser um dos seguintes
+símbolos:
+
+@example
+
+  SYMBOL               Dim Coordenadas       Descrição/comentários
+  --------------------------------------------------------------------------
+  cartesian2d           2  [x,y]             Sist. de coord. cartesianas 2D
+  polar                 2  [r,phi]           Sist. de coord. Polare
+  elliptic              2  [u,v]
+  confocalelliptic      2  [u,v]
+  bipolar               2  [u,v]
+  parabolic             2  [u,v]
+  cartesian3d           3  [x,y,z]           Sist. de coord. cartesianas 3D
+  polarcylindrical      3  [r,theta,z]
+  ellipticcylindrical   3  [u,v,z]           Elíptica 2D com Z cilíndrico
+  confocalellipsoidal   3  [u,v,w]
+  bipolarcylindrical    3  [u,v,z]           Bipolar 2D com Z cilíndrico
+  paraboliccylindrical  3  [u,v,z]           Parabólico 2D com Z cilíndrico
+  paraboloidal          3  [u,v,phi]
+  conical               3  [u,v,w]
+  toroidal              3  [u,v,phi]
+  spherical             3  [r,theta,phi]     Sist. de coord. Esféricas
+  oblatespheroidal      3  [u,v,phi]
+  oblatespheroidalsqrt  3  [u,v,phi]
+  prolatespheroidal     3  [u,v,phi]
+  prolatespheroidalsqrt 3  [u,v,phi]
+  ellipsoidal           3  [r,theta,phi]
+  cartesian4d           4  [x,y,z,t]         Sist. de coord. 4D
+  spherical4d           4  [r,theta,eta,phi]
+  exteriorschwarzschild 4  [t,r,theta,phi]   Métrica de Schwarzschild
+  interiorschwarzschild 4  [t,z,u,v]        Métrica de Schwarzschild Interior
+  kerr_newman           4  [t,r,theta,phi]   Métrica simétrica axialmente alterada
+
+@end example
+
+@code{sistema_de_coordenadas} pode também ser uma lista de funções de transformação,
+seguida por uma lista contendo as varáveis coordenadas. Por exemplo,
+pode especificar uma métrica esférica como segue:
+
+@example
+
+(%i1) load(ctensor);
+(%o1)       /share/tensor/ctensor.mac
+(%i2) ct_coordsys([r*cos(theta)*cos(phi),r*cos(theta)*sin(phi),
+      r*sin(theta),[r,theta,phi]]);
+(%o2)                                done
+(%i3) lg:trigsimp(lg);
+                           [ 1  0         0        ]
+                           [                       ]
+                           [     2                 ]
+(%o3)                      [ 0  r         0        ]
+                           [                       ]
+                           [         2    2        ]
+                           [ 0  0   r  cos (theta) ]
+(%i4) ct_coords;
+(%o4)                           [r, theta, phi]
+(%i5) dim;
+(%o5)                                  3
+
+@end example
+
+Funções de transformação podem também
+serem usadas quando @code{cframe_flag} for @code{true}:
+
+@example
+
+(%i1) load(ctensor);
+(%o1)       /share/tensor/ctensor.mac
+(%i2) cframe_flag:true;
+(%o2)                                true
+(%i3) ct_coordsys([r*cos(theta)*cos(phi),r*cos(theta)*sin(phi),
+      r*sin(theta),[r,theta,phi]]);
+(%o3)                                done
+(%i4) fri;
+      [ cos(phi) cos(theta)  - cos(phi) r sin(theta)  - sin(phi) r cos(theta) ]
+      [                                                                       ]
+(%o4) [ sin(phi) cos(theta)  - sin(phi) r sin(theta)   cos(phi) r cos(theta)  ]
+      [                                                                       ]
+      [     sin(theta)            r cos(theta)                   0            ]
+(%i5) cmetric();
+(%o5)                                false
+(%i6) lg:trigsimp(lg);
+                           [ 1  0         0        ]
+                           [                       ]
+                           [     2                 ]
+(%o6)                      [ 0  r         0        ]
+                           [                       ]
+                           [         2    2        ]
+                           [ 0  0   r  cos (theta) ]
+
+@end example
+
+O argumento opcional @var{extra_arg} pode ser qualquer um dos seguintes:
+@c LOOKING AT share/tensor/ctensor.mac CIRCA LINE 837, misner IS RECOGNIZED ALSO; WHAT EFFECT DOES IT HAVE ??
+
+@code{cylindrical} diz a @code{ct_coordsys} para anexar uma coordenada
+adicional cilíndrica.
+
+@code{minkowski} diz a @code{ct_coordsys} para anexar uma coordenada com
+assinatura métrica negativa.
+
+@code{all} diz a @code{ct_coordsys} para chamar @code{cmetric} e
+@code{christof(false)} após escolher a métrica.
+
+@c GLOBAL VARIABLE verbose IS USED IN ctensor.mac IN JUST THIS ONE CONTEXT
+Se a variável global @code{verbose} for escolhida para @code{true},
+@code{ct_coordsys} mostra os valores de @code{dim}, @code{ct_coords}, e
+ou @code{lg} ou @code{lfg} e @code{fri}, dependendo do valor de
+@code{cframe_flag}.
+
+@end deffn
+
+@deffn {Função} init_ctensor ()
+Inicializa o pacote @code{ctensor}.
+
+A função @code{init_ctensor} reinicializa o pacote
+@code{ctensor}. Essa função remove todos os arrays e
+matrizes usados por @code{ctensor}, coloca todos os sinalizadores de
+volta a seus valores padrão, retorna @code{dim} para 4, e retorna a
+métrica do referencial para a métrica do referencial de Lorentz.
+
+@end deffn
+
+
+@subsection Os tensores do espaço curvo
+
+O principal propósito do pacote @code{ctensor} é calcular os
+tensores do espaç(tempo) curvo, mais notavelmente os
+tensores usados na relatividade geral.
+
+Quando uma base métrica é usada, @code{ctensor} pode calcular os
+seguintes tensores:
+
+@example
+
+ lg  -- ug
+   \      \
+    lcs -- mcs -- ric -- uric 
+              \      \       \
+               \      tracer - ein -- lein
+                \
+                 riem -- lriem -- weyl
+                     \
+                      uriem
+
+
+@end example
+
+@code{ctensor} pode também usar referenciais móveis. Quando
+@code{cframe_flag} for escolhida para @code{true}, os seguintes tensores
+podem ser calculados:
+
+@example
+
+ lfg -- ufg
+     \
+ fri -- fr -- lcs -- mcs -- lriem -- ric -- uric
+      \                       |  \      \       \
+       lg -- ug               |   weyl   tracer - ein -- lein
+                              |\
+                              | riem
+                              |
+                              \uriem
+
+@end example
+
+@deffn {Função} christof (@var{dis})
+Uma função no pacote @code{ctensor}.  Essa
+função calcula os símbolos de Christoffel
+de ambos os tipos.  O argumento @var{dis} determina quais resultados
+são para serem imediatamente mostrados.  Os símbolos de
+Christoffel de primeiro e de segundo tipo são armazenados nos arrays
+@code{lcs[i,j,k]} e @code{mcs[i,j,k]} respectivamente e definidos para
+serem simétricos nos primeiros dois índices. Se o
+argumento para @code{christof} for @code{lcs} ou for @code{mcs} então
+o único valor não nulo de @code{lcs[i,j,k]} ou de @code{mcs[i,j,k]},
+respectivamente, será mostrado. Se o argumento for @code{all} então
+o único valor não nulo de @code{lcs[i,j,k]} e o único valor não
+nulo de @code{mcs[i,j,k]} serão mostrados.  Se o argumento for
+@code{false} então a exibição dos elementos não
+acontecerá. Os elementos do array @code{mcs[i,j,k]} são definidos de
+uma tal maneira que o índice final é contravariante.
+@end deffn
+
+@deffn {Função} ricci (@var{dis})
+Uma função no pacote @code{ctensor}.  @code{ricci}
+calcula as componentes contravariantes (simétricas) @code{ric[i,j]} do
+tensor de Ricci.  Se o argumento @var{dis} for @code{true}, então as
+componentes não nulas são mostradas.
+@end deffn
+
+@deffn {Função} uricci (@var{dis})
+Essa função primeiro calcula as componentes
+contravariantes @code{ric[i,j]} do tensor de Ricci.  Então o tensor
+misto de Ricci é calculado usando o tensor métrico contravariante.
+Se o valor do argumento @var{dis} for @code{true}, então essas
+componentes mistas, @code{uric[i,j]} (o índice "i" é
+covariante e o índice "j" é contravariante), serão
+mostradas directamente.  De outra forma, @code{ricci(false)} irá
+simplesmente calcular as entradas do array @code{uric[i,j]} sem mostrar
+os resultados.
+
+@end deffn
+@deffn {Função} scurvature ()
+
+Retorna a curvatura escalar (obtida através da
+contração do tensor de Ricci) do Riemaniano multiplicado
+com a métrica dada.
+
+@end deffn
+@deffn {Função} einstein (@var{dis})
+Uma função no pacote @code{ctensor}.  @code{einstein}
+calcula o tensor misto de Einstein após os símbolos de
+Christoffel e o tensor de Ricci terem sido obtidos (com as
+funções @code{christof} e @code{ricci}).  Se o argumento
+@var{dis} for @code{true}, então os valores não nulos do tensor
+misto de Einstein @code{ein[i,j]} serão mostrados quando @code{j} for
+o índice contravariante.  A variável @code{rateinstein}
+fará com que a simplificação racional ocorra sobre
+esses componentes. Se @code{ratfac} for @code{true} então as
+componentes irão também ser factoradas.
+
+@end deffn
+@deffn {Função} leinstein (@var{dis})
+Tensor covariante de Einstein. @code{leinstein} armazena o valor do
+tensor covariante de Einstein no array @code{lein}. O tensor covariante
+de Einstein é calculado a partir tensor misto de Einstein @code{ein}
+através da multiplicação desse pelo tensor
+métrico. Se o argumento @var{dis} for @code{true}, então os valores
+não nulos do tensor covariante de Einstein são mostrados.
+
+@end deffn
+
+@deffn {Função} riemann (@var{dis})
+Uma função no pacote @code{ctensor}.  @code{riemann}
+calcula o tensor de curvatura de Riemann a partir da métrica dada e
+correspondendo aos símbolos de Christoffel. As seguintes
+convenções de índice são usadas:
+
+@example
+                l      _l       _l       _l   _m    _l   _m
+ R[i,j,k,l] =  R    = |      - |      + |    |   - |    |
+                ijk     ij,k     ik,j     mk   ij    mj   ik
+@end example
+
+Essa notação é consistente com a
+notação usada por no pacote @code{itensor} e sua
+função @code{icurvature}.  Se o argumento opcional
+@var{dis} for @code{true}, as componentes não nulas
+@code{riem[i,j,k,l]} serão mostradas.  Como com o tensor de Einstein,
+vários comutadores escolhidos pelo utilizador controlam a
+simplificação de componentes do tensor de Riemann.  Se
+@code{ratriemann} for @code{true}, então simplificação
+racional será feita. Se @code{ratfac} for @code{true} então cada uma
+das componentes irá também ser factorada.
+
+Se a variável @code{cframe_flag} for @code{false}, o tensor de Riemann
+é calculado directamente dos símbolos de Christoffel. Se
+@code{cframe_flag} for @code{true}, o tensor covariante de Riemann é
+calculado primeiro dos coeficientes de campo do referencial.
+
+@end deffn
+
+@deffn {Função} lriemann (@var{dis})
+Tensor covariante de Riemann (@code{lriem[]}).
+
+Calcula o tensor covariante de Riemann como o array @code{lriem}. Se o
+argumento @var{dis} for @code{true}, únicos valores não nulos são
+mostrados.
+
+Se a variável @code{cframe_flag} for @code{true}, o tensor covariante
+de Riemann é calculado directamente dos coeficientes de campo do
+referencial. De outra forma, o tensor (3,1) de Riemann é calculado
+primeiro.
+
+Para informação sobre a ordenação de
+índice, veja @code{riemann}.
+
+@end deffn
+
+@deffn {Função} uriemann (@var{dis})
+Calcula as componentes contravariantes do tensor de curvatura
+ de Riemann como elementos do array @code{uriem[i,j,k,l]}.  Esses são
+mostrados se @var{dis} for @code{true}.
+
+@end deffn
+
+@deffn {Função} rinvariant ()
+Compõe o invariante de Kretchmann (@code{kinvariant}) obtido através
+da contração dos tensores
+
+@example
+lriem[i,j,k,l]*uriem[i,j,k,l].
+@end example
+
+Esse objecto não é automaticamente simplificado devido ao facto de
+poder ser muito largo.
+
+@end deffn
+
+@deffn {Função} weyl (@var{dis})
+Calcula o tensor conformal de Weyl.  Se o argumento @var{dis} for
+@code{true}, as componentes não nulas @code{weyl[i,j,k,l]} irão ser
+mostradas para o utilizador.  De outra forma, essas componentes irão
+simplesmente serem calculadas e armazenadas.  Se o comutador
+@code{ratweyl} é escolhido para @code{true}, então as componentes
+irão ser racionalmente simplificadas; se @code{ratfac} for @code{true}
+então os resultados irão ser factorados também.
+
+@end deffn
+
+@subsection Expansão das séries de Taylor
+
+O pacote @code{ctensor} possui a habilidade para truncar resultados
+assumindo que eles são aproximações das séries de
+Taylor. Esse comportamenteo é controlado através da variável
+@code{ctayswitch}; quando escolhida para @code{true}, @code{ctensor} faz
+uso internamente da função @code{ctaylor} quando
+simplifica resultados.
+
+A função @code{ctaylor} é invocada pelas seguintes funções de @code{ctensor}:
+
+@example
+
+    Function     Comments
+    ---------------------------------
+    christof()   só para mcs
+    ricci()
+    uricci()
+    einstein()
+    riemann()
+    weyl()
+    checkdiv()
+@end example
+
+@deffn {Função} ctaylor ()
+
+A função @code{ctaylor} trunca seus argumentos através
+da conversão destes para uma série de Taylor usando @code{taylor}, e
+então chamando @code{ratdisrep}. Isso tem efeito combinado de
+abandonar termos de ordem mais alta na variável de expansão
+@code{ctayvar}. A ordem dos termos que podem ser abandonados é
+definida através de @code{ctaypov}; o ponto em torno do qual a
+expansão da série é realizada está especificado em
+@code{ctaypt}.
+
+Como um exemplo, considere uma métrica simples que é uma
+perturbação da métrica de Minkowski. Sem
+restrições adicionais, mesmo uma métrica diagonal
+produz expressões para o tensor de Einstein que são de longe muito
+complexas:
+
+@example
+
+(%i1) load(ctensor);
+(%o1)       /share/tensor/ctensor.mac
+(%i2) ratfac:true;
+(%o2)                                true
+(%i3) derivabbrev:true;
+(%o3)                                true
+(%i4) ct_coords:[t,r,theta,phi];
+(%o4)                         [t, r, theta, phi]
+(%i5) lg:matrix([-1,0,0,0],[0,1,0,0],[0,0,r^2,0],[0,0,0,r^2*sin(theta)^2]);
+                        [ - 1  0  0         0        ]
+                        [                            ]
+                        [  0   1  0         0        ]
+                        [                            ]
+(%o5)                   [          2                 ]
+                        [  0   0  r         0        ]
+                        [                            ]
+                        [              2    2        ]
+                        [  0   0  0   r  sin (theta) ]
+(%i6) h:matrix([h11,0,0,0],[0,h22,0,0],[0,0,h33,0],[0,0,0,h44]);
+                            [ h11   0    0    0  ]
+                            [                    ]
+                            [  0   h22   0    0  ]
+(%o6)                       [                    ]
+                            [  0    0   h33   0  ]
+                            [                    ]
+                            [  0    0    0   h44 ]
+(%i7) depends(l,r);
+(%o7)                               [l(r)]
+(%i8) lg:lg+l*h;
+         [ h11 l - 1      0          0                 0            ]
+         [                                                          ]
+         [     0      h22 l + 1      0                 0            ]
+         [                                                          ]
+(%o8)    [                        2                                 ]
+         [     0          0      r  + h33 l            0            ]
+         [                                                          ]
+         [                                    2    2                ]
+         [     0          0          0       r  sin (theta) + h44 l ]
+(%i9) cmetric(false);
+(%o9)                                done
+(%i10) einstein(false);
+(%o10)                               done
+(%i11) ntermst(ein);
+[[1, 1], 62] 
+[[1, 2], 0] 
+[[1, 3], 0] 
+[[1, 4], 0] 
+[[2, 1], 0] 
+[[2, 2], 24] 
+[[2, 3], 0] 
+[[2, 4], 0] 
+[[3, 1], 0] 
+[[3, 2], 0] 
+[[3, 3], 46] 
+[[3, 4], 0] 
+[[4, 1], 0] 
+[[4, 2], 0] 
+[[4, 3], 0] 
+[[4, 4], 46] 
+(%o12)                               done
+
+@end example
+
+Todavia, se nós recalcularmos esse exemplo como uma
+aproximação que é linear na variável @code{l},
+pegamos expressões muito simples:
+
+@example
+
+(%i14) ctayswitch:true;
+(%o14)                               true
+(%i15) ctayvar:l;
+(%o15)                                 l
+(%i16) ctaypov:1;
+(%o16)                                 1
+(%i17) ctaypt:0;
+(%o17)                                 0
+(%i18) christof(false);
+(%o18)                               done
+(%i19) ricci(false);
+(%o19)                               done
+(%i20) einstein(false);
+(%o20)                               done
+(%i21) ntermst(ein);
+[[1, 1], 6] 
+[[1, 2], 0] 
+[[1, 3], 0] 
+[[1, 4], 0] 
+[[2, 1], 0] 
+[[2, 2], 13] 
+[[2, 3], 2] 
+[[2, 4], 0] 
+[[3, 1], 0] 
+[[3, 2], 2] 
+[[3, 3], 9] 
+[[3, 4], 0] 
+[[4, 1], 0] 
+[[4, 2], 0] 
+[[4, 3], 0] 
+[[4, 4], 9] 
+(%o21)                               done
+(%i22) ratsimp(ein[1,1]);
+                         2      2  4               2     2
+(%o22) - (((h11 h22 - h11 ) (l )  r  - 2 h33 l    r ) sin (theta)
+                              r               r r
+
+                                2               2      4    2
+                  - 2 h44 l    r  - h33 h44 (l ) )/(4 r  sin (theta))
+                           r r                r
+
+
+
+@end example
+
+Essa compatibilidade pode ser útil, por exemplo, quando trabalhamos no
+limite do campo fraco longe de uma fonte gravitacional.
+
+@end deffn
+    
+
+@subsection Campos de referencial
+
+Quando a variável @code{cframe_flag} for escolhida para @code{true}, o
+pacote @code{ctensor} executa seus cálculos usando um referencial
+móvel.
+
+@deffn {Função} frame_bracket (@var{fr}, @var{fri}, @var{diagframe})
+O delimitador do referencial (@code{fb[]}).
+
+Calcula o delimitador do referencial conforme a seguinte
+definição:
+
+@example
+   c          c         c        d     e
+ifb   = ( ifri    - ifri    ) ifr   ifr
+   ab         d,e       e,d      a     b
+@end example
+
+@end deffn
+
+@subsection Classificação Algébrica
+
+Um novo recurso (a partir de November de 2004) de @code{ctensor} é sua habilidade para
+calcular a classificação de Petrov de uma métrica espaço tempo tetradimensional.
+Para uma demonstração dessa compatibilidade, veja o ficheiro
+@code{share/tensor/petrov.dem}.
+
+@deffn {Função} nptetrad ()
+Calcula um tetrad nulo de Newman-Penrose (@code{np}) e seus índices ascendentes
+em contrapartida (@code{npi}). Veja @code{petrov} para um exemplo.
+
+O tetrad nulo é construído assumindo que um referencial
+métrico ortonormal tetradimensional com assinatura métrica (-,+,+,+)
+está sendo usada.  As componentes do tetrad nulo são relacionadas
+para a matriz referencial inversa como segue:
+
+@example
+
+np  = (fri  + fri ) / sqrt(2)
+  1       1      2
+
+np  = (fri  - fri ) / sqrt(2)
+  2       1      2
+
+np  = (fri  + %i fri ) / sqrt(2)
+  3       3         4
+
+np  = (fri  - %i fri ) / sqrt(2)
+  4       3         4
+
+@end example
+
+@end deffn
+
+@deffn {Função} psi (@var{dis})
+Calcula os cinco coeficientes de Newman-Penrose @code{psi[0]}...@code{psi[4]}.
+Se @code{psi} for escolhida para @code{true}, os coeficientes são mostrados.
+Veja @code{petrov} para um exemplo.
+
+Esses coeficientes são calculados a partir do tensor de Weyl em uma
+base de coordenada.  Se uma base de referencial for usada, o tensor de Weyl
+é primeiro convertido para a base de coordenada, que pode ser um
+procedimento computacional expansível. Por essa razão,
+em alguns casos pode ser mais vantajoso usar uma base de coordenada em
+primeiro lugar antes que o tensor de Weyl seja calculado. Note todavia,
+que para a construção de um tetrad nulo de
+Newman-Penrose é necessário uma base de referencial. Portanto, uma
+sequência de cálculo expressiva pode começar com uma
+base de referencial, que é então usada para calcular @code{lg}
+(calculada automaticamente através de @code{cmetric}) e em seguida
+calcula @code{ug}. Nesse ponto, pode comutar de volta para uma base de
+coordenada escolhendo @code{cframe_flag} para @code{false} antes de
+começar a calcular os símbolos de
+Christoffel. Mudando para uma base de referencial num estágio posterior
+pode retornar resultados inconsistentes, já que pode terminar com uma
+grande mistura de tensores, alguns calculados numa base de referencial, e
+outros numa base de coordenada, sem nenhum modo para distinguir entre os
+dois tipos.
+
+@end deffn
+
+@deffn {Função} petrov ()
+Calcula a classificação de petrov da métrica caracterizada através de @code{psi[0]}...@code{psi[4]}.
+
+Por exemplo, o seguinte demonstra como obter a classificação de Petrov
+da métrica de Kerr:
+
+@example
+(%i1) load(ctensor);
+(%o1)       /share/tensor/ctensor.mac
+(%i2) (cframe_flag:true,gcd:spmod,ctrgsimp:true,ratfac:true);
+(%o2)                                true
+(%i3) ct_coordsys(exteriorschwarzschild,all);
+(%o3)                                done
+(%i4) ug:invert(lg)$
+(%i5) weyl(false);
+(%o5)                                done
+(%i6) nptetrad(true);
+(%t6) np = 
+
+       [  sqrt(r - 2 m)           sqrt(r)                                     ]
+       [ ---------------   ---------------------      0             0         ]
+       [ sqrt(2) sqrt(r)   sqrt(2) sqrt(r - 2 m)                              ]
+       [                                                                      ]
+       [  sqrt(r - 2 m)            sqrt(r)                                    ]
+       [ ---------------  - ---------------------     0             0         ]
+       [ sqrt(2) sqrt(r)    sqrt(2) sqrt(r - 2 m)                             ]
+       [                                                                      ]
+       [                                              r      %i r sin(theta)  ]
+       [        0                    0             -------   ---------------  ]
+       [                                           sqrt(2)       sqrt(2)      ]
+       [                                                                      ]
+       [                                              r       %i r sin(theta) ]
+       [        0                    0             -------  - --------------- ]
+       [                                           sqrt(2)        sqrt(2)     ]
+
+                             sqrt(r)          sqrt(r - 2 m)
+(%t7) npi = matrix([- ---------------------, ---------------, 0, 0], 
+                      sqrt(2) sqrt(r - 2 m)  sqrt(2) sqrt(r)
+
+          sqrt(r)            sqrt(r - 2 m)
+[- ---------------------, - ---------------, 0, 0], 
+   sqrt(2) sqrt(r - 2 m)    sqrt(2) sqrt(r)
+
+           1               %i
+[0, 0, ---------, --------------------], 
+       sqrt(2) r  sqrt(2) r sin(theta)
+
+           1                 %i
+[0, 0, ---------, - --------------------])
+       sqrt(2) r    sqrt(2) r sin(theta)
+
+(%o7)                                done
+(%i7) psi(true);
+(%t8)                              psi  = 0
+                                      0
+
+(%t9)                              psi  = 0
+                                      1
+
+                                          m
+(%t10)                             psi  = --
+                                      2    3
+                                          r
+
+(%t11)                             psi  = 0
+                                      3
+
+(%t12)                             psi  = 0
+                                      4
+(%o12)                               done
+(%i12) petrov();
+(%o12)                                 D
+
+@end example
+
+A função de classificação Petrov é baseada no algoritmo publicado em
+"Classifying geometries in general relativity: III Classification in practice"
+por Pollney, Skea, e d'Inverno, Class. Quant. Grav. 17 2885-2902 (2000).
+Exceto para alguns casos de teste simples, a implementação não está testada até
+19 de Dezembro de 2004, e é provável que contenha erros.
+
+@end deffn
+
+
+@subsection Torsão e não metricidade
+
+@code{ctensor} possui a habilidade de calcular e incluir coeficientes de torsão e não
+metricidade nos coeficientes de conecção.
+
+Os coeficientes de torsão são calculados a partir de um tensor fornecido pelo utilizador
+@code{tr}, que pode ser um tensor de categoria (2,1).  A partir disso, os coeficientes de
+torsão @code{kt} são calculados de acordo com a seguinte fórmula:
+
+@example
+
+              m          m      m
+       - g  tr   - g   tr   - tr   g
+          im  kj    jm   ki     ij  km
+kt   = -------------------------------
+  ijk                 2
+
+
+  k     km
+kt   = g   kt
+  ij         ijm
+
+@end example
+
+Note que somente o tensor de índice misto é calculao e armazenado no
+array @code{kt}.
+
+Os coeficientes de não metricidade são calculados a partir  do vector de não metricidade
+fornecido pelo utilizador @code{nm}. A partir disso, os coeficientes de não metricidade
+@code{nmc} são calculados como segue:
+
+@example
+
+             k    k        km
+       -nm  D  - D  nm  + g   nm  g
+   k      i  j    i   j         m  ij
+nmc  = ------------------------------
+   ij                2
+
+@end example
+
+onde D simboliza o delta de Kronecker.
+
+Quando @code{ctorsion_flag} for escolhida para @code{true}, os valores de @code{kt}
+são subtraídos dos coeficientes de conecção indexados mistos calculados através de
+@code{christof} e armazenados em @code{mcs}. Similarmente, se @code{cnonmet_flag}
+for escolhida para @code{true}, os valores de @code{nmc} são subtraídos dos
+coeficientes de conecção indexados mistos.
+
+Se necessário, @code{christof} chama as funções @code{contortion} e
+@code{nonmetricity} com o objectivo de calcular @code{kt} e @code{nm}.
+
+@deffn {Função} contortion (@var{tr})
+
+Calcula os coeficientes de contorsão de categoria (2,1) a partir do tensor de torsão @var{tr}.
+
+@end deffn
+
+@deffn {Função} nonmetricity (@var{nm})
+
+Calcula o coeficiente de não metricidade de categoria (2,1) a partir do vector de
+não metricidade @var{nm}.
+
+@end deffn
+
+
+
+@subsection Recursos diversos
+
+@deffn {Função} ctransform (@var{M})
+Uma função no pacote @code{ctensor}
+que irá executar uma transformação de coordenadas
+sobre uma matriz simétrica quadrada arbitrária @var{M}. O utilizador deve informar as
+funçãoes que definem a transformação.  (Formalmente chamada @code{transform}.)
+
+@end deffn
+
+@deffn {Função} findde (@var{A}, @var{n})
+
+Retorna uma lista de equações diferenciais únicas (expressões)
+correspondendo aos elementos do array quadrado @var{n} dimensional
+@var{A}. Actualmente, @var{n} pode ser 2 ou 3. @code{deindex} é uma lista global
+contendo os índices de @var{A} correspondendo a essas únicas
+equações diferenciais. Para o tensor de Einstein (@code{ein}), que
+é um array dimensional, se calculado para a métrica no exemplo
+abaixo, @code{findde} fornece as seguintes equações diferenciais independentes:
+
+
+@example
+(%i1) load(ctensor);
+(%o1)       /share/tensor/ctensor.mac
+(%i2) derivabbrev:true;
+(%o2)                                true
+(%i3) dim:4;
+(%o3)                                  4
+(%i4) lg:matrix([a,0,0,0],[0,x^2,0,0],[0,0,x^2*sin(y)^2,0],[0,0,0,-d]);
+                          [ a  0       0        0  ]
+                          [                        ]
+                          [     2                  ]
+                          [ 0  x       0        0  ]
+(%o4)                     [                        ]
+                          [         2    2         ]
+                          [ 0  0   x  sin (y)   0  ]
+                          [                        ]
+                          [ 0  0       0       - d ]
+(%i5) depends([a,d],x);
+(%o5)                            [a(x), d(x)]
+(%i6) ct_coords:[x,y,z,t];
+(%o6)                            [x, y, z, t]
+(%i7) cmetric();
+(%o7)                                done
+(%i8) einstein(false);
+(%o8)                                done
+(%i9) findde(ein,2);
+                                            2
+(%o9) [d  x - a d + d, 2 a d d    x - a (d )  x - a  d d  x + 2 a d d
+        x                     x x         x        x    x            x
+
+                                                        2          2
+                                                - 2 a  d , a  x + a  - a]
+                                                     x      x
+(%i10) deindex;
+(%o10)                     [[1, 1], [2, 2], [4, 4]]
+
+@end example
+
+
+@end deffn
+@deffn {Função} cograd ()
+Calcula o gradiente covariante de uma função escalar permitindo ao
+utilizador escolher o nome do vector correspondente como o exemplo sob
+@code{contragrad} ilustra.
+@end deffn
+@deffn {Função} contragrad ()
+
+Calcula o gradiente contravariante de uma função escalar permitindo
+@c "vector^F2name^F*" LOOKS LIKE IT NEEDS TO BE FIXED UP, NOT SURE HOW THOUGH
+ao utilizador escolher o nome do vector correspondente como o exemplo
+abaixo como ilustra a métrica de Schwarzschild:
+
+@example
+
+(%i1) load(ctensor);
+(%o1)       /share/tensor/ctensor.mac
+(%i2) derivabbrev:true;
+(%o2)                                true
+(%i3) ct_coordsys(exteriorschwarzschild,all);
+(%o3)                                done
+(%i4) depends(f,r);
+(%o4)                               [f(r)]
+(%i5) cograd(f,g1);
+(%o5)                                done
+(%i6) listarray(g1);
+(%o6)                            [0, f , 0, 0]
+                                      r
+(%i7) contragrad(f,g2);
+(%o7)                                done
+(%i8) listarray(g2);
+                               f  r - 2 f  m
+                                r        r
+(%o8)                      [0, -------------, 0, 0]
+                                     r
+
+@end example
+
+@end deffn
+@deffn {Função} dscalar ()
+Calcula o tensor d'Alembertiano da função escalar assim que
+as dependências tiverem sido declaradas sobre a função. Po exemplo:
+
+@example
+(%i1) load(ctensor);
+(%o1)       /share/tensor/ctensor.mac
+(%i2) derivabbrev:true;
+(%o2)                                true
+(%i3) ct_coordsys(exteriorschwarzschild,all);
+(%o3)                                done
+(%i4) depends(p,r);
+(%o4)                               [p(r)]
+(%i5) factor(dscalar(p));
+                          2
+                    p    r  - 2 m p    r + 2 p  r - 2 m p
+                     r r           r r        r          r
+(%o5)               --------------------------------------
+                                       2
+                                      r
+@end example
+
+@end deffn
+@deffn {Função} checkdiv ()
+
+Calcula a divergência covariante do tensor de segunda categoria misto
+(cujo primeiro índice deve ser covariante) imprimindo as
+correspondentes n componentes do campo do vector (a divergência) onde
+n = @code{dim}. Se o argumento para a função for @code{g} então a
+divergência do tensor de Einstein será formada e pode ser zero.
+Adicionalmente, a divergência (vector) é dada no array chamado @code{div}.
+@end deffn
+
+@deffn {Função} cgeodesic (@var{dis})
+Uma função no pacote @code{ctensor}.
+@code{cgeodesic} calcula as equações geodésicas de
+movimento para uma dada métrica.  Elas são armazenadas no array @code{geod[i]}.  Se
+o argumento @var{dis} for @code{true} então essas equações são mostradas.
+
+@end deffn
+
+
+@deffn {Função} bdvac (@var{f})
+
+Gera as componentes covariantes das equações de campo de vácuo da
+teoria de gravitação de Brans-Dicke. O campo escalar é especificado
+através do argumento @var{f}, que pode ser um nome de função (com apóstrofo)
+com dependências funcionais, e.g., @code{'p(x)}.
+
+As componentes de segunda categoria do tensor campo covariante são as componentes de segunda categoria
+representadas pelo array @code{bd}.
+
+@end deffn
+
+@deffn {Função} invariant1 ()
+
+Gera o tensor misto de Euler-Lagrange (equações de campo) para a
+densidade invariante de R^2. As equações de campo são componentes de um
+array chamado @code{inv1}.
+
+@end deffn
+
+@deffn {Função} invariant2 ()
+
+*** NOT YET IMPLEMENTED ***
+
+Gera o tensor misto de Euler-Lagrange (equações de campo) para a
+densidade invariante de @code{ric[i,j]*uriem[i,j]}. As equações de campo são as
+componentes de um array chamado @code{inv2}.
+
+
+@end deffn
+@deffn {Função} bimetric ()
+
+*** NOT YET IMPLEMENTED ***
+
+Gera as euauações de campo da teoria bimétrica de Rosen. As equações
+de campo são as componentes de um array chamado @code{rosen}.
+
+@end deffn
+
+@subsection Funções utilitárias
+
+@deffn {Função} diagmatrixp (@var{M})
+
+Retorna @code{true} se @var{M} for uma matriz diagonal ou um array (2D).
+
+@end deffn
+
+@deffn {Função} symmetricp (@var{M})
+
+Retorna @code{true} se @var{M} for uma matriz simétrica ou um array (2D).
+
+@end deffn
+
+@deffn {Função} ntermst (@var{f})
+Fornece ao utilizador um rápido quadro do "tamanho" do tensor duplamente
+subscrito (array) @var{f}.  Imprime uma lista de dois elementos onde o segundo
+elemento corresponde a N-TERMOS de componentes especificadas através dos primeiros
+elementos.  Nesse caminho, é possível rapidamente encontrar as expressões
+não nulas e tentar simplificação.
+
+@end deffn
+
+@deffn {Função} cdisplay (@var{ten})
+Mostra todos os elementos do tensor @var{ten}, como representados por
+um array multidimensional. Tensores de categoria 0 e 1, assim como outros tipos de
+variáveis, são mostrados com @code{ldisplay}. Tensores de categoria 2 são
+mostrados como matrizes bidimensionais, enquanto tensores de alta categoria são mostrados
+como uma lista de matrizes bidimensionais. Por exemplo, o tensor de Riemann da
+métrica de Schwarzschild pode ser visto como:
+
+@example
+(%i1) load(ctensor);
+(%o1)       /share/tensor/ctensor.mac
+(%i2) ratfac:true;
+(%o2)                                true
+(%i3) ct_coordsys(exteriorschwarzschild,all);
+(%o3)                                done
+(%i4) riemann(false);
+(%o4)                                done
+(%i5) cdisplay(riem);
+               [ 0               0                    0            0      ]
+               [                                                          ]
+               [                              2                           ]
+               [      3 m (r - 2 m)   m    2 m                            ]
+               [ 0  - ------------- + -- - ----       0            0      ]
+               [            4          3     4                            ]
+               [           r          r     r                             ]
+               [                                                          ]
+    riem     = [                                 m (r - 2 m)              ]
+        1, 1   [ 0               0               -----------       0      ]
+               [                                      4                   ]
+               [                                     r                    ]
+               [                                                          ]
+               [                                              m (r - 2 m) ]
+               [ 0               0                    0       ----------- ]
+               [                                                   4      ]
+               [                                                  r       ]
+
+                                [    2 m (r - 2 m)       ]
+                                [ 0  -------------  0  0 ]
+                                [          4             ]
+                                [         r              ]
+                     riem     = [                        ]
+                         1, 2   [ 0        0        0  0 ]
+                                [                        ]
+                                [ 0        0        0  0 ]
+                                [                        ]
+                                [ 0        0        0  0 ]
+
+                                [         m (r - 2 m)    ]
+                                [ 0  0  - -----------  0 ]
+                                [              4         ]
+                                [             r          ]
+                     riem     = [                        ]
+                         1, 3   [ 0  0        0        0 ]
+                                [                        ]
+                                [ 0  0        0        0 ]
+                                [                        ]
+                                [ 0  0        0        0 ]
+
+                                [            m (r - 2 m) ]
+                                [ 0  0  0  - ----------- ]
+                                [                 4      ]
+                                [                r       ]
+                     riem     = [                        ]
+                         1, 4   [ 0  0  0        0       ]
+                                [                        ]
+                                [ 0  0  0        0       ]
+                                [                        ]
+                                [ 0  0  0        0       ]
+
+                               [       0         0  0  0 ]
+                               [                         ]
+                               [       2 m               ]
+                               [ - ------------  0  0  0 ]
+                    riem     = [    2                    ]
+                        2, 1   [   r  (r - 2 m)          ]
+                               [                         ]
+                               [       0         0  0  0 ]
+                               [                         ]
+                               [       0         0  0  0 ]
+
+                   [     2 m                                         ]
+                   [ ------------  0        0               0        ]
+                   [  2                                              ]
+                   [ r  (r - 2 m)                                    ]
+                   [                                                 ]
+                   [      0        0        0               0        ]
+                   [                                                 ]
+        riem     = [                         m                       ]
+            2, 2   [      0        0  - ------------        0        ]
+                   [                     2                           ]
+                   [                    r  (r - 2 m)                 ]
+                   [                                                 ]
+                   [                                         m       ]
+                   [      0        0        0         - ------------ ]
+                   [                                     2           ]
+                   [                                    r  (r - 2 m) ]
+
+                                [ 0  0       0        0 ]
+                                [                       ]
+                                [            m          ]
+                                [ 0  0  ------------  0 ]
+                     riem     = [        2              ]
+                         2, 3   [       r  (r - 2 m)    ]
+                                [                       ]
+                                [ 0  0       0        0 ]
+                                [                       ]
+                                [ 0  0       0        0 ]
+
+                                [ 0  0  0       0       ]
+                                [                       ]
+                                [               m       ]
+                                [ 0  0  0  ------------ ]
+                     riem     = [           2           ]
+                         2, 4   [          r  (r - 2 m) ]
+                                [                       ]
+                                [ 0  0  0       0       ]
+                                [                       ]
+                                [ 0  0  0       0       ]
+
+                                      [ 0  0  0  0 ]
+                                      [            ]
+                                      [ 0  0  0  0 ]
+                                      [            ]
+                           riem     = [ m          ]
+                               3, 1   [ -  0  0  0 ]
+                                      [ r          ]
+                                      [            ]
+                                      [ 0  0  0  0 ]
+
+                                      [ 0  0  0  0 ]
+                                      [            ]
+                                      [ 0  0  0  0 ]
+                                      [            ]
+                           riem     = [    m       ]
+                               3, 2   [ 0  -  0  0 ]
+                                      [    r       ]
+                                      [            ]
+                                      [ 0  0  0  0 ]
+
+                               [   m                      ]
+                               [ - -   0   0       0      ]
+                               [   r                      ]
+                               [                          ]
+                               [        m                 ]
+                               [  0   - -  0       0      ]
+                    riem     = [        r                 ]
+                        3, 3   [                          ]
+                               [  0    0   0       0      ]
+                               [                          ]
+                               [              2 m - r     ]
+                               [  0    0   0  ------- + 1 ]
+                               [                 r        ]
+
+                                    [ 0  0  0    0   ]
+                                    [                ]
+                                    [ 0  0  0    0   ]
+                                    [                ]
+                         riem     = [            2 m ]
+                             3, 4   [ 0  0  0  - --- ]
+                                    [             r  ]
+                                    [                ]
+                                    [ 0  0  0    0   ]
+
+                                [       0        0  0  0 ]
+                                [                        ]
+                                [       0        0  0  0 ]
+                                [                        ]
+                     riem     = [       0        0  0  0 ]
+                         4, 1   [                        ]
+                                [      2                 ]
+                                [ m sin (theta)          ]
+                                [ -------------  0  0  0 ]
+                                [       r                ]
+
+                                [ 0        0        0  0 ]
+                                [                        ]
+                                [ 0        0        0  0 ]
+                                [                        ]
+                     riem     = [ 0        0        0  0 ]
+                         4, 2   [                        ]
+                                [         2              ]
+                                [    m sin (theta)       ]
+                                [ 0  -------------  0  0 ]
+                                [          r             ]
+
+                              [ 0  0          0          0 ]
+                              [                            ]
+                              [ 0  0          0          0 ]
+                              [                            ]
+                   riem     = [ 0  0          0          0 ]
+                       4, 3   [                            ]
+                              [                2           ]
+                              [         2 m sin (theta)    ]
+                              [ 0  0  - ---------------  0 ]
+                              [                r           ]
+
+                 [        2                                             ]
+                 [   m sin (theta)                                      ]
+                 [ - -------------         0                0         0 ]
+                 [         r                                            ]
+                 [                                                      ]
+                 [                         2                            ]
+                 [                    m sin (theta)                     ]
+      riem     = [        0         - -------------         0         0 ]
+          4, 4   [                          r                           ]
+                 [                                                      ]
+                 [                                          2           ]
+                 [                                   2 m sin (theta)    ]
+                 [        0                0         ---------------  0 ]
+                 [                                          r           ]
+                 [                                                      ]
+                 [        0                0                0         0 ]
+
+(%o5)                                done
+
+@end example
+@end deffn
+
+@deffn {Função} deleten (@var{L}, @var{n})
+Retorna uma nova lista consistindo de @var{L} com o @var{n}'ésimo elemento
+apagado.
+@end deffn
+
+@subsection Variáveis usadas por @code{ctensor}
+
+
+@defvr {Variável de opção} dim
+Valor por omissão: 4
+
+Uma opção no pacote @code{ctensor}.
+@code{dim} é a dimensão de multiplicação com o
+padrão 4. O comando @code{dim: n} irá escolher a dimensão para qualquer outro
+valor @code{n}.
+
+@end defvr
+
+@defvr {Variável de opção} diagmetric
+Valor por omissão: @code{false}
+
+Uma opção no pacote @code{ctensor}.
+Se @code{diagmetric} for @code{true} rotinas especiais calculam
+todos os objectos geométricos (que possuem o tensor métrico explicitamente)
+levando em consideração a diagonalidade da métrica. Tempo de
+execuçào reduzido irá, com certeza, resultar dessa escolha. Nota: essa opção é escolhida
+automaticamente por @code{csetup} se uma métrica diagonal for especificada.
+
+@end defvr
+
+@defvr {Variável de opção} ctrgsimp
+
+Faz com que simplificações trigonométricas sejam usadas quando tensores forem calculados. Actualmente,
+@code{ctrgsimp} afecta somente cálculos envolvendo um referencial móvel.
+
+@end defvr
+
+@defvr {Variável de opção} cframe_flag
+
+Faz com que cálculos sejam executados relativamente a um referencial
+móvel em oposição a uma métrica holonómica. O
+referencial é definido através do array do referencial inverso
+@code{fri} e da métrica do referencial @code{lfg}. Para cálculos
+usando um referencial Cartesiano, @code{lfg} pode ser a matriz
+unitária de dimensão apropriada; para cálculos num referencial
+de Lorentz, @code{lfg} pode ter a assinatura apropriada.
+
+@end defvr
+
+@defvr {Variável de opção} ctorsion_flag
+
+Faz com que o tensor de contorsão seja incluído no cálculo dos
+coeficientes de conecção. O tensor de contorsão por si mesmo é calculado através de
+@code{contortion} a partir do tensor @code{tr} fornecido pelo utilizador.
+
+@end defvr
+
+@defvr {Variável de opção} cnonmet_flag
+
+Faz com que os coeficientes de não metricidade sejam incluídos no cálculo dos
+coeficientes de conecção. Os coeficientes de não metricidade são calculados
+a partir do vector de não metricidade @code{nm} fornecido pelo utilizador através da função
+@code{nonmetricity}.
+
+@end defvr
+
+@defvr {Variável de opção} ctayswitch
+
+Se escolhida para @code{true}, faz com que alguns cálculos de @code{ctensor} sejam realizados usando
+expansões das séries de Taylor. actualmente, @code{christof}, @code{ricci},
+@code{uricci}, @code{einstein}, e @code{weyl} levam em conta essa
+escolha.
+
+@end defvr
+
+@defvr {Variável de opção} ctayvar
+
+Variável usada pela expansão de séries de Taylor se @code{ctayswitch} é escolhida para
+@code{true}.
+
+@end defvr
+
+@defvr {Variável de opção} ctaypov
+
+Maximo expoente usado em expansões de séries de Taylor quando @code{ctayswitch} for
+escolhida para @code{true}.
+
+@end defvr
+
+@defvr {Variável de opção} ctaypt
+
+Ponto em torno do qual expansões de séries de Taylor sao realizadas quando
+@code{ctayswitch} for escolhida para @code{true}.
+
+@end defvr
+
+@defvr {Variável de sistema} gdet
+
+O determinante do tensor métrico @code{lg}. Calculado através de @code{cmetric} quando
+@code{cframe_flag} for escolhido para @code{false}.
+
+@end defvr
+
+@defvr {Variável de opção} ratchristof
+
+Faz com que simplificações racionais sejam aplicadas através de @code{christof}.
+
+@end defvr
+
+@defvr {Variável de opção} rateinstein
+Valor por omissão: @code{true}
+
+Se @code{true} simplificação racional será
+executada sobre as componentes não nulas de tensores de Einstein; se
+@code{ratfac} for @code{true} então as componentes irão também ser factoradas.
+
+@end defvr
+@defvr {Variável de opção} ratriemann
+Valor por omissão: @code{true}
+
+Um dos comutadores que controlam
+simplificações dos tensores de Riemann; se @code{true}, então simplificações
+racionais irão ser concluídas; se @code{ratfac} for @code{true} então cada uma das
+componentes irá também ser factorada.
+
+@end defvr
+
+@defvr {Variável de opção} ratweyl
+Valor por omissão: @code{true}
+
+Se @code{true}, esse comutador faz com que a função de @code{weyl}
+aplique simplificações racionais aos valores do tensor de Weyl. Se
+@code{ratfac} for @code{true}, então as componentes irão também ser factoradas.
+@end defvr
+
+@defvr {Variável} lfg
+O referencial métrico covariante. Por padrão, é inicializado para
+o referencial tetradimensional de Lorentz com assinatura
+(+,+,+,-). Usada quando @code{cframe_flag} for @code{true}.
+@end defvr
+
+@defvr {Variável} ufg
+A métrica do referencial inverso. Calculada de @code{lfg} quando @code{cmetric} for chamada enquanto @code{cframe_flag} for escolhida para @code{true}.
+@end defvr
+
+@defvr {Variável} riem
+O tensor de categoria (3,1) de Riemann. Calculado quando a função @code{riemann} é invocada. Para informação sobre ordenação de índices, veja a descrição de @code{riemann}.
+
+Se @code{cframe_flag} for @code{true}, @code{riem} é calculado a partir do tensor covariante de Riemann @code{lriem}.
+
+@end defvr
+
+@defvr {Variável} lriem
+
+O tensor covariante de Riemann. Calculado através de @code{lriemann}.
+
+@end defvr
+
+@defvr {Variável} uriem
+
+O tensor contravariante de Riemann. Calculado através de @code{uriemann}.
+
+@end defvr
+
+@defvr {Variável} ric
+
+O tensor misto de Ricci. Calculado através de @code{ricci}.
+
+@end defvr
+
+@defvr {Variável} uric
+
+O tensor contravariante de Ricci. Calculado através de @code{uricci}.
+
+@end defvr
+
+@defvr {Variável} lg
+
+O tensor métrico. Esse tensor deve ser especificado (como uma @code{dim} através da matriz @code{dim})
+antes que outro cálculo possa ser executado.
+
+@end defvr
+
+@defvr {Variável} ug
+
+O inverso do tensor métrico. Calculado através de @code{cmetric}.
+
+@end defvr
+
+@defvr {Variável} weyl
+
+O tensor de Weyl. Calculado através de @code{weyl}.
+
+@end defvr
+
+@defvr {Variável} fb
+
+Coeficientes delimitadores do referencial, como calculado através de @code{frame_bracket}.
+
+@end defvr
+
+@defvr {Variável} kinvariant
+
+O invariante de Kretchmann. Calculado através de @code{rinvariant}.
+
+@end defvr
+
+@defvr {Variável} np
+
+Um tetrad nulo de Newman-Penrose. Calculado através de @code{nptetrad}.
+
+@end defvr
+
+@defvr {Variável} npi
+
+O índice ascendente do tetrad nulo de Newman-Penrose. Calculado através de @code{nptetrad}.
+Definido como @code{ug.np}. O produto @code{np.transpose(npi)} é constante:
+
+@example
+(%i39) trigsimp(np.transpose(npi));
+                              [  0   - 1  0  0 ]
+                              [                ]
+                              [ - 1   0   0  0 ]
+(%o39)                        [                ]
+                              [  0    0   0  1 ]
+                              [                ]
+                              [  0    0   1  0 ]
+@end example
+
+@end defvr
+
+@defvr {Variável} tr
+
+Tensor de categoria 3 fornecido pelo utilizador representando torsão. Usado por @code{contortion}.
+@end defvr
+
+@defvr {Variável} kt
+
+O tensor de contorsão, calculado a partir de @code{tr} através de @code{contortion}.
+@end defvr
+
+@defvr {Variável} nm
+
+Vetor de não metrcidade fornecido pelo utilizador. Usado por @code{nonmetricity}.
+@end defvr
+
+@defvr {Variável} nmc
+
+Os coeficientes de não metricidade, calculados a partir de @code{nm} por @code{nonmetricity}.
+
+@end defvr
+
+@defvr {Variável de sistema} tensorkill
+
+Variável indicando se o pacote tensor foi inicializado. Escolhida e usada por
+@code{csetup}, retornada ao seu valor original através de @code{init_ctensor}.
+
+@end defvr
+
+@defvr {Variável de opção} ct_coords
+Valor por omissão: @code{[]}
+
+Uma opção no pacote @code{ctensor}.
+@code{ct_coords} contém uma lista de coordenadas.
+Enquanto normalmente definida quando a função @code{csetup} for chamada,
+se pode redefinir as coordenadas com a atribuição
+@code{ct_coords: [j1, j2, ..., jn]} onde os j's são os novos nomes de coordenadas.
+Veja também @code{csetup}.
+
+@end defvr
+
+@subsection Nomes reservados
+
+Os seguintes nomes são usados internamente pelo pacote @code{ctensor} e
+não devem ser redefinidos:
+
+@example
+  Name         Description
+  ---------------------------------------
+  _lg()        Avalia para @code{lfg} se for usado o referencial métrico,
+                    para @code{lg} de outra forma
+  _ug()        Avalia para @code{ufg} se for usado o referencial métrico,
+                    para @code{ug} de outra forma
+  cleanup()    Remove ítens da lista @code{deindex}
+  contract4()  Usado por psi()
+  filemet()    Usado por csetup() quando lendo a métrica de um ficheiro
+  findde1()    Usado por findde()
+  findde2()    Usado por findde()
+  findde3()    Usado por findde()
+  kdelt()      Delta de Kronecker (não generalizado)
+  newmet()     Usado por csetup() para escolher uma métrica
+                    interativamente
+  setflags()   Usado por init_ctensor()
+  readvalue()
+  resimp()
+  sermet()     Usado por csetup() para informar uma métricacom série
+                    de Taylor
+  txyzsum()
+  tmetric()    Referencial métrico, usado por cmetric() quando
+                    cframe_flag:true
+  triemann()   Tensor de Riemann na base do referencial, usado quando
+                    cframe_flag:true
+  tricci()     Tensor de Ricci na base do referencial, usado quando
+                    cframe_flag:true
+  trrc()       Coeficientes de rotação de Ricci, usado por
+                    christof()
+  yesp()
+@end example
+
+
+@subsection Modificações
+
+Em Novembro de 2004, o pacote @code{ctensor} foi extensivamente reescrito.
+Muitas funções e variáveis foram renomeadas com o objectivo de tornar o
+pacote com a versão comercial do Macsyma.
+
+
+@example
+  Novo Nome    Nome Antigo     Descrição
+  --------------------------------------------------------------------
+  ctaylor()    DLGTAYLOR()     Expansão da série de Taylor de uma
+  -----------------------------expressão
+  lgeod[]      EM              Equações geodésicas
+  ein[]        G[]             Tensor misto de Einstein
+  ric[]        LR[]            Tensor misto de Ricci
+  ricci()      LRICCICOM()     Calcula o tensor misto de Ricci
+  ctaypov      MINP            Maximo expoente em expansões de séries de
+  -----------------------------Taylor
+  cgeodesic()  MOTION          Calcula as equações geodésicas
+  ct_coords    OMEGA           Coordenadas métricas
+  ctayvar      PARAM           Variável de expansão de séries de
+  -----------------------------Taylor
+  lriem[]      R[]             Tensor covariante de Riemann
+  uriemann()   RAISERIEMANN()  Calcula o tensor contravariante de
+  -----------------------------Riemann
+  ratriemann   RATRIEMAN       Simplificação racional do tensor de
+  -----------------------------Riemann
+  uric[]       RICCI[]         Tensor de Ricci contravariante
+  uricci()     RICCICOM()      Calcula o tensor de Ricci contravariante
+  cmetric()    SETMETRIC()     Escolhe a métrica
+  ctaypt       TAYPT           Ponto para expansões de séries de Taylor
+  ctayswitch   TAYSWITCH       Escolhe o comutador de séries de Taylor
+  csetup()     TSETUP()        Inicia sessão interativa de configuração
+  ctransform() TTRANSFORM()    Transformação de coordenadas interativa
+  uriem[]      UR[]            Tensor contravariante de Riemann 
+  weyl[]       W[]             Tensor (3,1) de Weyl
+
+@end example
+
+

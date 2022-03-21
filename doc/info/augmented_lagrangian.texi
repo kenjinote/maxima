@@ -1,0 +1,157 @@
+@menu
+* Functions and Variables for augmented_lagrangian::
+@end menu
+
+@node Functions and Variables for augmented_lagrangian,  , augmented_lagrangian-pkg, augmented_lagrangian-pkg
+@section Functions and Variables for augmented_lagrangian
+
+@anchor{augmented_lagrangian_method}
+@deffn  {Function} augmented_lagrangian_method @
+@fname{augmented_lagrangian_method} (@var{FOM}, @var{xx}, @var{C}, @var{yy}) @
+@fname{augmented_lagrangian_method} (@var{FOM}, @var{xx}, @var{C}, @var{yy}, optional_args) @
+@fname{augmented_lagrangian_method} ([@var{FOM}, @var{grad}], @var{xx}, @var{C}, @var{yy}) @
+@fname{augmented_lagrangian_method} ([@var{FOM}, @var{grad}], @var{xx}, @var{C}, @var{yy}, optional_args)
+
+Returns an approximate minimum of the expression @var{FOM}
+with respect to the variables @var{xx},
+holding the constraints @var{C} equal to zero.
+@var{yy} is a list of initial guesses for @var{xx}.
+The method employed is the augmented Lagrangian method (see Refs [1] and [2]).
+
+@var{grad}, if present, is the gradient of @var{FOM} with respect to @var{xx},
+represented as a list of expressions,
+one for each variable in @var{xx}.
+If not present, the gradient is constructed automatically.
+
+@var{FOM} and each element of @var{grad}, if present,
+must be ordinary expressions, not names of functions or lambda expressions.
+
+@code{optional_args} represents additional arguments,
+specified as @code{@var{symbol} = @var{value}}.
+The optional arguments recognized are:
+
+@table @code
+@item niter
+Number of iterations of the augmented Lagrangian algorithm
+@item lbfgs_tolerance
+Tolerance supplied to LBFGS
+@item iprint
+IPRINT parameter (a list of two integers which controls verbosity) supplied to LBFGS
+@item %lambda
+Initial value of @code{%lambda} to be used for calculating the augmented Lagrangian
+@end table
+
+This implementation minimizes the augmented Lagrangian by
+applying the limited-memory BFGS (LBFGS) algorithm,
+which is a quasi-Newton algorithm.
+
+@code{load("augmented_lagrangian")} loads this function.
+
+See also @ref{lbfgs-pkg}
+
+References:
+
+@c Both links seem invalid now (one redirects somewhere, one is access forbidden). Remove them?
+[1] @url{http://www-fp.mcs.anl.gov/otc/Guide/OptWeb/continuous/constrained/nonlinearcon/auglag.html}
+
+[2] @url{http://www.cs.ubc.ca/spider/ascher/542/chap10.pdf}
+
+Examples:
+
+@c ===beg===
+@c load ("lbfgs");
+@c load ("augmented_lagrangian");
+@c FOM: x^2 + 2*y^2;
+@c xx: [x, y];
+@c C: [x + y - 1];
+@c yy: [1, 1];
+@c augmented_lagrangian_method(FOM, xx, C, yy, iprint=[-1,0]);
+@c ===end===
+@example
+@group
+(%i1) load ("lbfgs");
+(%o1)  /home/gunter/src/maxima-code/share/lbfgs/lbfgs.mac
+@end group
+@group
+(%i2) load ("augmented_lagrangian");
+(%o2) /home/gunter/src/maxima-code/share/contrib/augmented_lagra\
+ngian.mac
+@end group
+@group
+(%i3) FOM: x^2 + 2*y^2;
+                               2    2
+(%o3)                       2 y  + x
+@end group
+@group
+(%i4) xx: [x, y];
+(%o4)                        [x, y]
+@end group
+@group
+(%i5) C: [x + y - 1];
+(%o5)                      [y + x - 1]
+@end group
+@group
+(%i6) yy: [1, 1];
+(%o6)                        [1, 1]
+@end group
+@group
+(%i7) augmented_lagrangian_method(FOM, xx, C, yy, iprint=[-1,0]);
+(%o7) [[x = 0.666659841080023, y = 0.333340272455448], 
+                                 %lambda = [- 1.333337940892518]]
+@end group
+@end example
+
+Same example as before, but this time the gradient is supplied as an argument.
+
+@c ===beg===
+@c load ("lbfgs")$
+@c load ("augmented_lagrangian")$
+@c FOM: x^2 + 2*y^2;
+@c xx: [x, y];
+@c grad : [2*x, 4*y];
+@c C: [x + y - 1];
+@c yy: [1, 1];
+@c augmented_lagrangian_method ([FOM, grad], xx, C, yy, 
+@c                              iprint = [-1, 0]);
+@c ===end===
+@example
+(%i1) load ("lbfgs")$
+(%i2) load ("augmented_lagrangian")$
+@group
+(%i3) FOM: x^2 + 2*y^2;
+                               2    2
+(%o3)                       2 y  + x
+@end group
+@group
+(%i4) xx: [x, y];
+(%o4)                        [x, y]
+@end group
+@group
+(%i5) grad : [2*x, 4*y];
+(%o5)                      [2 x, 4 y]
+@end group
+@group
+(%i6) C: [x + y - 1];
+(%o6)                      [y + x - 1]
+@end group
+@group
+(%i7) yy: [1, 1];
+(%o7)                        [1, 1]
+@end group
+@group
+(%i8) augmented_lagrangian_method ([FOM, grad], xx, C, yy,
+                             iprint = [-1, 0]);
+(%o8) [[x = 0.6666598410800247, y = 0.3333402724554464], 
+                                 %lambda = [- 1.333337940892525]]
+@end group
+@end example
+
+@opencatbox{Categories:}
+@category{Numerical methods}
+@category{Optimization}
+@category{Share packages}
+@category{Package augmented_lagrangian} 
+@closecatbox
+
+@end deffn
+

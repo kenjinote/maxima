@@ -1,0 +1,147 @@
+@c /numericalio.texi/1.1/Mon Feb 27 22:09:17 2006//
+@menu
+* Introdução a numericalio::
+* Definições para numericalio::
+@end menu
+
+@node Introdução a numericalio, Definições para numericalio, numericalio, numericalio
+@section Introdução a numericalio
+
+@code{numericalio} é uma colecção de funções para ler e escrever ficheiros de dados.
+O ficheiro é lido completamente para construir um objecto;
+leituras parciais não são suportadas.
+
+É assumido que cada item a ler ou escrever é at@^omico:
+um número inteiro, número em ponto flutuante, grande número em ponto flutuante, sequência de caracteres, ou símbolo,
+e não um número racional ou um número complexo ou qualquer outro tipo de expressão não at@^omica.
+Essas funções podem tentar fazer alguma coisa levemente parecida com expressões não at@^omicas,
+mas os resultados não são especificados aqui e são sujeitos a mudanças.
+
+Átomos em ambos os ficheiros de entrada e saída possuem o mesmo formato que
+em ficheiros de lote do Maxima ou no console interativo.
+Em particular, sequência de caracteres são contidas dentro de aspas duplas,
+contrabarra @code{\} evita qualquer interpretação especial do caractere seguinte,
+e o ponto de interrogação @code{?} é reconhecido no início de um símbolo
+para significar um símbolo do Lisp (em oposição a um símbolo do Maxima).
+Nenhum caractere de continuação (para continuar linhas quebradas) é reconhecido.
+
+@var{separator_flag} diz que caracteres separa elementos.
+@var{separator_flag} é um argumento opcional para todas as funções de leitura e escrita.
+
+Para entrada, os valores de @var{separator_flag} reconhecidos são:
+@code{comma} para valores separados por vírgula,
+@code{pipe} para valores separados pelo caractere barra vertical @code{|},
+@code{semicolon} para valores separados por ponto e vírgula @code{;}, 
+e @code{space} para valores separados pelos caracteres de espaço e de tabulação.
+Se o nome do ficheiro a ser lido/escrito termina em @code{.csv} e @var{separator_flag} não for especificado,
+@code{comma} é assumido.
+Se o nome do ficheiro termina em alguma outra coisa que não @code{.csv} e @code{separator_flag} não for especificado,
+@code{space} é assumido.
+
+Para saída, os mesmos quatro sinalizadores são reconhecidos como na entrada,
+e também @code{tab}, para valores separados pelo caractere de tabulaçao.
+
+Em entrada, múltiplos espaços e múltiplas tabulações sucessivas contam como um separador simples.
+Todavia, múltiplas vírgulas, barras verticais, ou ponto-e-vírgulas são significativos.
+Sucessivas vírgulas, barras verticais, ou ponto-e-vírgulas (com ou sem intercalação de espaços ou tabulações)
+são considerados como tendo @code{false} entre os separadores.
+Por exemplo, @code{1234,,Foo} é tratado da mesma forma que @code{1234,false,Foo}.
+Em saídas, os átomos @code{false} são escritos como tais;
+uma lista @code{[1234, false, Foo]} é escrita @code{1234,false,Foo},
+e não é tentado colapsar a saída para @code{1234,,Foo}.
+
+@node Definições para numericalio,  , Introdução a numericalio, numericalio
+@section Definições para numericalio
+
+   @deffn {Função} read_matrix (@var{nomeficheiro})
+@deffnx {Função} read_matrix (@var{nomeficheiro}, @var{separator_flag})
+Lê o ficheiro @var{nomeficheiro} e retorna seu conteúdo completo como uma matriz.
+Se @var{separator_flag} não for especificado, o ficheiro é assumido como delimitado por espaços em branco.
+
+@code{read_matrix} infere o tamanho da matriz dos dados de entrada.
+Cada linha do ficheiro inicia uma linha da matriz.
+Se algumas linhas possuirem diferentes comprimentos, @code{read_matrix} reclama.
+
+@end deffn
+
+@deffn {Função} read_lisp_array (@var{nomeficheiro}, @var{A})
+@deffnx {Função} read_lisp_array (@var{nomeficheiro}, @var{A}, @var{separator_flag})
+
+@code{read_lisp_array} exige que o array
+seja declarado através de @code{make_array} antes de chamar
+a função de leitura. (Isso obviamente é necessário para inferir a dimensão 
+do array, que pode ser um problema para arrays com múltiplas dimensões.)
+
+@code{read_lisp_array} não verifica para ver se o 
+ficheiro de entrada está de acordo com as dimensãoes do array; a entrada
+é lida como uma lista monótona, então o array é preenchido usando @code{fillarray}.
+
+@end deffn
+
+@deffn {Função} read_maxima_array (@var{nomeficheiro}, @var{A})
+@deffnx {Função} read_maxima_array (@var{nomeficheiro}, @var{A}, @var{separator_flag})
+
+@code{read_maxima_array} requer que o array
+seja declarado através de @code{array} antes de chamar
+a função de leitura. (Isso obviamente é necessário para inferir a dimensão 
+do array, que pode ser uma hassle para arrays com múltiplas dimensões.)
+
+@code{read_maxima_array} não verifica para ver se o 
+ficheiro de entrada está de acordo com as dimensãoes do array; a entrada
+é lida como uma lista monótona, então o array é preenchido usando @code{fillarray}.
+
+@end deffn
+
+@deffn {Função} read_hashed_array (@var{nomeficheiro}, @var{A})
+@deffnx {Função} read_hashed_array (@var{nomeficheiro}, @var{A}, @var{separator_flag})
+
+@code{read_hashed_array} trata o primeiro item sobre uma linha como uma
+chave hash, e associa o restante da linha (como uma lista) com a chava.
+Por exemplo,
+a linha @code{567 12 17 32 55} é equivalente a @code{A[567]: [12, 17, 32, 55]$}.
+Linhas não precisam ter o mesmo número de elementos.
+
+@end deffn
+
+@deffn {Função} read_nested_list (@var{nomeficheiro})
+@deffnx {Função} read_nested_list (@var{nomeficheiro}, @var{separator_flag})
+
+@code{read_nested_list} retorna uma lista que tem uma sublista para cada
+linha de entrada. Linhas não precisam ter o mesmo número de elementos.
+Linhas vazias @i{não} são ignoradas: uma linha vazia retorna uma sublista vazia.
+
+@end deffn
+
+@deffn {Função} read_list (@var{nomeficheiro})
+@deffnx {Função} read_list (@var{nomeficheiro}, @var{separator_flag})
+
+@code{read_list} lê todas as entradas em uma lista monótona.
+@code{read_list} ignora o caractere de fim de linha.
+
+@end deffn
+
+@deffn {Função} write_data (@var{X}, @var{nomeficheiro})
+@deffnx {Função} write_data (@var{object}, @var{nomeficheiro}, @var{separator_flag})
+
+@code{write_data} escreve o objecto @var{X} no ficheiro @var{nomeficheiro}.
+
+@code{write_data} escreve matrizes da forma usual,
+com uma linha por fileira.
+
+@code{write_data} escreve arrays declarados do Lisp e do Maxima da
+forma usual, com um caractere de nova linha no final de todo pedaço.
+Pedaços dimensionais muito grandes são separados por meio de novas linhas adicionais.
+
+@code{write_data} escreve arrays desordenados com uma chave seguida por
+a lista associada sobre cada linha.
+
+@code{write_data} escreve a lista seguinte com cada sublista em uma linha.
+
+@code{write_data} escreve uma lista monótona toda em uma linha.
+
+Se @code{write_data} anexa ao final ou abandona os excessos em seus ficheiros de saída
+é governado através da variável global @code{file_output_append}.
+
+@end deffn
+
+

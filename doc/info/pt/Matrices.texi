@@ -1,0 +1,1587 @@
+@c /Matrices.texi/1.28/Fri Mar  2 00:44:39 2007/-ko/
+@menu
+* Introdução a Matrizes e Álgebra Linear::  
+* Definições para Matrizes e Álgebra Linear::  
+@end menu
+
+@node Introdução a Matrizes e Álgebra Linear, Definições para Matrizes e Álgebra Linear, Matrizes e Álgebra Linear, Matrizes e Álgebra Linear
+@section Introdução a Matrizes e Álgebra Linear
+
+@menu
+* Ponto::                         
+* Vetores::                     
+* auto::
+@end menu
+
+@node Ponto, Vetores, Introdução a Matrizes e Álgebra Linear, Introdução a Matrizes e Álgebra Linear
+@subsection Ponto
+O operador @code{.} representa multiplicação não comutativa e produto escalar.
+Quando os operandos são matrizes 1-coluna ou 1-linha @code{a} e @code{b},
+a expresão @code{a.b} é equivalente a @code{sum (a[i]*b[i], i, 1, length(a))}.
+Se @code{a} e @code{b} não são complexos, isso é o produto escalar,
+também chamado produto interno ou produto do ponto, de @code{a} e @code{b}.
+O produto escalar é definido como @code{conjugate(a).b} quando @code{a} e @code{b} são complexos;
+@code{innerproduct} no pacote @code{eigen} fornece o produto escalar complexo.
+
+Quando os operandos são matrizes mais gerais,
+o produto é a matriz produto @code{a} e @code{b}.
+O número de linhas de @code{b} deve ser igual ao número de colunas de @code{a},
+e o resultado tem número de linhas igual ao número de linhas de @code{a}
+e número de colunas igual ao número de colunas de @code{b}.
+
+Para distinguir @code{.} como um operador aritmético do 
+ponto decimal em um número em ponto flutuante,
+pode ser necessário deixar espaços em cada lado.
+Por exemplo, @code{5.e3} é @code{5000.0} mas @code{5 . e3} é @code{5} vezes @code{e3}.
+
+Existem muitos sinalizadores que governam a simplificação de
+expresões envolvendo @code{.}, a saber
+@code{dot}, @code{dot0nscsimp}, @code{dot0simp}, @code{dot1simp}, @code{dotassoc}, 
+@code{dotconstrules}, @code{dotdistrib}, @code{dotexptsimp}, @code{dotident},
+e @code{dotscrules}.
+
+@node Vetores, auto, Ponto, Introdução a Matrizes e Álgebra Linear
+@subsection Vetores
+@code{vect} é um pacote de funções para análise vectorial.
+@code{load ("vect")} chama esse pacote, e @code{demo ("vect")} permite visualizar uma demonstração.
+@c find maxima -name \*orth\* YIELDS NOTHING; ARE THESE FUNCTIONS IN ANOTHER FILE NOW ??
+@c and SHARE;VECT ORTH contains definitions of various orthogonal curvilinear coordinate systems.
+
+O pacote de análise vectorial pode combinar e simplificar expresões
+simbólicas incluindo produtos dos pontos e productos dos x, juntamente com
+o gradiente, divergencia, torção, e operadores Laplacianos.  A 
+distribuição desses operadores sobre adições ou produtos é governada
+por muitos sinalizadores, como são várias outras expansões, incluindo expansão
+dentro de componentes em qualquer sistema de coordenadas ortogonais.
+Existem também funções para derivar o escalar ou vector potencial
+de um campo.
+
+O pacote @code{vect} contém essas funções:
+@code{vectorsimp}, @code{scalefactors},
+@code{express}, @code{potential}, e @code{vectorpotential}.
+@c REVIEW vect.usg TO ENSURE THAT TEXINFO HAS WHATEVER IS THERE
+@c PRINTFILE(VECT,USAGE,SHARE); for details.
+
+Atenção: o pacote @code{vect} declara o operador ponto @code{.}
+como sendo um operador comutativo.
+
+@node auto, , Vetores, Introdução a Matrizes e Álgebra Linear
+@subsection auto
+
+O pacote @code{eigen} contém muitas funções devotadas para a
+computação simbólica de autovalores e autovectores.
+Maxima chama o pacote automaticamente se uma das funções
+@code{eigenvalues} ou @code{eigenvectors} é invocada.
+O pacote pode ser chamado explicitamente com @code{load ("eigen")}.
+
+@code{demo ("eigen")} mostra uma demonstração das compatibilidades
+desse pacote.
+@code{batch ("eigen")} executa a mesma demonstração,
+mas sem lembretes de utilizador entre sucessivas computações.
+
+As funções no pacote @code{eigen} são
+@code{innerproduct}, @code{unitvector}, @code{columnvector},
+@code{gramschmidt}, @code{eigenvalues}, @code{eigenvectors}, @code{uniteigenvectors},
+e @code{similaritytransform}.
+
+@c end concepts Matrizes e Álgebra Linear
+@node Definições para Matrizes e Álgebra Linear,  , Introdução a Matrizes e Álgebra Linear, Matrizes e Álgebra Linear
+@section Definições para Matrizes e Álgebra Linear
+
+@deffn {Função} addcol (@var{M}, @var{list_1}, ..., @var{list_n})
+Anexa a(s) coluna(s) dadas por uma
+ou mais listas (ou matrizes) sobre a matriz @var{M}.
+
+@end deffn
+
+@deffn {Função} addrow (@var{M}, @var{list_1}, ..., @var{list_n})
+Anexa a(s) linha(s) dadas por uma ou
+mais listas (ou matrizes) sobre a matriz @var{M}.
+
+@end deffn
+
+@deffn {Função} adjoint (@var{M})
+Retorna a matriz adjunta da matriz @var{M}.
+A matriz adjunta é a transposta da matriz dos cofactores de @var{M}.
+
+@end deffn
+
+@deffn {Função} augcoefmatrix ([@var{eqn_1}, ..., @var{eqn_m}], [@var{x_1}, ..., @var{x_n}])
+Retorna a matriz dos coeficientes
+aumentada para as variáveis @var{x_1}, ..., @var{x_n} do sistema de equações lineares
+@var{eqn_1}, ..., @var{eqn_m}.  Essa é a matriz dos coeficientes com uma coluna anexada para
+os termos independentes em cada equação (i.e., esses termos não dependem de
+@var{x_1}, ..., @var{x_n}).
+
+@example
+(%i1) m: [2*x - (a - 1)*y = 5*b, c + b*y + a*x = 0]$
+(%i2) augcoefmatrix (m, [x, y]);
+                       [ 2  1 - a  - 5 b ]
+(%o2)                  [                 ]
+                       [ a    b      c   ]
+@end example
+
+@end deffn
+
+@deffn {Função} charpoly (@var{M}, @var{x})
+Retorna um polinómio característico para a matriz @var{M}
+em relação à variável @var{x}.  Que é,
+@code{determinant (@var{M} - diagmatrix (length (@var{M}), @var{x}))}.
+
+@example
+(%i1) a: matrix ([3, 1], [2, 4]);
+                            [ 3  1 ]
+(%o1)                       [      ]
+                            [ 2  4 ]
+(%i2) expand (charpoly (a, lambda));
+                           2
+(%o2)                lambda  - 7 lambda + 10
+(%i3) (programmode: true, solve (%));
+(%o3)               [lambda = 5, lambda = 2]
+(%i4) matrix ([x1], [x2]);
+                             [ x1 ]
+(%o4)                        [    ]
+                             [ x2 ]
+(%i5) ev (a . % - lambda*%, %th(2)[1]);
+                          [ x2 - 2 x1 ]
+(%o5)                     [           ]
+                          [ 2 x1 - x2 ]
+(%i6) %[1, 1] = 0;
+(%o6)                     x2 - 2 x1 = 0
+(%i7) x2^2 + x1^2 = 1;
+                            2     2
+(%o7)                     x2  + x1  = 1
+(%i8) solve ([%th(2), %], [x1, x2]);
+                  1               2
+(%o8) [[x1 = - -------, x2 = - -------], 
+               sqrt(5)         sqrt(5)
+
+                                             1             2
+                                    [x1 = -------, x2 = -------]]
+                                          sqrt(5)       sqrt(5)
+@end example
+
+@end deffn
+
+@deffn {Função} coefmatrix ([@var{eqn_1}, ..., @var{eqn_m}], [@var{x_1}, ..., @var{x_n}])
+Retorna a matriz dos coeficientes para as
+variáveis @var{x_1}, ..., @var{x_n} do sistema de equações lineares
+@var{eqn_1}, ..., @var{eqn_m}.
+
+@example
+(%i1) coefmatrix([2*x-(a-1)*y+5*b = 0, b*y+a*x = 3], [x,y]);
+                                 [ 2  1 - a ]
+(%o1)                            [          ]
+                                 [ a    b   ]
+@end example
+
+@end deffn
+
+@deffn {Função} col (@var{M}, @var{i})
+Reorna a @var{i}'ésima coluna da matriz @var{M}.
+O valor de retorno é uma matriz.
+@c EXAMPLE HERE
+
+@end deffn
+
+@deffn {Função} columnvector (@var{L})
+@deffnx {Função} covect (@var{L})
+Retorna uma matriz de uma coluna e @code{length (@var{L})} linhas,
+contendo os elementos da lista @var{L}.
+
+@code{covect} é um sin@^onimo para @code{columnvector}.
+
+@code{load ("eigen")} chama essa função.
+
+@c FOLLOWING COMMENT PRESERVED.  WHAT DOES THIS MEAN ??
+Isso é útil se quiser usar partes das saídas das
+funções nesse pacote em cálculos matriciais.
+
+Exemplo:
+
+@c HMM, SPURIOUS "redefining the Macsyma function".
+@c LEAVE IT HERE SINCE THAT'S WHAT A USER ACTUALLY SEES.
+@example
+(%i1) load ("eigen")$
+Warning - you are redefining the Macsyma function autovalores
+Warning - you are redefining the Macsyma function autovectores
+(%i2) columnvector ([aa, bb, cc, dd]);
+                             [ aa ]
+                             [    ]
+                             [ bb ]
+(%o2)                        [    ]
+                             [ cc ]
+                             [    ]
+                             [ dd ]
+@end example
+
+@end deffn
+
+@deffn {Função} conjugate (@var{x})
+Retorna o conjugado complexo de @var{x}.
+
+@c ===beg===
+@c declare ([aa, bb], real, cc, complex, ii, imaginary);
+@c conjugate (aa + bb*%i);
+@c conjugate (cc);
+@c conjugate (ii);
+@c conjugate (xx + yy);
+@c ===end===
+@example
+(%i1) declare ([aa, bb], real, cc, complex, ii, imaginary);
+
+(%o1)                         done
+(%i2) conjugate (aa + bb*%i);
+
+(%o2)                      aa - %i bb
+(%i3) conjugate (cc);
+
+(%o3)                     conjugate(cc)
+(%i4) conjugate (ii);
+
+(%o4)                         - ii
+(%i5) conjugate (xx + yy);
+
+(%o5)             conjugate(yy) + conjugate(xx)
+@end example
+
+@end deffn
+
+@deffn {Função} copymatrix (@var{M})
+Retorna uma cópia da matriz @var{M}.  Esse é o único
+para fazer uma copia separada copiando @var{M} elemento a elemento.
+
+Note que uma atribuição de uma matriz para outra, como em @code{m2: m1},
+não copia @code{m1}.
+Uma atribuição @code{m2 [i,j]: x} ou @code{setelmx (x, i, j, m2} também modifica @code{m1 [i,j]}.
+criando uma cópia com @code{copymatrix} e então usando atribução cria uma separada e modificada cópia.
+
+@c NEED EXAMPLE HERE
+@end deffn
+
+@deffn {Função} determinant (@var{M})
+Calcula o determinante de @var{M} por um método similar à
+eliminação de Gauss.
+
+@c JUST HOW DOES ratmx AFFECT THE RESULT ??
+A forma do resultado depende da escolha
+do comutador @code{ratmx}.
+
+@c IS A SPARSE DETERMINANT SOMETHING OTHER THAN THE DETERMINANT OF A SPARSE MATRIX ??
+Existe uma rotina especial para calcular
+determinantes esparsos que é chamada quando os comutadores
+@code{ratmx} e @code{sparse} são ambos @code{true}.
+
+@c EXAMPLES NEEDED HERE
+@end deffn
+
+@defvr {Variável} detout
+Valor por omissão: @code{false}
+
+Quando @code{detout} é @code{true}, o determinante de uma
+matriz cuja inversa é calculada é factorado fora da inversa.
+
+Para esse comutador ter efeito @code{doallmxops} e @code{doscmxops} deveram ambos serem
+@code{false} (veja suas transcrições).  Alternativamente esses comutadores podem ser
+dados para @code{ev} o que faz com que os outros dois sejam escolhidos correctamente.
+
+Exemplo:
+
+@example
+(%i1) m: matrix ([a, b], [c, d]);
+                            [ a  b ]
+(%o1)                       [      ]
+                            [ c  d ]
+(%i2) detout: true$
+(%i3) doallmxops: false$
+(%i4) doscmxops: false$
+(%i5) invert (m);
+                          [  d   - b ]
+                          [          ]
+                          [ - c   a  ]
+(%o5)                     ------------
+                           a d - b c
+@end example
+@c THERE'S MORE TO THIS STORY: detout: false$ invert (m); RETURNS THE SAME THING.
+@c IT APPEARS THAT doallmxops IS CRUCIAL HERE.
+
+@end defvr
+
+@deffn {Função} diagmatrix (@var{n}, @var{x})
+Retorna uma matriz diagonal de tamanho @var{n} por @var{n} com os
+elementos da diagonal todos iguais a @var{x}.
+@code{diagmatrix (@var{n}, 1)} retorna uma matriz identidade (o mesmo que @code{ident (@var{n})}).
+
+@var{n} deve avaliar para um inteiro, de outra forma @code{diagmatrix} reclama com uma mensagem de erro.
+
+@var{x} pode ser qualquer tipo de expresão, incluindo outra matriz.
+Se @var{x} é uma matriz, isso não é copiado; todos os elementos da diagonal referem-se à mesma instância, @var{x}.
+
+@c NEED EXAMPLE HERE
+@end deffn
+
+@defvr {Variável} doallmxops
+Valor por omissão: @code{true}
+
+Quando @code{doallmxops} é @code{true},
+@c UMM, WHAT DOES THIS MEAN EXACTLY ??
+todas as operações relacionadas a matrizes são realizadas.
+Quando isso é @code{false} então a escolha de
+comutadores individuais @code{dot} governam quais operações são executadas.
+
+@c NEED EXAMPLES HERE
+@end defvr
+
+@defvr {Variável} domxexpt
+Valor por omissão: @code{true}
+
+Quando @code{domxexpt} é @code{true},
+uma matriz exponencial, @code{exp (@var{M})} onde @var{M} é a matriz,
+é interpretada como uma matriz com elementos @code{[i,j} iguais a @code{exp (m[i,j])}.
+de outra forma @code{exp (@var{M})} avalia para @code{exp (@var{ev(M)}}.
+
+@code{domxexpt}
+afecta todas as expresões da forma @code{@var{base}^@var{expoente}} onde @var{base} é uma
+expresão assumida escalar ou constante, e @var{expoente} é uma lista ou
+matriz.
+
+Exemplo:
+
+@example
+(%i1) m: matrix ([1, %i], [a+b, %pi]);
+                         [   1    %i  ]
+(%o1)                    [            ]
+                         [ b + a  %pi ]
+(%i2) domxexpt: false$
+(%i3) (1 - c)^m;
+                             [   1    %i  ]
+                             [            ]
+                             [ b + a  %pi ]
+(%o3)                 (1 - c)
+(%i4) domxexpt: true$
+(%i5) (1 - c)^m;
+                  [                      %i  ]
+                  [    1 - c      (1 - c)    ]
+(%o5)             [                          ]
+                  [        b + a         %pi ]
+                  [ (1 - c)       (1 - c)    ]
+@end example
+
+@end defvr
+
+@defvr {Variável de opção} domxmxops
+Valor por omissão: @code{true}
+
+Quando @code{domxmxops} é @code{true}, todas as operações matriz-matriz ou
+matriz-lista são realizadas (mas não operações
+escalar-matriz); se esse comutador é @code{false} tais operações não são.
+@c IS THIS AN EVALUATION OR A SIMPLIFICATION FLAG ??
+
+@c NEED EXAMPLE HERE
+@end defvr
+
+@defvr {Variável de opção} domxnctimes
+Valor por omissão: @code{false}
+
+Quando @code{domxnctimes} é @code{true}, produtos não comutativos de
+matrizes são realizados.
+@c IS THIS AN EVALUATION OR A SIMPLIFICATION FLAG ??
+
+@c NEED EXAMPLE HERE
+@end defvr
+
+@defvr {Variável de opção} dontfactor
+Valor por omissão: @code{[]}
+
+@code{dontfactor} pode ser escolhido para uma lista de variáveis em relação
+a qual factoração não é para ocorrer.  (A lista é inicialmente vazia.)
+Factoração também não pegará lugares com relação a quaisquer variáveis que
+são menos importantes, conforme a hierarquía de variável assumida para a forma expresão racional canónica (CRE),
+que essas na lista @code{dontfactor}.
+
+@end defvr
+
+@defvr {Variável de opção} doscmxops
+Valor por omissão: @code{false}
+
+Quando @code{doscmxops} é @code{true}, operações escalar-matriz são
+realizadas.
+@c IS THIS AN EVALUATION OR A SIMPLIFICATION FLAG ??
+
+@c NEED EXAMPLE HERE
+@end defvr
+
+@defvr {Variável de opção} doscmxplus
+Valor por omissão: @code{false}
+
+Quando @code{doscmxplus} é @code{true}, operações escalar-matriz retornam
+uma matriz resultado.  Esse comutador não é subsomado sob @code{doallmxops}.
+@c IS THIS AN EVALUATION OR A SIMPLIFICATION FLAG ??
+
+@c NEED EXAMPLE HERE
+@end defvr
+
+@defvr {Variável de opção} dot0nscsimp
+Valor por omissão: @code{true}
+
+@c WHAT DOES THIS MEAN EXACTLY ??
+Quando @code{dot0nscsimp} é @code{true}, um produto não comutativo de zero
+e um termo não escalar é simplificado para um produto comutativo.
+
+@c NEED EXAMPLE HERE
+@end defvr
+
+@defvr {Variável de opção} dot0simp
+Valor por omissão: @code{true}
+
+@c WHAT DOES THIS MEAN EXACTLY ??
+Quando @code{dot0simp} é @code{true},
+um produto não comutativo de zero e
+um termo escalar é simplificado para um produto não comutativo.
+
+@c NEED EXAMPLE HERE
+@end defvr
+
+@defvr {Variável de opção} dot1simp
+Valor por omissão: @code{true}
+
+@c WHAT DOES THIS MEAN EXACTLY ??
+Quando @code{dot1simp} é @code{true},
+um produto não comutativo de um e
+outro termo é simplificado para um produto comutativo.
+
+@c NEED EXAMPLE HERE
+@end defvr
+
+@defvr {Variável de opção} dotassoc
+Valor por omissão: @code{true}
+
+Quando @code{dotassoc} é @code{true}, uma expresão @code{(A.B).C} simplifica para
+@code{A.(B.C)}.
+@c "." MEANS NONCOMMUTATIVE MULTIPLICATION RIGHT ??
+
+@c NEED EXAMPLE HERE
+@end defvr
+
+@defvr {Variável de opção} dotconstrules
+Valor por omissão: @code{true}
+
+Quando @code{dotconstrules} é @code{true}, um produto não comutativo de uma
+constante e outro termo é simplificado para um produto comutativo.
+@c TERMINOLOGY: (1) SWITCH/FLAG/SOME OTHER TERM ?? (2) ASSIGN/SET/TURN ON/SOME OTHER TERM ??
+Ativando esse sinalizador efectivamente activamos @code{dot0simp}, @code{dot0nscsimp}, e
+@code{dot1simp} também.
+
+@c NEED EXAMPLE HERE
+@end defvr
+
+@defvr {Variável de opção} dotdistrib
+Valor por omissão: @code{false}
+
+Quando @code{dotdistrib} é @code{true}, uma expresão @code{A.(B + C)} simplifica para @code{A.B + A.C}.
+
+@c NEED EXAMPLE HERE
+@end defvr
+
+@defvr {Variável de opção} dotexptsimp
+Valor por omissão: @code{true}
+
+Quando @code{dotexptsimp} é @code{true}, uma expresão @code{A.A} simplifica para @code{A^^2}.
+
+@c NEED EXAMPLE HERE
+@end defvr
+
+@defvr {Variável de opção} dotident
+Valor por omissão: 1
+
+@code{dotident} é o valor retornado por @code{X^^0}.
+@c "RETURNED" ?? IS THIS A SIMPLIFICATION OR AN EVALUATION ??
+
+@c NEED EXAMPLE HERE
+@end defvr
+
+@defvr {Variável de opção} dotscrules
+Valor por omissão: @code{false}
+
+Quando @code{dotscrules} é @code{true}, uma expresão @code{A.SC} ou @code{SC.A} simplifica
+para @code{SC*A} e @code{A.(SC*B)} simplifica para @code{SC*(A.B)}.
+@c HMM, DOES "SC" MEAN "SCALAR" HERE ?? CLARIFY
+
+@c NEED EXAMPLE HERE
+@end defvr
+
+@deffn {Função} echelon (@var{M})
+Retorna a forma escalonada da matriz @var{M},
+como produzido através da eliminação de Gauss.
+A forma escalonada é calculada de @var{M}
+por operações elementares de linha tais que o primeiro
+elemento não zero em cada linha na matriz resultante seja o número um e os
+elementos da coluna abaixo do primeiro número um em cada linha sejam todos zero.
+
+@code{triangularize} também realiza eliminação de Gaussian,
+mas não normaliza o elemento líder não nulo em cada linha.
+
+@code{lu_factor} e @code{cholesky} são outras funções que retornam matrizes triangularizadas.
+
+@c ===beg===
+@c M: matrix ([3, 7, aa, bb], [-1, 8, 5, 2], [9, 2, 11, 4]);
+@c echelon (M);
+@c ===end===
+@example
+(%i1) M: matrix ([3, 7, aa, bb], [-1, 8, 5, 2], [9, 2, 11, 4]);
+                       [  3   7  aa  bb ]
+                       [                ]
+(%o1)                  [ - 1  8  5   2  ]
+                       [                ]
+                       [  9   2  11  4  ]
+(%i2) echelon (M);
+                  [ 1  - 8  - 5      - 2     ]
+                  [                          ]
+                  [         28       11      ]
+                  [ 0   1   --       --      ]
+(%o2)             [         37       37      ]
+                  [                          ]
+                  [              37 bb - 119 ]
+                  [ 0   0    1   ----------- ]
+                  [              37 aa - 313 ]
+@end example
+
+@end deffn
+
+@deffn {Função} eigenvalues (@var{M})
+@deffnx {Função} eivals (@var{M})
+@c eigen.mac IS AUTOLOADED IF eigenvalues OR eigenvectors IS REFERENCED; EXTEND THAT TO ALL FUNCTIONS ??
+@c EACH FUNCTION INTENDED FOR EXTERNAL USE SHOULD HAVE ITS OWN DOCUMENTATION ITEM
+Retorna uma lista de duas listas contendo os autovalores da matriz @var{M}.
+A primeira sublista do valor de retorno é a lista de autovalores da
+matriz, e a segunda sublista é a lista de
+multiplicidade dos autovalores na ordem correspondente.
+
+@code{eivals} é um sin@^onimo de @code{eigenvalues}.
+
+@code{eigenvalues} chama a função @code{solve} para achar as raízes do
+polinómio característico da matriz.
+Algumas vezes @code{solve} pode não estar habilitado a achar as raízes do polinómio;
+nesse caso algumas outras funções nesse
+pacote (except @code{innerproduct}, @code{unitvector}, @code{columnvector} e
+@code{gramschmidt}) não irão trabalhar.
+@c WHICH ONES ARE THE FUNCTIONS WHICH DON'T WORK ??
+@c ACTUALLY IT'S MORE IMPORTANT TO LIST THE ONES WHICH DON'T WORK HERE
+@c WHAT DOES "will not work" MEAN, ANYWAY ??
+
+Em alguns casos os autovalores achados por @code{solve} podem ser expresões complicadas.
+(Isso pode acontecer quando @code{solve} retorna uma expresão real não trivial
+para um autovalor que é sabidamente real.)
+Isso pode ser possível para simplificar os autovalores usando algumas outras funções.
+@c WHAT ARE THOSE OTHER FUNCTIONS ??
+
+O pacote @code{eigen.mac} é chamado automaticamente quando
+@code{eigenvalues} ou @code{eigenvectors} é referenciado.
+Se @code{eigen.mac} não tiver sido ainda chamado,
+@code{load ("eigen")} chama-o.
+Após ser chamado, todas as funções e variáveis no pacote estarão disponíveis.
+@c REFER TO OVERVIEW OF PACKAGE (INCLUDING LIST OF FUNCTIONS) HERE
+
+@c NEED EXAMPLES HERE
+@end deffn
+
+@deffn {Função} eigenvectors (@var{M})
+@deffnx {Função} eivects (@var{M})
+pegam uma matriz @var{M} como seu argumento e retorna uma lista
+de listas cuja primeira sublista é a saída de @code{eigenvalues}
+e as outras sublistas são os autovectores da
+matriz correspondente para esses autovalores respectivamente.
+
+@code{eivects} é um sin@^onimo para @code{eigenvectors}.
+
+O pacote @code{eigen.mac} é chamado automaticamente quando
+@code{eigenvalues} ou @code{eigenvectors} é referenciado.
+Se @code{eigen.mac} não tiver sido ainda chamado,
+@code{load ("eigen")} chama-o.
+Após ser chamado, todas as funções e variáveis no pacote estarão disponíveis.
+
+Os sinalizadores que afectam essa função são:
+
+@code{nondiagonalizable} é escolhido para @code{true} ou @code{false} dependendo de
+se a matriz é não diagonalizável ou diagonalizável após o
+retorno de @code{eigenvectors}.
+
+@code{hermitianmatrix} quando @code{true}, faz com que os autovectores
+degenerados da matriz Hermitiana sejam ortogonalizados usando o
+algoritmo de Gram-Schmidt.
+
+@code{knowneigvals} quando @code{true} faz com que o pacote @code{eigen} assumir que os
+autovalores da matriz são conhecidos para o utilizador e armazenados sob o
+nome global @code{listeigvals}.  @code{listeigvals} poderá ser escolhido para uma lista similar
+à saída de @code{eigenvalues}.
+
+A função @code{algsys} é usada aqui para resolver em relação aos autovectores.  Algumas vezes se os
+autovalores estão ausêntes, @code{algsys} pode não estar habilitado a achar uma solução.
+Em alguns casos, isso pode ser possível para simplificar os autovalores por
+primeiro achando e então usando o comando @code{eigenvalues} e então usando outras funções
+para reduzir os autovalores a alguma coisa mais simples.
+Continuando a simplificação, @code{eigenvectors} pode ser chamada novamente
+com o sinalizador @code{knowneigvals} escolhido para @code{true}.
+
+@end deffn
+
+@deffn {Função} ematrix (@var{m}, @var{n}, @var{x}, @var{i}, @var{j})
+Retorna uma matriz @var{m} por @var{n}, todos os elementos da qual
+são zero excepto para o elemento @code{[@var{i}, @var{j}]} que é @var{x}.
+@c WOW, THAT SEEMS PRETTY SPECIALIZED ...
+
+@end deffn
+
+@deffn {Função} entermatrix (@var{m}, @var{n})
+Retorna uma matriz @var{m} por @var{n}, lendo os elementos interativamente.
+
+Se @var{n} é igual a @var{m},
+Maxima pergunta pelo tipo de matriz (diagonal, simétrica, antisimétrica, ou genérica)
+e por cada elemento.
+Cada resposta é terminada por um ponto e vírgula @code{;} ou sinal de dólar @code{$}.
+
+Se @var{n} não é igual a @var{m},
+Maxima pergunta por cada elemento.
+
+Os elementos podem ser quaisquer expressões, que são avaliadas.
+@code{entermatrix} avalia seus argumentos.
+
+@example
+(%i1) n: 3$
+(%i2) m: entermatrix (n, n)$
+
+Is the matriz  1.  Diagonal  2.  Symmetric  3.  Antisymmetric  4.  General
+Answer 1, 2, 3 or 4 : 
+1$
+Row 1 Column 1: 
+(a+b)^n$
+Row 2 Column 2: 
+(a+b)^(n+1)$
+Row 3 Column 3: 
+(a+b)^(n+2)$
+
+Matriz entered.
+(%i3) m;
+                [        3                     ]
+                [ (b + a)      0         0     ]
+                [                              ]
+(%o3)           [                  4           ]
+                [    0      (b + a)      0     ]
+                [                              ]
+                [                            5 ]
+                [    0         0      (b + a)  ]
+@end example
+
+@end deffn
+
+@deffn {Função} genmatrix (@var{a}, @var{i_2}, @var{j_2}, @var{i_1}, @var{j_1})
+@deffnx {Função} genmatrix (@var{a}, @var{i_2}, @var{j_2}, @var{i_1})
+@deffnx {Função} genmatrix (@var{a}, @var{i_2}, @var{j_2})
+Retorna uma matriz gerada de @var{a},
+pegando o elemento @code{@var{a}[@var{i_1},@var{j_1}]}
+como o elemento do canto superior esquerdo e @code{@var{a}[@var{i_2},@var{j_2}]}
+como o elemento do canto inferior directo da matriz.
+Aqui @var{a} é um array declarado (criado através de @code{array} mas não por meio de @code{make_array})
+ou um array não declarado,
+ou uma função array,
+ou uma expressão lambda de dois argumentos.
+(Uma funçãO array é criado como outras funções com @code{:=} ou @code{define},
+mas os argumentos são colocados entre colchêtes em lugar de parêntesis.)
+
+Se @var{j_1} é omitido, isso é assumido ser igual a @var{i_1}.
+Se ambos @var{j_1} e @var{i_1} são omitidos, ambos são assumidos iguais a 1.
+
+Se um elemento seleccionado @code{i,j} de um array for indefinido,
+a matriz conterá um elemento simbólico @code{@var{a}[i,j]}.
+
+Exemplos:
+
+@c ===beg===
+@c h [i, j] := 1 / (i + j - 1);
+@c genmatrix (h, 3, 3);
+@c array (a, fixnum, 2, 2);
+@c a [1, 1] : %e;
+@c a [2, 2] : %pi;
+@c genmatrix (a, 2, 2);
+@c genmatrix (lambda ([i, j], j - i), 3, 3);
+@c genmatrix (B, 2, 2);
+@c ===end===
+@example
+(%i1) h [i, j] := 1 / (i + j - 1);
+                                    1
+(%o1)                  h     := ---------
+                        i, j    i + j - 1
+(%i2) genmatrix (h, 3, 3);
+                           [    1  1 ]
+                           [ 1  -  - ]
+                           [    2  3 ]
+                           [         ]
+                           [ 1  1  1 ]
+(%o2)                      [ -  -  - ]
+                           [ 2  3  4 ]
+                           [         ]
+                           [ 1  1  1 ]
+                           [ -  -  - ]
+                           [ 3  4  5 ]
+(%i3) array (a, fixnum, 2, 2);
+(%o3)                           a
+(%i4) a [1, 1] : %e;
+(%o4)                          %e
+(%i5) a [2, 2] : %pi;
+(%o5)                          %pi
+(%i6) genmatrix (a, 2, 2);
+                           [ %e   0  ]
+(%o6)                      [         ]
+                           [ 0   %pi ]
+(%i7) genmatrix (lambda ([i, j], j - i), 3, 3);
+                         [  0    1   2 ]
+                         [             ]
+(%o7)                    [ - 1   0   1 ]
+                         [             ]
+                         [ - 2  - 1  0 ]
+(%i8) genmatrix (B, 2, 2);
+                        [ B      B     ]
+                        [  1, 1   1, 2 ]
+(%o8)                   [              ]
+                        [ B      B     ]
+                        [  2, 1   2, 2 ]
+@end example
+
+@end deffn
+
+@deffn {Função} gramschmidt (@var{x})
+@deffnx {Função} gschmit (@var{x})
+Realiza o algoritmo de ortonalização de Gram-Schmidt sobre @var{x},
+seja ela uma matriz ou uma lista de listas.
+@var{x} não é modificado por @code{gramschmidt}.
+
+Se @var{x} é uma matriz, o algoritmo é aplicado para as linhas de @var{x}.
+Se @var{x} é uma lista de listas, o algoritmo é aplicado às sublistas,
+que devem ter igual números de elementos.
+Nos dois casos,
+o valor de retorno é uma lista de listas, as sublistas das listas são ortogonais
+e gera o mesmo spaço que @var{x}.
+Se a dimensão do conjunto gerador de @var{x} é menor que o número de linhas ou sublistas,
+algumas sublistas do valor de retorno são zero.
+
+@code{factor} é chamada a cada estágio do algoritmo para simplificar resultados intermédios.
+Como uma consequência, o valor de retorno pode conter inteiros factorados.
+
+@code{gschmit} (nota ortográfica) é um sin@^onimo para @code{gramschmidt}.
+
+@code{load ("eigen")} chama essa função.
+
+Exemplo:
+
+@example
+(%i1) load ("eigen")$
+Warning - you are redefining the Macsyma function autovalores
+Warning - you are redefining the Macsyma function autovectores
+(%i2) x: matrix ([1, 2, 3], [9, 18, 30], [12, 48, 60]);
+                         [ 1   2   3  ]
+                         [            ]
+(%o2)                    [ 9   18  30 ]
+                         [            ]
+                         [ 12  48  60 ]
+(%i3) y: gramschmidt (x);
+                       2      2            4     3
+                      3      3   3 5      2  3  2  3
+(%o3)  [[1, 2, 3], [- ---, - --, ---], [- ----, ----, 0]]
+                      2 7    7   2 7       5     5
+(%i4) i: innerproduct$
+(%i5) [i (y[1], y[2]), i (y[2], y[3]), i (y[3], y[1])];
+(%o5)                       [0, 0, 0]
+@end example
+
+@end deffn
+
+@deffn {Função} ident (@var{n})
+Retorna uma matriz identidade @var{n} por @var{n}.
+
+@end deffn
+
+@deffn {Função} innerproduct (@var{x}, @var{y})
+@deffnx {Função} inprod (@var{x}, @var{y})
+Retorna o produto interno (também chamado produto escalar ou produto do ponto) de @var{x} e @var{y},
+que são listas de igual comprimento, ou ambas matrizes 1-coluna ou 1-linha de igual comprimento.
+O valor de retorno é @code{conjugate (x) . y},
+onde @code{.} é o operador de multiplicação não comutativa.
+
+@code{load ("eigen")} chama essa função.
+
+@code{inprod} é um sin@^onimo para @code{innerproduct}.
+
+@c NEED EXAMPLE HERE
+@end deffn
+
+@c THIS DESCRIPTION NEEDS WORK
+@deffn {Função} invert (@var{M})
+Retorna a inversa da matriz @var{M}.
+A inversa é calculada pelo método adjunto.
+
+Isso permite a um utilizador calcular a inversa de uma matriz com
+entradas bfloat ou polinómios com coeficientes em ponto flutuante sem
+converter para a forma CRE.
+
+Cofactores são calculados pela função  @code{determinant},
+então se @code{ratmx} é @code{false} a inversa é calculada
+sem mudar a representação dos elementos.
+
+A implementação
+corrente é ineficiente para matrizes de alta ordem.
+
+Quando @code{detout} é @code{true}, o determinante é factorado fora da
+inversa.
+
+Os elementos da inversa não são automaticamente expandidos.
+Se @var{M} tem elementos polinomiais, melhor aparência de saída pode ser
+gerada por @code{expand (invert (m)), detout}.
+Se isso é desejável para ela
+divisão até pelo determinante pode ser excelente por @code{xthru (%)}
+ou alternativamente na unha por
+
+@example
+expe (adjoint (m)) / expand (determinant (m))
+invert (m) := adjoint (m) / determinant (m)
+@end example
+
+Veja @code{^^} (expoente não comutativo) para outro método de inverter uma matriz.
+
+@c NEED EXAMPLE HERE
+@end deffn
+
+@defvr {Variável de opção} lmxchar
+Valor por omissão: @code{[}
+
+@code{lmxchar} é o caractere mostrado como o delimitador
+esquerdo de uma matriz.
+Veja também @code{rmxchar}.
+
+Exemplo:
+
+@example
+(%i1) lmxchar: "|"$
+(%i2) matrix ([a, b, c], [d, e, f], [g, h, i]);
+                           | a  b  c ]
+                           |         ]
+(%o2)                      | d  e  f ]
+                           |         ]
+                           | g  h  i ]
+@end example
+
+@end defvr
+
+@deffn {Função} matrix (@var{row_1}, ..., @var{row_n})
+Retorna uma matriz retangular que tem as linhas @var{row_1}, ..., @var{row_n}.
+Cada linha é uma lista de expressões.
+Todas as linhas devem ter o mesmo comprimento.
+
+As operações @code{+} (adição), @code{-} (subtração), @code{*} (multiplicação),
+e @code{/} (divisão), são realizadas elemento por elemento
+quando os operandos são duas matrizes, um escalar e uma matriz, ou uma matriz e um escalar.
+A operação @code{^} (exponenciação, equivalentemente @code{**})
+é realizada elemento por elemento
+se os operandos são um escalar e uma matriz ou uma matriz e um escalar,
+mas não se os operandos forem duas matrizes.
+@c WHAT DOES THIS NEXT PHRASE MEAN EXACTLY ??
+Todos as operações são normalmente realizadas de forma completa,
+incluindo @code{.} (multiplicação não comutativa).
+
+Multiplicação de matrizes é representada pelo operador de multiplicação não comutativa @code{.}.
+O correspondente operador de exponenciação não comutativa é @code{^^}.
+Para uma matriz @code{@var{A}}, @code{@var{A}.@var{A} = @var{A}^^2} e
+@code{@var{A}^^-1} é a inversa de @var{A}, se existir.
+
+Existem comutadores para controlar a simplificação de expresões
+envolvendo operações escalar e matriz-lista.
+São eles
+@code{doallmxops}, @code{domxexpt}
+@code{domxmxops}, @code{doscmxops}, e @code{doscmxplus}.
+@c CHECK -- WE PROBABLY WANT EXHAUSTIVE LIST HERE
+
+Existem opções adicionais que são relacionadas a matrizes.  São elas:
+@code{lmxchar}, @code{rmxchar}, @code{ratmx}, @code{listarith}, @code{detout},
+@code{scalarmatrix},
+e @code{sparse}.
+@c CHECK -- WE PROBABLY WANT EXHAUSTIVE LIST HERE
+
+Existe um número de
+funções que pegam matrizes como argumentos ou devolvem matrizes como valor de retorno.
+Veja @code{eigenvalues}, @code{eigenvectors},
+@code{determinant},
+@code{charpoly}, @code{genmatrix}, @code{addcol}, @code{addrow}, 
+@code{copymatrix}, @code{transpose}, @code{echelon},
+e @code{rank}.
+@c CHECK -- WE PROBABLY WANT EXHAUSTIVE LIST HERE
+
+Exemplos:
+
+@itemize @bullet
+@item
+Construção de matrizes de listas.
+@end itemize
+@example
+(%i1) x: matrix ([17, 3], [-8, 11]);
+                           [ 17   3  ]
+(%o1)                      [         ]
+                           [ - 8  11 ]
+(%i2) y: matrix ([%pi, %e], [a, b]);
+                           [ %pi  %e ]
+(%o2)                      [         ]
+                           [  a   b  ]
+@end example
+@itemize @bullet
+@item
+Adição, elemento por elemento.
+@end itemize
+@example
+(%i3) x + y;
+                      [ %pi + 17  %e + 3 ]
+(%o3)                 [                  ]
+                      [  a - 8    b + 11 ]
+@end example
+@itemize @bullet
+@item
+Subtração, elemento por elemento.
+@end itemize
+@example
+(%i4) x - y;
+                      [ 17 - %pi  3 - %e ]
+(%o4)                 [                  ]
+                      [ - a - 8   11 - b ]
+@end example
+@itemize @bullet
+@item
+Multiplicação, elemento por elemento.
+@end itemize
+@example
+(%i5) x * y;
+                        [ 17 %pi  3 %e ]
+(%o5)                   [              ]
+                        [ - 8 a   11 b ]
+@end example
+@itemize @bullet
+@item
+Divisão, elemento por elemento.
+@end itemize
+@example
+(%i6) x / y;
+                        [ 17       - 1 ]
+                        [ ---  3 %e    ]
+                        [ %pi          ]
+(%o6)                   [              ]
+                        [   8    11    ]
+                        [ - -    --    ]
+                        [   a    b     ]
+@end example
+@itemize @bullet
+@item
+Matriz para um expoente escalar, elemento por elemento.
+@end itemize
+@example
+(%i7) x ^ 3;
+                         [ 4913    27  ]
+(%o7)                    [             ]
+                         [ - 512  1331 ]
+@end example
+@itemize @bullet
+@item
+Base escalar para um expoente matriz, elemento por elemento.
+@end itemize
+@example
+(%i8) exp(y); 
+                         [   %pi    %e ]
+                         [ %e     %e   ]
+(%o8)                    [             ]
+                         [    a     b  ]
+                         [  %e    %e   ]
+@end example
+@itemize @bullet
+@item
+Base matriz para um expoente matriz.  Essa não é realizada elemento por elemento.
+@c WHAT IS THIS ??
+@end itemize
+@example
+(%i9) x ^ y;
+                                [ %pi  %e ]
+                                [         ]
+                                [  a   b  ]
+                     [ 17   3  ]
+(%o9)                [         ]
+                     [ - 8  11 ]
+@end example
+@itemize @bullet
+@item
+Multiplicação não comutativa de matrizes.
+@end itemize
+@example
+(%i10) x . y;
+                  [ 3 a + 17 %pi  3 b + 17 %e ]
+(%o10)            [                           ]
+                  [ 11 a - 8 %pi  11 b - 8 %e ]
+(%i11) y . x;
+                [ 17 %pi - 8 %e  3 %pi + 11 %e ]
+(%o11)          [                              ]
+                [  17 a - 8 b     11 b + 3 a   ]
+@end example
+@itemize @bullet
+@item
+Exponenciação não comutativa de matrizes.
+Uma base escalar @var{b} para uma potência matriz @var{M}
+é realizada elemento por elemento e então @code{b^^m} é o mesmo que @code{b^m}.
+@end itemize
+@example
+(%i12) x ^^ 3;
+                        [  3833   1719 ]
+(%o12)                  [              ]
+                        [ - 4584  395  ]
+(%i13) %e ^^ y;
+                         [   %pi    %e ]
+                         [ %e     %e   ]
+(%o13)                   [             ]
+                         [    a     b  ]
+                         [  %e    %e   ]
+@end example
+@itemize @bullet
+@item
+A matriz elevada a um expoente -1 com exponenciação não comutativa é a matriz inversa,
+se existir.
+@end itemize
+@example
+(%i14) x ^^ -1;
+                         [ 11      3  ]
+                         [ ---  - --- ]
+                         [ 211    211 ]
+(%o14)                   [            ]
+                         [  8    17   ]
+                         [ ---   ---  ]
+                         [ 211   211  ]
+(%i15) x . (x ^^ -1);
+                            [ 1  0 ]
+(%o15)                      [      ]
+                            [ 0  1 ]
+@end example
+
+@end deffn
+
+@deffn {Função} matrixmap (@var{f}, @var{M})
+Retorna uma matriz com elemento @code{i,j} igual a @code{@var{f}(@var{M}[i,j])}.
+
+Veja também @code{map}, @code{fullmap}, @code{fullmapl}, e @code{apply}.
+
+@c NEED EXAMPLE HERE
+@end deffn
+
+@deffn {Função} matrixp (@var{expr})
+Retorna @code{true} se @var{expr} é uma matriz, de outra forma retorna @code{false}.
+
+@end deffn
+
+@defvr {Variável de opção} matrix_element_add
+Valor por omissão: @code{+}
+
+@code{matrix_element_add} é a operação 
+invocada em lugar da adição em uma multiplicação de matrizes.
+A @code{matrix_element_add} pode ser atribuído qualquer operador n-ário
+(que é, uma função que manuseia qualquer número de argumentos).
+Os valores atribuídos podem ser o nome de um operador entre aspas duplas,
+o nome da função,
+ou uma expressão lambda.
+
+Veja também @code{matrix_element_mult} e @code{matrix_element_transpose}.
+
+Exemplo:
+
+@example
+(%i1) matrix_element_add: "*"$
+(%i2) matrix_element_mult: "^"$
+(%i3) aa: matrix ([a, b, c], [d, e, f]);
+                           [ a  b  c ]
+(%o3)                      [         ]
+                           [ d  e  f ]
+(%i4) bb: matrix ([u, v, w], [x, y, z]);
+                           [ u  v  w ]
+(%o4)                      [         ]
+                           [ x  y  z ]
+(%i5) aa . transpose (bb);
+                     [  u  v  w   x  y  z ]
+                     [ a  b  c   a  b  c  ]
+(%o5)                [                    ]
+                     [  u  v  w   x  y  z ]
+                     [ d  e  f   d  e  f  ]
+@end example
+
+@end defvr
+
+@defvr {Variável de opção} matrix_element_mult
+Valor por omissão: @code{*}
+
+@code{matrix_element_mult} é a operação
+invocada em lugar da multiplicação em uma multiplicação de matrizes.
+A @code{matrix_element_mult} pode ser atribuído qualquer operador binário.
+O valor atribuído pode ser o nome de um operador entre aspas duplas,
+o nome de uma função,
+ou uma expressão lambda.
+
+O operador do ponto @code{.} é uma escolha útil em alguns contextos.
+
+Veja também @code{matrix_element_add} e @code{matrix_element_transpose}.
+
+Exemplo:
+
+@example
+(%i1) matrix_element_add: lambda ([[x]], sqrt (apply ("+", x)))$
+(%i2) matrix_element_mult: lambda ([x, y], (x - y)^2)$
+(%i3) [a, b, c] . [x, y, z];
+                          2          2          2
+(%o3)         sqrt((c - z)  + (b - y)  + (a - x) )
+(%i4) aa: matrix ([a, b, c], [d, e, f]);
+                           [ a  b  c ]
+(%o4)                      [         ]
+                           [ d  e  f ]
+(%i5) bb: matrix ([u, v, w], [x, y, z]);
+                           [ u  v  w ]
+(%o5)                      [         ]
+                           [ x  y  z ]
+(%i6) aa . transpose (bb);
+               [             2          2          2  ]
+               [ sqrt((c - w)  + (b - v)  + (a - u) ) ]
+(%o6)  Col 1 = [                                      ]
+               [             2          2          2  ]
+               [ sqrt((f - w)  + (e - v)  + (d - u) ) ]
+
+                         [             2          2          2  ]
+                         [ sqrt((c - z)  + (b - y)  + (a - x) ) ]
+                 Col 2 = [                                      ]
+                         [             2          2          2  ]
+                         [ sqrt((f - z)  + (e - y)  + (d - x) ) ]
+@end example
+
+@end defvr
+
+@defvr {Variável de opção} matrix_element_transpose
+Valor por omissão: @code{false}
+
+@code{matrix_element_transpose} é a operação
+aplicada a cada elemento de uma matriz quando for uma transposta.
+A @code{matrix_element_mult} pode ser atribuído qualquer operador unário.
+O valor atribuído pode ser  nome de um operador entre aspas duplas,
+o nome de uma função,
+ou uma expressão lambda.
+
+Quando @code{matrix_element_transpose} for igual a @code{transpose},
+a função  @code{transpose} é aplicada a todo elemento.
+Quando @code{matrix_element_transpose} for igual a @code{nonscalars},
+a função @code{transpose} é aplicada a todo elemento não escalar.
+Se algum elemento é um átomo, a opção @code{nonscalars} aplica
+@code{transpose} somente se o átomo for declarado não escalar,
+enquanto a opção @code{transpose} sempre aplica @code{transpose}.
+
+O valor padrão, @code{false}, significa nenhuma operação é aplicada.
+
+Veja também @code{matrix_element_add} e @code{matrix_element_mult}.
+
+Exemplos:
+
+@example
+(%i1) declare (a, nonscalar)$
+(%i2) transpose ([a, b]);
+                        [ transpose(a) ]
+(%o2)                   [              ]
+                        [      b       ]
+(%i3) matrix_element_transpose: nonscalars$
+(%i4) transpose ([a, b]);
+                        [ transpose(a) ]
+(%o4)                   [              ]
+                        [      b       ]
+(%i5) matrix_element_transpose: transpose$
+(%i6) transpose ([a, b]);
+                        [ transpose(a) ]
+(%o6)                   [              ]
+                        [ transpose(b) ]
+(%i7) matrix_element_transpose: lambda ([x], realpart(x) - %i*imagpart(x))$
+(%i8) m: matrix ([1 + 5*%i, 3 - 2*%i], [7*%i, 11]);
+                     [ 5 %i + 1  3 - 2 %i ]
+(%o8)                [                    ]
+                     [   7 %i       11    ]
+(%i9) transpose (m);
+                      [ 1 - 5 %i  - 7 %i ]
+(%o9)                 [                  ]
+                      [ 2 %i + 3    11   ]
+@end example
+
+@end defvr
+
+@c IS THIS THE ONLY MATRIX TRACE FUNCTION ??
+@deffn {Função} mattrace (@var{M})
+Retorna o traço (que é, a soma dos elementos sobre a diagonal principal) da
+matriz quadrada @var{M}.  
+
+@code{mattrace} é chamada por @code{ncharpoly},
+uma alternativa para @code{charpoly} do Maxima.
+@c UMM, HOW IS THAT RELEVANT HERE ??
+
+@code{load ("nchrpl")} chama essa função.
+
+@end deffn
+
+@deffn {Função} minor (@var{M}, @var{i}, @var{j})
+Retorna o @var{i}, @var{j} menor do elemento localizado na linha @var{i} coluna @var{j} da matriz @var{M}.  Que é @var{M}
+com linha @var{i} e coluna @var{j} ambas removidas.
+
+@end deffn
+
+@deffn {Função} ncexpt (@var{a}, @var{b})
+Se uma expressão exponencial não comutativa é muito
+alta para ser mostrada como @code{@var{a}^^@var{b}} aparecerá como @code{ncexpt (@var{a},@var{b})}.
+
+@code{ncexpt} não é o nome de uma função ou operador;
+o nome somente aparece em saídas, e não é reconhecido em entradas.
+
+@end deffn
+
+@deffn {Função} ncharpoly (@var{M}, @var{x})
+Retorna o polinómio característico da matriz @var{M}
+com relação a @var{x}.  Essa é uma alternativa para @code{charpoly} do Maxima.
+
+@code{ncharpoly} trabalha pelo cálculo dos traços das potências na dada matriz,
+que são sabidos serem iguais a somas de potências das raízes do
+polinómio característico.  Para essas quantidade a função
+simétrica das raízes pode ser calculada, que nada mais são que
+os coeficientes do polinómio característico.  @code{charpoly} trabalha
+@c SHOULD THAT BE "m" INSTEAD OF "a" IN THE NEXT LINE ??
+formatando o determinante de @code{@var{x} * ident [n] - a}.  Dessa forma @code{ncharpoly} é vencedor,
+por exemplo, no caso de largas e densas matrizes preencidas com inteiros,
+desde que isso evite inteiramente a aritmética polinomial.
+
+@code{load ("nchrpl")} loads this file.
+
+@end deffn
+
+@deffn {Função} newdet (@var{M}, @var{n})
+Calcula o determinante de uma matriz ou array @var{M} pelo
+algoritmo da árvore menor de Johnson-Gentleman.
+@c UGH -- ARRAYS ARE SUCH A MESS
+O argumento @var{n} é a ordem; isso é opcional se @var{M} for uma matriz.
+
+@end deffn
+
+@c NEEDS CLARIFICATION AND EXAMPLES
+@defvr {Declaração} nonscalar
+Faz átomos ser comportarem da mesma forma que uma lista ou matriz em relação ao
+operador do ponto.
+
+@end defvr
+
+@deffn {Função} nonscalarp (@var{expr})
+Retorna @code{true} se @var{expr} é um não escalar, i.e., isso contém
+átomos declarados como não escalares, listas, ou matrizes.
+
+@end deffn
+
+@deffn {Função} permanent (@var{M}, @var{n})
+Calcula o permanente da matriz @var{M}.  Um permanente
+é como um determinante mas sem mudança de sinal.
+
+@end deffn
+
+@deffn {Função} rank (@var{M})
+Calcula o posto da matriz @var{M}.  Que é, a ordem do
+mais largo determinante não singular de @var{M}.
+
+@c STATEMENT NEEDS CLARIFICATION
+@var{rank} pode retornar uma
+resposta ruim se não puder determinar que um elemento da matriz que é
+equivalente a zero é realmente isso.
+
+@end deffn
+
+@defvr {Variável de opção} ratmx
+Valor por omissão: @code{false}
+
+Quando @code{ratmx} é @code{false}, adição, subtração,
+e multiplicação para determinantes e matrizes são executados na
+representação dos elementos da matriz e fazem com que o resultado da
+inversão de matrizes seja esquerdo na representação geral.
+
+Quando @code{ratmx} é @code{true},
+as 4 operações mencionadas acima são executadas na forma CRE e o
+resultado da matriz inversa é dado na forma CRE.  Note isso pode
+fazer com que os elementos sejam expandidos (dependendo da escolha de @code{ratfac})
+o que pode não ser desejado sempre.
+
+@end defvr
+
+@deffn {Função} row (@var{M}, @var{i})
+retorna a @var{i}'ésima linha da matriz @var{M}.
+O valor de retorno é uma matriz.
+
+@end deffn
+
+@defvr {Variável de opção} scalarmatrixp
+Valor por omissão: @code{true}
+
+Quando @code{scalarmatrixp} é @code{true}, então sempre que uma matriz 1 x 1
+é produzida como um resultado de cálculos o produto do ponto de matrizes 
+é simplificado para um escalar, a saber o elemento solitário da matriz.
+
+Quando @code{scalarmatrixp} é @code{all},
+então todas as matrizes 1 x 1 serão simplificadas para escalares.
+
+Quando @code{scalarmatrixp} é @code{false}, matrizes 1 x 1 não são simplificadas para escalares.
+
+@end defvr
+
+@c I WONDER WHAT THIS IS ABOUT
+@deffn {Função} scalefactors (@var{coordinatetransform})
+Aqui coordinatetransform
+avalia para a forma [[expresão1, expresão2, ...],
+indeterminação1, indeterminação2, ...], onde indeterminação1,
+indeterminação2, etc.  são as variáveis de coordenadas curvilíneas e
+onde a escolha de componentes cartesianas retangulares é dada em termos das
+coordenadas curvilíneas por [expresão1, expresão2, ...].
+@code{coordinates} é escolhida para o vector [indeterminação1, indeterminação2,...],
+e @code{dimension} é escolhida para o comprimento desse vector.  SF[1], SF[2],
+..., SF[DIMENSION] são escohidos para factores de escala de coordenada, e @code{sfprod}
+é escohido para o produto desse factores de escala.  Inicialmente, @code{coordinates}
+é [X, Y, Z], @code{dimension} é 3, e SF[1]=SF[2]=SF[3]=SFPROD=1,
+correspondendo a coordenadas Cartesianas retangulares 3-dimensional.
+Para expandir uma expresão dentro de componentes físicos no sistema de coordenadas
+corrente , existe uma função com uso da forma
+@c SOME TEXT HAS GONE MISSING HERE
+
+@end deffn
+
+@deffn {Função} setelmx (@var{x}, @var{i}, @var{j}, @var{M})
+Atribue @var{x} para o (@var{i}, @var{j})'ésimo elemento da matriz @var{M},
+e retorna a matriz alterada.
+
+@code{@var{M} [@var{i}, @var{j}]: @var{x}} tem o mesmo efeito,
+mas retorna @var{x} em lugar de @var{M}.
+
+@end deffn
+
+@deffn {Função} similaritytransform (@var{M})
+@deffnx {Função} simtran (@var{M})
+@code{similaritytransform} calcula uma transformação homotética da matriz @code{M}.
+Isso retorna uma lista que é a saída do
+comando @code{uniteigenvectors}.  Em adição se o sinalizador @code{nondiagonalizable}
+é @code{false} duas matrizes globais @code{leftmatrix} e @code{rightmatrix} são calculadas.
+Essas matrizes possuem a propriedade de
+@code{leftmatrix . @var{M} . rightmatrix} é uma matriz diagonal com os autovalores
+de @var{M} sobre a diagonal.  Se @code{nondiagonalizable} é @code{true} as matrizes esquerda e
+direita não são computadas.
+
+Se o sinalizador @code{hermitianmatrix} é @code{true}
+então @code{leftmatrix} é o conjugado complexo da transposta de
+@code{rightmatrix}.  De outra forma @code{leftmatrix} é a inversa de @code{rightmatrix}.
+
+@code{rightmatrix} é a matriz cujas colunas são os autovectores
+unitários de @var{M}.  Os outros sinalizadores (veja @code{eigenvalues} e
+@code{eigenvectors}) possuem o mesmo efeito desde que
+@code{similaritytransform} chama as outras funções no pacote com o objectivo de
+estar habilitado para a forma @code{rightmatrix}.
+
+@code{load ("eigen")} chama essa função.
+
+@code{simtran} é um sin@^onimo para @code{similaritytransform}.
+
+@end deffn
+
+@defvr {Variável de opção} sparse
+Valor por omissão: @code{false}
+
+Quando @code{sparse} é @code{true}, e se @code{ratmx} é @code{true}, então @code{determinant}
+usará rotinas especiais para calcular determinantes esparsos.
+
+@end defvr
+
+@deffn {Função} submatrix (@var{i_1}, ..., @var{i_m}, @var{M}, @var{j_1}, ..., @var{j_n})
+@deffnx {Função} submatrix (@var{i_1}, ..., @var{i_m}, @var{M})
+@deffnx {Função} submatrix (@var{M}, @var{j_1}, ..., @var{j_n})
+Retorna uma nova matriz formada pela
+matrix @var{M} com linhas @var{i_1}, ..., @var{i_m} excluídas, e colunas @var{j_1}, ..., @var{j_n} excluídas.
+
+@end deffn
+
+@deffn {Função} transpose (@var{M})
+Retorna a transposta de @var{M}.
+
+Se @var{M} é uma matriz, o valor de retorno é outra matriz @var{N}
+tal que @code{N[i,j] = M[j,i]}.
+
+Se @var{M} for uma lista, o valor de retorno é uma matrix @var{N}
+de @code{length (m)} linhas e 1 coluna, tal que @code{N[i,1] = M[i]}.
+
+De outra forma @var{M} é um símbolo,
+e o valor de retorno é uma expressão substantiva @code{'transpose (@var{M})}.
+
+@end deffn
+
+@deffn {Função} triangularize (@var{M})
+Retorna a maior forma triangular da matriz @code{M}, como produzido através da eliminação de Gauss.
+O valor de retorno é o mesmo que @code{echelon},
+excepto que o o coeficiente lider não nulo em cada linha não é normalizado para 1.
+
+@code{lu_factor} e @code{cholesky} são outras funções que retornam matrizes triangularizadas.
+
+@c ===beg===
+@c M: matrix ([3, 7, aa, bb], [-1, 8, 5, 2], [9, 2, 11, 4]);
+@c triangularize (M);
+@c ===end===
+@example
+(%i1) M: matrix ([3, 7, aa, bb], [-1, 8, 5, 2], [9, 2, 11, 4]);
+                       [  3   7  aa  bb ]
+                       [                ]
+(%o1)                  [ - 1  8  5   2  ]
+                       [                ]
+                       [  9   2  11  4  ]
+(%i2) triangularize (M);
+             [ - 1   8         5            2      ]
+             [                                     ]
+(%o2)        [  0   - 74     - 56         - 22     ]
+             [                                     ]
+             [  0    0    626 - 74 aa  238 - 74 bb ]
+@end example
+
+@end deffn
+
+@deffn {Função} uniteigenvectors (@var{M})
+@deffnx {Função} ueivects (@var{M})
+Calcula autovectores unitários da matriz @var{M}.
+O valor de retorno é uma lista de listas, a primeiro sublista é a
+saída do comando @code{eigenvalues}, e as outras sublistas são
+os autovectores unitários da matriz correspondente a esses autovalores
+respectivamente.
+
+@c COPY DESCRIPTIONS OF THOSE FLAGS HERE
+Os sinalizadores mencionados na descrição do
+comando @code{eigenvectors} possuem o mesmo efeito aqui também.
+
+Quando @code{knowneigvects} é @code{true}, o pacote @code{eigen} assume
+que os autovectores da matriz são conhecidos para o utilizador são
+armazenados sob o nome global @code{listeigvects}.  @code{listeigvects} pode ser ecolhido
+para uma lista similar à saída do comando @code{eigenvectors}.
+
+@c FOLLOWING PARAGRAPH IS IN NEED OF SERIOUS CLARIFICATION
+Se @code{knowneigvects} é escolhido para @code{true} e a lista de autovectores é dada a
+escolha do sinalizador @code{nondiagonalizable} pode não estar correcta.  Se esse é
+o caso por favor ecolha isso para o valor correcto.  O autor assume que
+o utilizador sabe o que está fazendo e que não tentará diagonalizar uma
+matriz cujos autovectores não geram o mesmo espaço vectorial de
+dimensão apropriada.
+
+@code{load ("eigen")} chama essa função.
+
+@code{ueivects} é um sin@^onimo para @code{uniteigenvectors}.
+
+@end deffn
+
+@deffn {Função} unitvector (@var{x})
+@deffnx {Função} uvect (@var{x})
+Retorna @math{@var{x}/norm(@var{x})};
+isso é um vector unitário na mesma direção que @var{x}.
+
+@code{load ("eigen")} chama essa função.
+
+@code{uvect} é um sin@^onimo para @code{unitvector}.
+
+@end deffn
+
+@c NEEDS A LOT OF WORK: MAKE SURE THAT ALL VECTOR SIMPLIFICATION FLAGS HAVE A DESCRIPTION HERE
+@deffn {Função} vectorsimp (@var{expr})
+Aplica simplificações e expansões conforme
+os seguintes sinalizadores globais:
+
+@code{expandall}, @code{expanddot}, @code{expanddotplus}, @code{expandcross}, @code{expandcrossplus},
+@code{expandcrosscross}, @code{expandgrad}, @code{expandgradplus}, @code{expandgradprod},
+@code{expanddiv}, @code{expanddivplus}, @code{expanddivprod}, @code{expandcurl}, @code{expandcurlplus},
+@code{expandcurlcurl}, @code{expandlaplacian}, @code{expandlaplacianplus},
+e @code{expandlaplacianprod}.
+
+Todos esses sinalizadores possuem valor padrão @code{false}.  O sufixo @code{plus} refere-se a
+utilização aditivamente ou distribuitivamente.  O sufixo @code{prod} refere-se a
+expansão para um operando que é qualquer tipo de produto.
+
+@table @code
+@item expandcrosscross
+Simplifica @math{p ~ (q ~ r)} para @math{(p . r)*q - (p . q)*r}.
+@item expandcurlcurl
+Simplifica @math{curl curl p} para @math{grad div p + div grad p}.
+@item expandlaplaciantodivgrad
+Simplifica @math{laplacian p} para @math{div grad p}.
+@item expandcross
+Habilita @code{expandcrossplus} e @code{expandcrosscross}.
+@item expandplus
+Habilita @code{expanddotplus}, @code{expandcrossplus}, @code{expandgradplus},
+@code{expanddivplus}, @code{expandcurlplus}, e @code{expandlaplacianplus}.
+@item expandprod
+Habilita @code{expandgradprod}, @code{expanddivprod}, e @code{expandlaplacianprod}.
+@end table
+
+@c EXPLAIN THE IMPORT OF THIS STATEMENT
+Esses sinalizadores foram todos declarados @code{evflag}.
+
+@c SEEMS SOME TEXT HAS GONE MISSING HERE; COMMENT OUT FRAGMENT PENDING
+@c RECOVERY AND/OR RECONSTRUCTION OF THIS PARAGRAPH
+@c For orthogonal curvilinear coordinates, the global variables
+@c COORDINATES[[X,Y,Z]], DIMENSION[3], SF[[1,1,1]], and SFPROD[1] são set
+@c by the function invocation
+
+@end deffn
+
+@defvr {Variável de opção} vect_cross
+Valor por omissão: @code{false}
+
+@c WHAT DOES THIS MEAN EXACTLY ??
+Quando @code{vect_cross} é @code{true}, isso permite DIFF(X~Y,T) trabalhar onde
+~ é definido em SHARE;VECT (onde VECT_CROSS é escolhido para @code{true}, de qualqeur modo.)
+
+@end defvr
+
+@deffn {Função} zeromatrix (@var{m}, @var{n})
+Retorna um matriz @var{m} por @var{n}, com todos os elementos sendo zero.
+
+@end deffn
+
+@defvr {Símbolo especial} [
+@defvrx {Símbolo especial} ]
+@ifinfo
+@fnindex Delimitador de Lista
+@fnindex Operador de Subscrito
+@end ifinfo
+@code{[} e @code{]} marcam o omeço e o fim, respectivamente, de uma lista.
+
+@code{[} e @code{]} também envolvem os subscritos de
+uma lista, array, array desordenado, ou função array.
+
+Exemplos:
+
+@example
+(%i1) x: [a, b, c];
+(%o1)                       [a, b, c]
+(%i2) x[3];
+(%o2)                           c
+(%i3) array (y, fixnum, 3);
+(%o3)                           y
+(%i4) y[2]: %pi;
+(%o4)                          %pi
+(%i5) y[2];
+(%o5)                          %pi
+(%i6) z['foo]: 'bar;
+(%o6)                          bar
+(%i7) z['foo];
+(%o7)                          bar
+(%i8) g[k] := 1/(k^2+1);
+                                  1
+(%o8)                     g  := ------
+                           k     2
+                                k  + 1
+(%i9) g[10];
+                                1
+(%o9)                          ---
+                               101
+@end example
+
+@end defvr
+

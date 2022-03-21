@@ -1,0 +1,75 @@
+@c English version: 2011-05-31
+@menu
+* Funciones y variables para mnewton::
+@end menu
+
+
+@node Funciones y variables para mnewton,  , mnewton, mnewton
+@section Funciones y variables para mnewton
+
+
+@defvr {Variable opcional} newtonepsilon
+Valor por defecto:  @code{10.0^(-fpprec/2)}
+
+Precisión que determina cuando la función @code{mnewton} ha conseguido una
+convergencia aceptable. Si @code{newtonepsilon} es un número decimal de 
+precisión arbitraria (bigfloat), entonces @code{mnewton} realiza los 
+cálculos en ese formato.
+
+Véase también @code{mnewton}.
+@end defvr
+
+
+@defvr {Variable opcional} newtonmaxiter
+Valor por defecto:  @code{50}
+
+Número máximo de iteraciones para la función @code{mnewton} en caso
+de que no se produzca convergencia, o de que ésta se haga muy lenta.
+
+Véase también @code{mnewton}.
+@end defvr
+
+
+@deffn {Función} mnewton (@var{FuncList},@var{VarList},@var{GuessList})
+Resolución de sistemas de ecuaciones no lineales por el método de Newton.
+@var{FuncList} es la lista de ecuaciones a resolver,
+@var{VarList} es la lista con los nombres de las incógnitas y
+@var{GuessList} es la lista de aproximaciones iniciales.
+
+La solución se devuelve en el mismo formato que lo hace la función @code{solve()}.
+Si no se le encuentra solución al sistema, se obtiene @code{[]} como respuesta.
+
+Esta función se controla con las variables globales @code{newtonepsilon} y @code{newtonmaxiter}.
+
+@example
+(%i1) load("mnewton")$
+
+(%i2) mnewton([x1+3*log(x1)-x2^2, 2*x1^2-x1*x2-5*x1+1],
+              [x1, x2], [5, 5]);
+(%o2) [[x1 = 3.756834008012769, x2 = 2.779849592817897]]
+(%i3) mnewton([2*a^a-5],[a],[1]);
+(%o3)             [[a = 1.70927556786144]]
+(%i4) mnewton([2*3^u-v/u-5, u+2^v-4], [u, v], [2, 2]);
+(%o4) [[u = 1.066618389595407, v = 1.552564766841786]]
+@end example
+
+La variable @code{newtonepsilon} controla la precisión de las
+aproximaciones. También controla si los cálculos se realizan con
+precisión doble o arbitraria (bigfloats).
+
+@example
+(%i1) load(mnewton)$
+
+(%i2) (fpprec : 25, newtonepsilon : bfloat(10^(-fpprec+5)))$
+
+(%i3) mnewton([2*3^u-v/u-5, u+2^v-4], [u, v], [2, 2]);
+(%o3) [[u = 1.066618389595406772591173b0, 
+                               v = 1.552564766841786450100418b0]]
+@end example
+
+Antes de hacer uso de esta función ejecútese  @code{load("mnewton")}.
+Véanse también @code{newtonepsilon} y @code{newtonmaxiter}.
+@end deffn
+
+
+

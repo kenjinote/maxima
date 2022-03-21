@@ -1,0 +1,2 @@
+plot2d (x^2-y^3+3*y=2, [x,-2.5,2.5], [y,-2.5,2.5], [pdf_file,"./plotting3.pdf"]);
+plot2d (x^2-y^3+3*y=2, [x,-2.5,2.5], [y,-2.5,2.5], [png_file,"./plotting3.png"]);

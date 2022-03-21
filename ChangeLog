@@ -1,0 +1,96 @@
+Maxima 5.45-post change log
+===========================
+
+New items in core:
+------------------
+
+New items in share:
+-------------------
+ * new additional package quantum_computing: a simulator of quantum computing
+   circuits.
+
+Changes in core:
+----------------
+ * new code to commute conjugate of derivative (Commit [565fcf])
+ * new function gnuplot_send (Commit [54380c])
+ * plot2d, plot3d, mandelbrot and julia now use gnuplot_pipes by default
+   in all operating systems and in all cases (plot shown on the screen or
+   saved to a graphics file). No temporary files are used.
+ * new plot option window. It can be used to send the plot to a window
+   different from the default 0 window.
+
+Changes in share:
+-----------------
+ * draw: Restored the detfault gnuplot_pipes format (Commit [a54f2f])
+ * draw: Restores the window, font and size options for defaut
+   terminal (Commit [096f0b])
+
+Changes in Xmaxima:
+-------------------
+
+Changes in the Windows installer:
+---------------------------------
+ * Update SBCL, wxMaxima, TCL/TK.
+   A newer Gnuplot version is available, but causes problems when using
+   pipes on Windows, therefore that was not updated.
+ * Use the HTML manual (not the PDF version) in the start menu.
+ * Strip included C programs (saves some space).
+
+Bug fixes for numbered bugs:
+----------------------------
+ * \#380: algsys a*b=c*d grossly incomplete
+ * \#484: limit(x=0,x,0) wrong
+ * \#1097: pattern variable appears in letsimp result
+ * \#2247: not plotting from Vista, probably due to national characters
+ * \#2388: wrong limit
+ * \#2709: `letsimp' is wrong if `ratexpand' is called
+ * \#2837: ev causes bogus WNA checks for sum, product, define and ":"
+ * \#2876: Error simplifying infix operators declared l/rassociative
+ * \#2921: errcatch fails to catch various errors
+ * \#2953: limit loops endlessly
+ * \#3068: taylor of CRE fails
+ * \#3159: plot3d in Windows not recognizing plot option color
+ * \#3910: correct 'an Unicode' in doc/info/stringproc.texi
+ * \#3453: Mesh Lines Bugged | Cannot Change Their Color from Default
+ * \#3483: limit apparently causes infinite loop
+ * \#3520: "Directory does not exist" errors on Windows 10
+ * \#3542: Unable to display second plot until first one is closed
+ * \#3736: Quoting either min or max inhibits simplification
+ * \#3764: limit of min works with assume but not with asksign
+ * \#3765: min(und,...) gives error with trylevel > 1
+ * \#3769: max or min called on CRE expressions
+ * \#3793: plot2d fails on small x-range
+ * \#3796: plot3d doesn't support rotation in 5.45
+ * \#3797: plot2d(0, ...) gives "can't plot with empty y range" -- regression
+ * \#3801: error sourcing .xmaximarc on Windows
+ * \#3805: plot2d should give a clean user error for undefined functions
+ * \#3807: plot2d heuristic to detect unbound variables excludes valid cases
+ * \#3819: Implicit plot2d calculating 1/​0 gives Lisp error
+ * \#3820: testsuite with display_all = true
+ * \#3838: limit(atan(sin(x)),x,inf,plus) --> atan(ind)
+ * \#3844: Wrong limit involving gamma function
+ * \#3881: plot2d not ignoring errors within functions
+ * \#3883: plot creates invalid gnuplot command
+ * \#3907: gnuplot_postamble not actually the last Gnuplot output before plot
+ * \#3934: expand(1/(1+%i)^4) => (-4)^(-1) (unsimplified)
+ * \#3936: plot2d sends invalid file to gnuplot
+ * \#3950: letsimp confuses symbols and nullary applications
+ * \#3951: screen terminal no longer works as described in docs
+ * \#3952: plot2d clipping warnings not appearing
+ * \#3953: Pressing q necessary to continue when plot2d output to svg
+ * \#3956: expand(1/((sqrt(2)-1)*(sqrt(2)+1))) => 1/1 (unsimplified)
+
+Unnumbered bugs fixed:
+---------------------
+
+Documentation:
+--------------
+ * Examples in the introduction to strings (Data Types and Structures chapter)
+   fixed.
+ * New build scripts in Lisp, Python is no longer needed to build the documentation
+ * Update japanese documentation
+ * Add new configuration options --enable-lang-ru and --enable-lang-ja for building
+   japanese and russian documentation
+ * Expunge build and runtime machinery for doc/info/<lang>.utf8
+ * Remove configuration options --enable-lang-<lang>-utf8 
+

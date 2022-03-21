@@ -1,0 +1,45 @@
+@c /lindstedt.texi/1.1/Mon Feb 27 22:09:17 2006//
+@menu
+* Definições para lindstedt::
+@end menu
+
+@node Definições para lindstedt,  , lindstedt, lindstedt
+@section Definições para lindstedt
+
+
+@deffn {Função} Lindstedt (@var{eq},@var{pvar},@var{torder},@var{ic})
+Esse é um primeiro passo para um código de Lindstedt.  Esse código pode resolver problemas
+com condições iniciais fornecidas, às quais podem ser constantes arbitrárias,
+(não apenas @var{%k1} e @var{%k2}) onde as condições iniciais sobre as equações
+de perturbação são @math{z[i]=0, z'[i]=0} para @math{i>0}. @var{ic} é a lista de 
+condições iniciais.
+
+Problemas ocorrem quando condições iniciais não forem dadas, como as constantes
+nas equações de perturbação são as mesmas que a solução da equação de
+ordem zero.  Também, problemas ocorrem quando as condições iniciais para as
+equações de perturbação não são @math{z[i]=0, z'[i]=0} para @math{i>0}, tais como a
+equação de Van der Pol.
+
+Exemplo:
+@example
+(%i1) load("makeOrders")$
+
+(%i2) load("lindstedt")$
+
+(%i3) Lindstedt('diff(x,t,2)+x-(e*x^3)/6,e,2,[1,0]);
+          2
+         e  (cos(5 T) - 24 cos(3 T) + 23 cos(T))
+(%o3) [[[---------------------------------------
+                          36864
+   e (cos(3 T) - cos(T))
+ - --------------------- + cos(T)],
+            192
+          2
+       7 e    e
+T = (- ---- - -- + 1) t]]
+       3072   16
+@end example
+
+Para usar essa função escreva primeiro @code{load("makeOrders")} e @code{load("lindstedt")}.
+@end deffn
+

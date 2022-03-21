@@ -1,0 +1,81 @@
+#  by Jaime E. Villate
+#  Time-stamp: "2021-04-22 15:19:44 villate"
+
+INTRODUCTION
+------------
+
+The figures in this directory will be used in the Maxima manual.
+Each figure should be in two versions, PDF and PNG. The PDF version
+will be used in the PDF version of the manual, and the PNG version
+will be used in the HTML version.
+
+CREATING FIGURES FOR THE MAXIMA MANUAL
+--------------------------------------
+
+If the figures are the result of a plot2d or plot3d command, the two
+versions needed can be created adding the options pdf_file and
+png_file to the plotting command. For example, the two commands needed
+to produce the figure "plotting6", shown in the file plotting6.mac,
+are the following:
+
+plot2d(sin(x), [x, -%pi, %pi], [pdf_file, "./plotting6.pdf"]);
+plot2d(sin(x), [x, -%pi, %pi], [png_file, "./plotting6.png"]);
+
+The two files "plotting6.pdf" and "plotting6.png" can then be
+created by runnig Maxima in batch mode:
+
+maxima -b plotting6.mac
+
+ADDING FIGURES TO THE MANUAL
+----------------------------
+
+Once the files "plotting6.pdf" and "plotting6.png" have been created
+in the doc/info/figures directory, they should be added in a section
+of the manual using the following syntax:
+
+@ifnotinfo
+@image{figures/plotting6,8cm}
+@end ifnotinfo
+
+Notice that no file-name extension or directory should be given. That
+way, "plotting6.png" will included in the HTML version of the manual
+and "plotting6.pdf" will be inserted with a width of 8 cm into the PDF
+version of the manual.
+
+ADDING THE FIGURE TO THE LIST OF FILES TO BE DISTRIBUTED
+--------------------------------------------------------
+
+Every time you add a new figure, do not forget to modify the
+doc/info/Makefile.am file, adding the name of the two files (PDF and
+PNG) to the lists "figurefiles" and "pdffigures". In the example
+above,
+
+  figures/plotting6.png
+  
+should be added to figurefiles and
+
+figures/plotting6.pdf
+
+to pdffigures.
+
+# Added by Gunter Königsmann on 2015
+
+MACROS THAT HELP CREATING FIGURE FILES IN THE NEEDED FORMATS
+------------------------------------------------------------
+
+../docdraw.mac contains macros that create a figure in both formats
+needed for building the documentation:
+
+docdraw("test",gr2d(explicit(sin(x),x,1,10)));
+docdraw2d("test",explicit(sin(x),x,1,10));
+docdraw3d("test",explicit(sin(x)*cos(y),x,1,10,y,1,10));
+
+
+In order to ease the use of the figures found in the manual as a testbench
+for the plotting functions all new plot commands should be added to
+the .wxm files in the "tests" directory of the maxima source tree.
+
+
+
+
+

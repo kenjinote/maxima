@@ -1,0 +1,60 @@
+@c English version: 2011-03-28
+@menu
+* Funciones y variables para ggf::
+@end menu
+
+@node Funciones y variables para ggf,  , ggf, ggf
+@section Funciones y variables para ggf
+
+
+@defvr {Variable opcional} GGFINFINITY
+Valor por defecto: 3
+
+Variable opcional para la función @code{ggf}.
+
+Cuando se calcula la fracción continua de la función
+generatriz, si un cociente parcial tiene grado estrictamente
+mayor que @var{GGFINFINITY} será descartado y la convergencia
+alcanzada hasta ese momento será considerada como exacta para
+la función generatriz. Lo más frecuente es que el grado de
+todos los cocientes parciales sea 0 ó 1, de modo que si se
+utiliza un valor mayor se deberán dar más términos para
+conseguir un cálculo más exacto.
+
+Véase también @code{ggf}.
+@end defvr
+
+
+@defvr {Variable opcional} GGFCFMAX
+Valor por defeco: 3
+
+Variable opcional para la función @code{ggf}.
+
+Cuando se calcula la fracción continua de la función
+generatriz, si no se ha encontrado un resultado aceptable
+(véase la variable @var{GGFINFINITY}) después de haber 
+calculado @var{GGFCFMAX} cocientes parciales, la función
+generatriz será considerada no equivalente a una fracción
+racional y la función @code{ggf} se detendrá. Puede
+asignársele a @var{GGFCFMAX} un valor mayor para funciones
+generatrices más complicadas.
+
+Véase también @code{ggf}.
+@end defvr
+
+@deffn {Función} ggf (@var{l})
+Calcula la función generatriz de una sucesión de la que
+se suministran tan solo los primeros valores y cuyo término
+general es una fracción algebraica (cociente de dos
+polinomios).
+
+La solución se devuelve como una fracción de polinomios. 
+En caso de no poder encontrar una solución, se devuelve
+@code{done}.
+
+Esta función está controlada por las variables globales 
+@var{GGFINFINITY} y @var{GGFCFMAX}. Véanse también @var{GGFINFINITY} y @var{GGFCFMAX}.
+
+Antes de hacer uso de esta función ejecútese  @code{load("ggf")}.
+@end deffn
+

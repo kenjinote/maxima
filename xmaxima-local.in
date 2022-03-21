@@ -1,0 +1,11 @@
+#!/bin/sh
+
+MAXIMA_VERPKGDATADIR="@abs_top_srcdir@"
+export MAXIMA_VERPKGDATADIR
+
+MAXIMA_XMAXIMADIR="@abs_top_srcdir@/interfaces/xmaxima"
+export MAXIMA_XMAXIMADIR
+XMAXIMA_MAXIMA="@abs_top_srcdir@/maxima-local"
+export XMAXIMA_MAXIMA
+
+exec @WISH@ "@abs_top_srcdir@/interfaces/xmaxima/xmaxima" -- "$@"

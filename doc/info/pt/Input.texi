@@ -1,0 +1,1995 @@
+@c Language: Portuguese
+@c Source: Input.texi (en) 1.52
+@menu
+* Comentários::
+* Ficheiros::                       
+* Definições para Entrada e Saída::  
+@end menu
+
+@node Comentários, Ficheiros, Entrada e Saída, Entrada e Saída
+@section Comentários
+
+Um comentário na entrada do Maxima é qualquer texto entre @code{/*} e @code{*/}.
+
+O analisador do Maxima trata um comentário como espação em branco para o propósito de
+encontrar indicações no fluxo de entrada;
+uma indicação sempre termina um comentário.
+Uma entrada tal como @code{a/* foo */b} contém duas indicações, @code{a} e @code{b},
+e não uma indicação simples @code{ab}.
+Comentários são de outra Comments are otherwise ignored by Maxima;
+nem o conteúdo nem a localização dos comentários são armazenados pelo analisador de expressões de entrada.
+
+Comentários podem ser aninhados de forma a terem um nível de estratificação arbitrario.
+O delimitador @code{/*} e o delimitador @code{*/} formam pares.
+A quantidade de @code{/*} deve ser a mesma quantidade de @code{*/}.
+
+Exemplos:
+
+@c ===beg===
+@c /* aa is a variable of interest */  aa : 1234;
+@c /* Value of bb depends on aa */  bb : aa^2;
+@c /* User-defined infix operator */  infix ("b");
+@c /* Parses same as a b c, not abc */  a/* foo */b/* bar */c;
+@c /* Comments /* can be nested /* to arbitrary depth */ */ */  1 + xyz;
+@c ===end===
+@example
+(%i1) /* aa is a variable of interest */  aa : 1234;
+(%o1)                         1234
+(%i2) /* Value of bb depends on aa */  bb : aa^2;
+(%o2)                        1522756
+(%i3) /* User-defined infix operator */  infix ("b");
+(%o3)                           b
+(%i4) /* Parses same as a b c, not abc */  a/* foo */b/* bar */c;
+(%o4)                         a b c
+(%i5) /* Comments /* can be nested /* to arbitrary depth */ */ */  1 + xyz;
+(%o5)                        xyz + 1
+@end example
+
+
+@node Ficheiros, Definições para Entrada e Saída, Comentários, Entrada e Saída
+@section Ficheiros
+Um ficheiro é simplesmente uma área sobre um dispositivo particular de armazenagem que contém dados ou texto.
+Ficheiros em disco são figurativamente agrupados dentro de "directórios".
+Um directório é apenas uma lista de ficheiros.
+Comandos que lidam com ficheiros são:
+@code{save},
+@code{load},
+@code{loadfile},
+@code{stringout},
+@code{batch},
+@code{demo},
+@code{writefile},
+@code{closefile},
+e
+@code{appendfile}.
+
+@node Definições para Entrada e Saída,  , Ficheiros, Entrada e Saída
+@section Definições para Entrada e Saída de Dados
+@defvr {Variável de sistema} __
+@ifinfo
+@vrindex Expressão de entrada actual
+@end ifinfo
+@code{__} é a expressão de entrada actualmente sendo avaliada.
+Isto é, enquanto um expressão de entrada @var{expr} está sendo avaliada, @code{__} é @var{expr}.
+
+@code{__} é atribuída à expressão de entrada antes de a entrada ser simplificada ou avaliada.
+Todavia, o valor de @code{__} é simplificado (mas não avaliado) quando for mostrado.
+
+@code{__} é reconhecido por @code{batch} e @code{load}.
+Em um ficheiro processado por @code{batch},
+@code{__} tem o mesmo significado que na linha de comando interativa.
+Em um ficheiro processado por @code{load},
+@code{__} está associado à expressão de entrada mais recentemente informada no prompt interativo
+ou em um ficheiro de lote (batch);
+@code{__} não é associado à expressões de entrada no ficheiro que está sendo processado.
+Em particular, quando @code{load (@var{nomeficheiro})} for chamado a partir da linha de comando interativa,
+@code{__} é associado a @code{load (@var{filename})}
+enquanto o ficheiro está sendo processado.
+
+Veja também @code{_} e @code{%}.
+
+Exemplos:
+
+@c ===beg===
+@c print ("Eu fui chamada como", __);
+@c foo (__);
+@c g (x) := (print ("Expressão actual de entrada =", __), 0);
+@c [aa : 1, bb : 2, cc : 3];
+@c (aa + bb + cc)/(dd + ee + g(x));
+@c ===end===
+@example
+(%i1) print ("Eu fui chamada como", __);
+Eu fui chamada como print(Eu fui chamada como, __) 
+(%o1)              print(Eu fui chamada como, __)
+(%i2) foo (__);
+(%o2)                     foo(foo(__))
+(%i3) g (x) := (print ("Expressão actual de entrada =", __), 0);
+(%o3) g(x) := (print("Expressão actual de entrada =", __), 0)
+(%i4) [aa : 1, bb : 2, cc : 3];
+(%o4)                       [1, 2, 3]
+(%i5) (aa + bb + cc)/(dd + ee + g(x));
+                               cc + bb + aa
+Expressão actual de entrada = -------------- 
+                              g(x) + ee + dd
+                                6
+(%o5)                        -------
+                             ee + dd
+@end example
+
+@end defvr
+
+@defvr {Variável de sistema} _
+@ifinfo
+@vrindex Entrada anterior
+@end ifinfo
+
+@code{_} é a mais recente expressão de  entrada (e.g., @code{%i1}, @code{%i2}, @code{%i3}, ...).
+
+A @code{_} é atribuída à expressão de entrada antes dela ser simplificada ou avaliada.
+Todavia, o valor de @code{_} é simplificado (mas não avaliado) quando for mostrado.
+
+@code{_} é reconhecido por @code{batch} e @code{load}.
+Em um ficheiro processado por @code{batch},
+@code{_} tem o mesmo significado que na linha de comando interativa.
+Em um ficheiro processado por load @code{load},
+@code{_} está associado à expressão de entrada mais recentemente avaliada na linha de comando interativa
+ou em um ficheiro de lote;
+@code{_} não está associada a expressões de entrada no ficheiro que está sendo processado.
+
+Veja também @code{__} e @code{%}.
+
+Exemplos:
+
+@c ===beg===
+@c 13 + 29;
+@c :lisp $_
+@c _;
+@c sin (%pi/2);
+@c :lisp $_
+@c _;
+@c a: 13$
+@c b: 29$
+@c a + b;
+@c :lisp $_
+@c _;
+@c a + b;
+@c ev (_);
+@c ===end===
+@example
+(%i1) 13 + 29;
+(%o1)                          42
+(%i2) :lisp $_
+((MPLUS) 13 29)
+(%i2) _;
+(%o2)                          42
+(%i3) sin (%pi/2);
+(%o3)                           1
+(%i4) :lisp $_
+((%SIN) ((MQUOTIENT) $%PI 2))
+(%i4) _;
+(%o4)                           1
+(%i5) a: 13$
+(%i6) b: 29$
+(%i7) a + b;
+(%o7)                          42
+(%i8) :lisp $_
+((MPLUS) $A $B)
+(%i8) _;
+(%o8)                         b + a
+(%i9) a + b;
+(%o9)                          42
+(%i10) ev (_);
+(%o10)                         42
+@end example
+
+@end defvr
+
+@defvr {Variável de sistema} %
+@ifinfo
+@vrindex Saída anterior
+@end ifinfo
+@code{%} é a expressão de saída (e.g., @code{%o1}, @code{%o2}, @code{%o3}, ...)
+mais recentemente calculada pelo Maxima,
+pode ou não ser mostrada.
+
+@code{%} é reconhecida por @code{batch} e @code{load}.
+Em um ficheiro processado por @code{batch},
+@code{%} tem o mesmo significado que na linha de comando interativa.
+Em um ficheiro processado por @code{load},
+@code{%} é associado à expressão de entrada mais recentemente calculada na linha de comando interativa 
+ou em um ficheiro de lote;
+@code{%} não está associada a expressões de saída no ficheiro que está sendo processado.
+
+Veja também @code{_}, @code{%%}, e @code{%th}
+
+@end defvr
+
+@defvr {Variável de sistema} %%
+@ifinfo
+@vrindex Resultado anterior em expressão composta
+@end ifinfo
+Em declaração composta,
+a saber @code{block}, @code{lambda}, ou @code{(@var{s_1}, ..., @var{s_n})},
+@code{%%} é os valor da declaração anterior.
+Por exemplo,
+
+@example
+block (integrate (x^5, x), ev (%%, x=2) - ev (%%, x=1));
+block ([prev], prev: integrate (x^5, x), ev (prev, x=2) - ev (prev, x=1));
+@end example
+
+retornam o mesmo resultado, a saber @code{21/2}.
+
+Uma declaração composta pode compreender outras declarações compostas.
+Pode uma declaração ser simples ou composta, 
+@code{%%} é o valor da declaração anterior.
+Por exemplo,
+
+@example
+block (block (a^n, %%*42), %%/6)
+@end example
+
+retorna @code{7*a^n}.
+
+Dentro da declaração composta, o valor de @code{%%} pode ser inspecionado em uma parada de linha de comando,
+que é aberta pela execução da função @code{break}.
+Por exemplo, na parada de linha de comando aberta por
+
+@example
+block (a: 42, break ())$
+@end example
+
+digitando @code{%%;} retorna @code{42}.
+
+Na primeira declaração em uma declaração composta,
+ou fora de uma declaração composta,
+@code{%%} é indefinido.
+
+@code{%%}  reconhecido por @code{batch} e @code{load},
+e possem o mesmo significao que na linha de comando interativa.
+
+Veja também @code{%}.
+
+@end defvr
+
+@defvr {Variável de opção} %edispflag
+Valor por omissão: @code{false}
+
+Quando @code{%edispflag} é @code{true},
+Maxima mostra @code{%e} para um expoente negativo como um quociente.
+Por exemplo, @code{%e^-x} é mostrado como @code{1/%e^x}.
+
+@end defvr
+
+@deffn {Função} %th (@var{i})
+@ifinfo
+@fnindex N'ésima saída anterior
+@end ifinfo
+O valor da @var{i}'ésima expressão prévia de saída.
+Isto é, se a próxima expressão a ser calculada for a @var{n}'ésima saída,
+@code{%th (@var{m})} será a (@var{n} - @var{m})'ésima saída.
+
+@code{%th} é útil em ficheiros @code{batch} ou para referir-se a um grupo de expressões de saída.
+Por exemplo,
+
+@example
+block (s: 0, for i:1 thru 10 do s: s + %th (i))$
+@end example
+
+escolhe @code{s} para a soma das últimas dez expressões de saída.
+
+@code{%th} é reconhecido por @code{batch} e @code{load}.
+Em um ficheiro processado por @code{batch},
+@code{%th} possue o mesmo significado que na linha de comando interativa.
+Em um ficheiro processado por @code{load},
+@code{%th} refere-se a expressões de saída mais recentemente calculadas na linha de comando interativa
+ou em um ficheiro de lote;
+@code{%th} não se refere a expressões de saída no ficheiro que está sendo processado.
+
+Veja também @code{%}.
+
+@end deffn
+
+@deffn {Símbolo especial} ?
+@ifinfo
+@fnindex Consulta documentação
+@end ifinfo
+Como prefixo para uma função ou nome de variável, @code{?} significa que
+o nome é um nome Lisp, não um nome Maxima.
+Por exemplo, @code{?round} significa a função Lisp @code{ROUND}.
+Veja @emph{Lisp e Maxima} para mais sobre esse ponto.
+
+A notação @code{? palavra} (um ponto de interrogação seguido de uma palavra e separado desta por um espaço em branco)
+é equivalente a @code{describe("palavra")}.
+O ponto de interrogação deve aparecer no início de uma linha de entrada;
+de outra forma o ponto de interrogação não é reconhecido com um pedido de documentação.
+
+@end deffn
+
+@deffn {Símbolo especial} ??
+@ifinfo
+@fnindex Consulta documentação (busca inexacta)
+@end ifinfo
+
+A notação @code{?? palavra} (@code{??} seguido de um espaço em branco e uma palavra)
+é equivalente a @code{describe("palavra", inexact)}.
+O ponto de interrogação deve ocorrer no início de uma linha de entrada;
+de outra forma não é reconhecido com um pedido de documentação.
+
+@end deffn
+
+@defvr {Variável de opção} absboxchar
+Valor por omissão: @code{!}
+
+@code{absboxchar} é o caracter usado para para desenhar o sinal de valor
+absoluto em torno de expressões que são maiores que uma linha de altura.
+
+@end defvr
+
+@defvr {Variável de opção} file_output_append
+Valor por omissão: @code{false}
+
+@code{file_output_append} governa se funções de saída de ficheiro
+anexam ao final ou truncam seu ficheiro de saída.
+Quando @code{file_output_append} for @code{true},
+tais funções anexam ao final de seu ficheiro de saída.
+De outra forma, o ficheiro de saída é truncado.
+
+@code{save}, @code{stringout}, e @code{with_stdout} respeitam @code{file_output_append}.
+Outras funções que escrevem ficheiros de saída não respeitam @code{file_output_append}.
+Em partivular, montagem de gráficos e traduções de funções sempre truncam seu ficheiro de saída,
+e @code{tex} e @code{appendfile} sempre anexam ao final.
+@c WHAT ABOUT WRITEFILE ??
+
+@end defvr
+
+@deffn {Função} appendfile (@var{filename})
+Adiciona ao final de @var{filename} uma transcrição do console.
+@code{appendfile} é o mesmo que @code{writefile}, 
+excepto que o ficheiro transcrito, se já existe, terá sempre alguma coisa adicionada ao seu final.
+
+@code{closefile} fecha o ficheiro transcrito que foi aberto anteriormente por @code{appendfile} ou por @code{writefile}.
+
+@end deffn
+
+@c batch CAN TAKE 'test AS AN OPTIONAL ARGUMENT IN WHICH CASE IT CALLS test-batch
+@c (SAME AS run_testsuite) -- SHOULD DOCUMENT batch (file, 'test)
+@c FIX BUG WHICH CAUSES batch (<file>, 'test) TO FAIL, THEN DOCUMENT IT HERE
+@deffn {Função} batch (@var{filename})
+Lê expressões Maxima do ficheiro @var{filename} e as avalia.
+@code{batch} procura pelo ficheiro @var{filename} na lista @code{file_search_maxima}.
+Veja @code{file_search}.
+
+@var{filename} compreende uma sequência de expressões Maxima,
+cada uma terminada com @code{;} ou @code{$}.
+A varável especial @code{%} e a função @code{%th}
+referem-se a resultados prévios dentro do ficheiro.
+O ficheiro pode incluir construções @code{:lisp}.
+Espaços, tabulações, e o caracter de nova linha no ficheiro serão ignorados.
+um ficheiro de entrada conveniente pode ser criado por um editor de texto ou pela função @code{stringout}.
+
+@code{batch} lê cada expressão de entrada de @var{filename},
+mostra a entrada para o console, 
+calcula a correspondente expressão de saída,
+e mostra a expressão de saída.
+Rótulos de entrada são atribuídos para expressões de entrada
+e rótulos de saída são atribuídos para expressões de saída.
+@code{batch} avalia toda expressão de entrada no ficheiro
+a menos que exista um erro.
+Se uma entrada de utilizador for requisitada (by @code{asksign} ou @code{askinteger}, por exemplo)
+@code{batch} interrompe para colectar a entrada requisitada e então continua.
+
+@c CTRL-C BREAKS batch IN CMUCL, BUT CLISP (ALTHO IT SHOWS "User break") KEEPS GOING !!!
+@c DON'T KNOW ABOUT GCL !!!
+Isso possibilita interromper @code{batch} pela digitação de @code{control-C} no console.
+O efeito de @code{control-C} depende da subjacente implementação do Lisp.
+
+@code{batch} tem muitos usos,
+tais como fornecer um reservatório para trabalhar linhas de comando,
+para fornecer demonstrações livres de erros,
+ou para ajudar a organizar alguma coisa na solução de problemas complexos.
+
+@code{batch} avalia seu argumento.
+@c LACK OF A RETURN VALUE IS A BUG; THE INTENT IS TO RETURN THE FILE PATH, TO JUDGE BY THE SOURCE CODE
+@code{batch} não possui valor de retorno.
+
+Veja também @code{load}, @code{batchload}, e @code{demo}.
+
+@end deffn
+
+@c RECOMMEND CUTTING THIS ITEM, AS THE load SUBSUMES FUNCTIONALITY OF batchload
+@deffn {Função} batchload (@var{filename})
+Lê expressões Maxima de @var{filename} e as avalia,
+sem mostrar a entrada ou expressões de saída
+e sem atribuir rótulos para expressões de saída.
+Saídas impressas (tais como produzidas por @code{print} ou @code{describe})
+são mostradas, todavia.
+
+A variável especial @code{%} e a função @code{%th}
+referem-se a resultados anteriores do interpretador interativo,
+não a resultados dentro do ficheiro.
+O ficheiro não pode incluir construções @code{:lisp}.
+
+@code{batchload} retorna o caminho de @var{filename}, como uma sequência de caracteres.
+@code{batchload} avalia seu argumento.
+
+Veja também @code{batch} e @code{load}.
+@c batchload APPEARS TO HAVE THE SAME EFFECT AS load.  WHY NOT GET RID OF batchload ???
+
+@end deffn
+
+@deffn {Função} closefile ()
+Fecha o ficheiro transcrito aberto por @code{writefile} ou @code{appendfile}.
+
+@end deffn
+
+@c NEEDS CLARIFICATION !!!
+@deffn {Função} collapse (@var{expr})
+Reduz @var{expr} fazendo com que todas as suas subexpressões comuns
+(i.e., iguais) serem compartilhadas (i.e., usam a mesma células),
+dessa forma exonomizando espaço.  (@code{collapse} é uma subrotina
+usada pelo comando @code{optimize}.)  Dessa forma, chamar
+@code{collapse} pode ser útil após um @code{save} ficheiro.  Pode
+diminuir muitas expressões juntas pelo uso de @code{collapse
+([@var{expr_1}, ..., @var{expr_n}])}.  Similarmente, pode diminuir os
+elementos de um array @code{A} fazendo @code{collapse (listarray ('A))}.
+
+@end deffn
+
+@deffn {Função} concat (@var{arg_1}, @var{arg_2}, ...)
+Concatena seus argumentos.
+Os argumentos devem obrigatóriamente serem avaliados para atomos.
+O valor de retorno é um símbolo se o primeiro argumento for um símbolo
+e uma sequência de caracteres no formato do Maxima em caso contrário.
+
+@code{concat} avalia seus argumentos.
+O apóstrofo @code{'} evita avaliação.
+
+@example
+(%i1) y: 7$
+(%i2) z: 88$
+(%i3) concat (y, z/2);
+(%o3)                          744
+(%i4) concat ('y, z/2);
+(%o4)                          y44
+@end example
+
+Um símbolo construído por @code{concat} pode
+ser atribuído a um valor e aparecer em expressões.
+O operador de atribuição @code{::} (duplo dois pontos) avalia seu lado esquerdo.
+
+@example
+(%i5) a: concat ('y, z/2);
+(%o5)                          y44
+(%i6) a:: 123;
+(%o6)                          123
+(%i7) y44;
+(%o7)                          123
+(%i8) b^a;
+                               y44
+(%o8)                         b
+(%i9) %, numer;
+                               123
+(%o9)                         b
+@end example
+
+Note que embora @code{concat (1, 2)} seja visto como um números, isso é uma sequência de caracteres no formato do Maxima.
+
+@example
+(%i10) concat (1, 2) + 3;
+(%o10)                       12 + 3
+@end example
+
+@end deffn
+
+@deffn {Função} sconcat (@var{arg_1}, @var{arg_2}, ...)
+
+Concatena seus argumentos em uma sequência de caracteres.
+Ao contrário de @code{concat}, os argumentos arrumados @i{não} precisam ser at@^omicos.
+
+O resultado é uma sequência de caracteres no format do Lisp.
+@c THAT'S ODD; WHY NOT A MAXIMA STRING ??
+
+@example
+(%i1) sconcat ("xx[", 3, "]:", expand ((x+y)^3));
+(%o1)               xx[3]:y^3+3*x*y^2+3*x^2*y+x^3
+@end example
+
+@end deffn
+
+@c AFTER REVIEWING src/displa.lisp, IT LOOKS LIKE THIS VARIABLE HAS NO EFFECT
+@c CUT IT ON THE NEXT PASS
+@c @defvar cursordisp
+@c Default value: @code{true}
+@c 
+@c When @code{cursordisp} is @code{true}, expressões are drawn by
+@c the displayer in logical sequence.  This only works with a console
+@c which can do cursor movement.  If @code{false}, expressões are
+@c printed line by line.
+@c 
+@c @code{cursordisp} is always @code{false} when a @code{writefile} is in
+@c effect.
+@c 
+@c @end defvar
+
+@c REPHRASE, NEEDS EXAMPLES
+@deffn {Função} disp (@var{expr_1}, @var{expr_2}, ...)
+é como @code{display} mas somente os valores dos
+argumentos são mostrados em lugar de equações.  Isso é útil para
+argumentos complicados que não possuem nomes ou onde somente o valor
+do argumento é de interesse e não o nome.
+
+@end deffn
+
+@c HMM, THIS NEXT ITEM IS DEFINED IN A SHARE FILE (itensor.lisp); 
+@c DOES ITS DESCRIPTION WANT TO BE ELSEWHERE ???
+@deffn {Função} dispcon (@var{tensor_1}, @var{tensor_2}, ...)
+@deffnx {Função} dispcon (all)
+Mostram as propriedades de contração de
+seus argumentos como foram dados para @code{defcon}.  @code{dispcon (all)} mostra todas as
+propriedades de contração que foram definidas.
+
+@end deffn
+
+@c REPHRASE, MORE EXAMPLES
+@deffn {Função} display (@var{expr_1}, @var{expr_2}, ...)
+Mostra equações cujo lado esquerdo é
+@var{expr_i} não avaliado, e cujo lado direito é o valor da expressão
+centrada na linha.  Essa função é útil em blocos e em @code{for}
+declarações com o objectivo de ter resultados intermédios mostrados.  The
+Os argumentos para @code{display} são usualmente átomos, variáveis subscritas, ou
+chamadas de função.  Veja também @code{disp}.
+
+@example
+(%i1) display(B[1,2]);
+                                      2
+                         B     = X - X
+                          1, 2
+(%o1)                            done
+@end example
+
+@end deffn
+
+@defvr {Variável de opção} display2d
+Valor por omissão: @code{true}
+
+Quando @code{display2d} é @code{false},
+O console visualizador é unidimensional ao invés de bidimensional.
+
+@end defvr
+
+@defvr {Variável de opção} display_format_internal
+Valor por omissão: @code{false}
+
+Quando @code{display_format_internal} é @code{true},
+expressões são mostradas sem ser por caminhos que
+escondam a representação matemática interna.  O visualizador então
+corresponde ao que @code{inpart} retorna em lugar de @code{part}.
+
+Exemplos:
+
+@example
+User     part       inpart
+a-b;      A - B     A + (- 1) B
+
+           A            - 1
+a/b;       -         A B
+           B
+                       1/2
+sqrt(x);   sqrt(X)    X
+
+          4 X        4
+X*4/3;    ---        - X
+           3         3
+@end example
+
+@end defvr
+
+@c IS THIS FUNCTION STILL USEFUL ???
+@c REPHRASE, NEEDS EXAMPLES
+@deffn {Função} dispterms (@var{expr})
+Mostra @var{expr} em partes uma abaixo da outra.
+Isto é, primeiro o operador de @var{expr} é mostrado, então cada parcela em
+uma adição, ou factores em um produto, ou parte de uma expressão mais geral é
+mostrado separadamente.  Isso é útil se @var{expr} é muito larga para ser
+mostrada de outra forma.  Por exemplo se @code{P1}, @code{P2}, ...  são expressões
+muito largas então o programa visualizador pode sair fora do espaço de armazenamento na
+tentativa de mostrar @code{P1 + P2 + ...}  tudo de uma vez.  Todavia,
+@code{dispterms (P1 + P2 + ...)} mostra @code{P1}, então abaixo disso @code{P2}, etc.  Quando não
+usando @code{dispterms}, se uma expressão exponencial é muito alta para ser
+mostrada como @code{A^B} isso aparece como @code{expt (A, B)} (ou como @code{ncexpt (A, B)} no
+caso de @code{A^^B}).
+
+@end deffn
+
+@defvr {Variável de opção} error_size
+Valor por omissão: 10
+
+@code{error_size} modifica mensagens de erro conforme o tamanho das expressões que aparecem nelas.
+Se o tamanho de uma expressão (como determinado pela função Lisp @code{ERROR-SIZE})
+é maior que @code{error_size},
+a expressão é substituída na mensagem por um símbolo,
+e o o símbolo é atribuído à expressão.
+Os símbolos são obtidos da lista @code{error_syms}.
+
+De outra forma, a expressão é menor que @code{error_size},
+e a expressão é mostrada na mensagem.
+
+Veja também @code{error} e @code{error_syms}.
+
+Exemplo:
+@c OUTPUT GENERATED BY THE FOLLOWING
+@c U: (C^D^E + B + A)/(cos(X-1) + 1)$
+@c error_size: 20$
+@c error ("Expressão exemplo é", U);
+@c errexp1;
+@c error_size: 30$
+@c error ("Expressão exemplo é", U);
+
+O tamanho de @code{U}, como determinado por @code{ERROR-SIZE}, é 24.
+
+@example
+(%i1) U: (C^D^E + B + A)/(cos(X-1) + 1)$
+
+(%i2) error_size: 20$
+
+(%i3) error ("Expressão exemplo é", U);
+
+Expressão exemplo é errexp1
+ -- an error.  Quitting.  To debug this try debugmode(true);
+(%i4) errexp1;
+                            E
+                           D
+                          C   + B + A
+(%o4)                    --------------
+                         cos(X - 1) + 1
+(%i5) error_size: 30$
+
+(%i6) error ("Expressão exemplo é", U);
+
+                           E
+                          D
+                         C   + B + A
+Expressão exemplo é --------------
+                        cos(X - 1) + 1
+ -- an error.  Quitting.  To debug this try debugmode(true);
+@end example
+
+@end defvr
+
+@defvr {Variável de opção} error_syms
+Valor por omissão: @code{[errexp1, errexp2, errexp3]}
+
+Em mensagens de erro,
+expressões mais largas que @code{error_size} são substituídas por símbolos, e os
+símbolos são escolhidos para as expressões.  Os símbolos são obtidos da
+lista @code{error_syms}.
+A primeira expressão muito larga é substituída por @code{error_syms[1]},
+a segunda por @code{error_syms[2]}, e assim por diante.
+
+Se houverem mais expressões muito largas que há elementos em @code{error_syms},
+símbolos são construídos automaticamente,
+com o @var{n}-ésimo símbolo equivalente a @code{concat ('errexp, @var{n})}.
+
+Veja também @code{error} e @code{error_size}.
+
+@end defvr
+
+@deffn {Função} expt (@var{a}, @var{b})
+Se uma expressão exponencial é muito alta para ser mostrada
+cmo @code{@var{a}^@var{b}} isso aparece como @code{expt (@var{a}, @var{b})} (ou como @code{ncexpt (@var{a}, @var{b})} no caso de
+@code{@var{a}^^@var{b}}).
+
+@c THIS SEEMS LIKE A BUG TO ME.  expt, ncexpt SHOULD BE RECOGNIZED SINCE MAXIMA
+@c ITSELF PRINTS THEM SOMETIMES.  THESE SHOULD JUST SIMPLIFY TO ^ AND ^^, RESPECTIVELY.
+@code{expt} e @code{ncexpt} não são reconhecidas em entradas.
+
+@end deffn
+
+@defvr {Variável de opção} exptdispflag
+Valor por omissão: @code{true}
+
+Quando @code{exptdispflag} é @code{true}, Maxima mostra expressões
+com expoente negativo usando quocientes, e.g., @code{X^(-1)} como @code{1/X}.
+
+@end defvr
+
+@c NEEDS EXAMPLES
+@deffn {Função} filename_merge (@var{path}, @var{filename})
+Constroem um caminho modificado de @var{path} e @var{filename}.
+Se o componente final de @var{path} é da forma @code{###.@var{algumacoisa}},
+o componente é substituído com @code{@var{filename}.@var{algumacoisa}}.
+De outra forma, o componente final é simplesmente substituído por @var{filename}.
+
+@c SAY SOMETHING ABOUT ARG TYPE -- LISP STRINGS WORK BETTER THAN MAXIMA STRINGS
+@c SAY SOMETHING ABOUT RETURN TYPE
+@end deffn
+
+@deffn {Função} file_search (@var{filename})
+@deffnx {Função} file_search (@var{filename}, @var{pathlist})
+
+@code{file_search} procura pelo ficheiro @var{filename} e retorna o caminho para o ficheiro
+(como uma sequência de caracteres) se ele for achado; de outra forma @code{file_search} retorna @code{false}.
+@code{file_search (@var{filename})} procura nos directórios padrões de busca,
+que são especificados pelas variáveis @code{file_search_maxima}, @code{file_search_lisp}, e @code{file_search_demo}.
+
+@code{file_search} primeiro verifica se o nome actual passado existe,
+antes de tentar coincidir esse nome actual com o modelo ``coringa'' de busca do ficheiro.
+Veja @code{file_search_maxima} concernente a modelos de busca de ficheiros.
+
+O argumento @var{filename} pode ser um caminho e nome de ficheiro,
+ou apenas um nome de ficheiro, ou, se um directório de busca de ficheiro inclui um modelo de busca de ficheiro,
+apenas a base do nome de ficheiro (sem uma extensão).
+Por exemplo,
+
+@example
+file_search ("/home/wfs/special/zeta.mac");
+file_search ("zeta.mac");
+file_search ("zeta");
+@end example
+
+todos acham o mesmo ficheiro, assumindo que o ficheiro exista e @code{/home/wfs/special/###.mac}
+está em @code{file_search_maxima}.
+
+@code{file_search (@var{filename}, @var{pathlist})} procura somente nesses directórios
+especificados por @var{pathlist},
+que é uma lista de sequências de caracteres.
+O argumento @var{pathlist} substitui os directórios de busca padrão,
+então se a lista do caminho é dada, @code{file_search} procura somente nesses especificados,
+e não qualquer dos directórios padrão de busca.
+Mesmo se existe somente um directório em @var{pathlist}, esse deve ainda ser dado como uma lista de um único elemento.
+
+O utilizador pode modificar o directório de busca padrão.  Veja @code{file_search_maxima}.
+
+@code{file_search} é invocado por @code{load} com @code{file_search_maxima} e @code{file_search_lisp}
+como directórios de busca.
+
+@end deffn
+
+@defvr {Variável de opção} file_search_maxima
+@defvrx {Variável de opção} file_search_lisp
+@defvrx {Variável de opção} file_search_demo
+Essas variáveis especificam listas de directórios a serem procurados
+por @code{load}, @code{demo}, e algumas outras funções do Maxima.
+O valor padrão dessas variáveis
+nomeia vários directórios na instalaçã padrão do Maxima.
+
+O usuáro pode modificar essas variáveis,
+quer substituindo os valores padrão ou colocando no final directórios adicionais.
+Por exemplo,
+
+@example
+file_search_maxima: ["/usr/local/foo/###.mac",
+    "/usr/local/bar/###.mac"]$
+@end example
+
+substitui o valor padrão de @code{file_search_maxima},
+enquanto
+
+@example
+file_search_maxima: append (file_search_maxima,
+    ["/usr/local/foo/###.mac", "/usr/local/bar/###.mac"])$
+@end example
+
+adiciona no final da lista dois directórios adicionais.
+Isso pode ser conveniente para colocar assim uma expressão no ficheiro @code{maxima-init.mac}
+de forma que o caminho de busca de ficheiro é atribuído automaticamente quando o Maxima inicia.
+
+Múltiplas extensões de ficheiro e e múltiplos caminhos podem ser especificados por
+construções ``coringa'' especiais.
+A sequência de caracteres @code{###} expande a busca para além do nome básico,
+enquanto uma lista separada por vírgulas e entre chaves @code{@{foo,bar,baz@}} expande
+em múltiplas sequências de caracteres.
+Por exemplo, supondo que o nome básico a ser procurado seja @code{neumann},
+
+@example
+"/home/@{wfs,gcj@}/###.@{lisp,mac@}"
+@end example
+
+expande em @code{/home/wfs/neumann.lisp}, @code{/home/gcj/neumann.lisp}, @code{/home/wfs/neumann.mac}, e @code{/home/gcj/neumann.mac}.
+
+@end defvr
+
+@deffn {Função} file_type (@var{filename})
+Retorna uma suposta informação sobre o conteúdo de @var{filename},
+baseada na extensão do ficheiro.
+@var{filename} não precisa referir-se a um ficheiro actual;
+nenhuma tentativa é feita para abrir o ficheiro e inspecionar seu conteúdo.
+
+O valor de retorno é um símbolo, qualquer um entre @code{object}, @code{lisp}, ou @code{maxima}.
+Se a extensão começa com @code{m} ou @code{d}, @code{file_type} retorna @code{maxima}.
+Se a extensão começa om @code{l}, @code{file_type} retorna @code{lisp}.
+Se nenhum dos acima, @code{file_type} retorna @code{object}.
+
+@end deffn
+
+@deffn {Função} grind (@var{expr})
+@deffnx {Variável de opção} grind
+A função @code{grind} imprime @var{expr}
+para o console em uma forma adequada de entrada para Maxima.
+@code{grind} sempre retorna @code{done}.
+
+Quando @var{expr} for um nome de uma função ou o nome de uma macro,
+@code{grind} mostra na tela a definição da função ou da macro em lugar de apenas o nome.
+
+Veja também @code{string}, que retorna uma sequência de caracteres em lugar de imprimir sua saída.
+@code{grind} tenta imprimir a expressão de uma maneira que a faz
+levemente mais fácil para ler que a saída de @code{string}.
+
+Quando a variável @code{grind} é @code{true},
+a saída de @code{string} e @code{stringout} tem o mesmo formato que @code{grind};
+de outra forma nenhuma tentativa é feita para formatar especialmente a saída dessas funções.
+O valor padrão da variável @code{grind} é @code{false}.
+
+@code{grind} pode também ser especificado como um argumento de @code{playback}.
+Quando @code{grind} está presente,
+@code{playback} imprime expressões de entrada no mesmo formato que a função @code{grind}.
+De outra forma, nenhuma tentativa é feita para formatar especialmente as expressões de entrada.
+@code{grind} avalia seus argumentos.
+
+Exemplos:
+
+@c ===beg===
+@c aa + 1729;
+@c grind (%);
+@c [aa, 1729, aa + 1729];
+@c grind (%);
+@c matrix ([aa, 17], [29, bb]);
+@c grind (%);
+@c set (aa, 17, 29, bb);
+@c grind (%);
+@c exp (aa / (bb + 17)^29);
+@c grind (%);
+@c expr: expand ((aa + bb)^10);
+@c grind (expr);
+@c string (expr);
+@c cholesky (A):= block ([n : length (A), L : copymatrix (A),
+@c p : makelist (0, i, 1, length (A))], for i thru n do for j : i thru n do
+@c (x : L[i, j], x : x - sum (L[j, k] * L[i, k], k, 1, i - 1), if i = j then
+@c p[i] : 1 / sqrt(x) else L[j, i] : x * p[i]), for i thru n do L[i, i] : 1 / p[i],
+@c for i thru n do for j : i + 1 thru n do L[i, j] : 0, L)$
+@c grind (cholesky);
+@c string (fundef (cholesky));
+@c ===end===
+@example
+(%i1) aa + 1729;
+(%o1)                       aa + 1729
+(%i2) grind (%);
+aa+1729$
+(%o2)                         done
+(%i3) [aa, 1729, aa + 1729];
+(%o3)                 [aa, 1729, aa + 1729]
+(%i4) grind (%);
+[aa,1729,aa+1729]$
+(%o4)                         done
+(%i5) matrix ([aa, 17], [29, bb]);
+                           [ aa  17 ]
+(%o5)                      [        ]
+                           [ 29  bb ]
+(%i6) grind (%);
+matrix([aa,17],[29,bb])$
+(%o6)                         done
+(%i7) set (aa, 17, 29, bb);
+(%o7)                   @{17, 29, aa, bb@}
+(%i8) grind (%);
+@{17,29,aa,bb@}$
+(%o8)                         done
+(%i9) exp (aa / (bb + 17)^29);
+                                aa
+                            -----------
+                                     29
+                            (bb + 17)
+(%o9)                     %e
+(%i10) grind (%);
+%e^(aa/(bb+17)^29)$
+(%o10)                        done
+(%i11) expr: expand ((aa + bb)^10);
+         10           9        2   8         3   7         4   6
+(%o11) bb   + 10 aa bb  + 45 aa  bb  + 120 aa  bb  + 210 aa  bb
+         5   5         6   4         7   3        8   2
+ + 252 aa  bb  + 210 aa  bb  + 120 aa  bb  + 45 aa  bb
+        9        10
+ + 10 aa  bb + aa
+(%i12) grind (expr);
+bb^10+10*aa*bb^9+45*aa^2*bb^8+120*aa^3*bb^7+210*aa^4*bb^6
+     +252*aa^5*bb^5+210*aa^6*bb^4+120*aa^7*bb^3+45*aa^8*bb^2
+     +10*aa^9*bb+aa^10$
+(%o12)                        done
+(%i13) string (expr);
+(%o13) bb^10+10*aa*bb^9+45*aa^2*bb^8+120*aa^3*bb^7+210*aa^4*bb^6\
++252*aa^5*bb^5+210*aa^6*bb^4+120*aa^7*bb^3+45*aa^8*bb^2+10*aa^9*\
+bb+aa^10
+(%i14) cholesky (A):= block ([n : length (A), L : copymatrix (A),
+p : makelist (0, i, 1, length (A))], for i thru n do for j : i thru n do
+(x : L[i, j], x : x - sum (L[j, k] * L[i, k], k, 1, i - 1), if i = j then
+p[i] : 1 / sqrt(x) else L[j, i] : x * p[i]), for i thru n do L[i, i] : 1 / p[i],
+for i thru n do for j : i + 1 thru n do L[i, j] : 0, L)$
+(%i15) grind (cholesky);
+cholesky(A):=block(
+         [n:length(A),L:copymatrix(A),
+          p:makelist(0,i,1,length(A))],
+         for i thru n do
+             (for j from i thru n do
+                  (x:L[i,j],x:x-sum(L[j,k]*L[i,k],k,1,i-1),
+                   if i = j then p[i]:1/sqrt(x)
+                       else L[j,i]:x*p[i])),
+         for i thru n do L[i,i]:1/p[i],
+         for i thru n do (for j from i+1 thru n do L[i,j]:0),L)$
+(%o15)                        done
+(%i16) string (fundef (cholesky));
+(%o16) cholesky(A):=block([n:length(A),L:copymatrix(A),p:makelis\
+t(0,i,1,length(A))],for i thru n do (for j from i thru n do (x:L\
+[i,j],x:x-sum(L[j,k]*L[i,k],k,1,i-1),if i = j then p[i]:1/sqrt(x\
+) else L[j,i]:x*p[i])),for i thru n do L[i,i]:1/p[i],for i thru \
+n do (for j from i+1 thru n do L[i,j]:0),L)
+@end example
+
+@end deffn
+
+@defvr {Variável de opção} ibase
+Valor por omissão: 10
+
+Inteiros fornecidos dentro do Maxima são interpretados
+com respeito à base @code{ibase}.
+
+A @code{ibase} pode ser atribuído qualquer inteiro entre 2 e 35 (decimal), inclusive.
+@c WHY NOT 36, BY THE WAY ??
+Quando @code{ibase} é maior que 10, os numerais compreendem aos numerais decimais de 0 até 9
+@c UPPERCASE/LOWERCASE DISTINCTION HERE ??
+mais as letras maiúsculas do alfabeto A, B, C, ..., como necessário.
+Os numerais para a base 35, a maior base aceitável,
+compreendem de 0 até 9 e de A até Y.
+@c HOW, EXACTLY, DOES ONE TYPE IN THE LETTERS ??
+@c ibase: 11$ 1A; YIELDS AN ERROR
+@c \1A; #1A; \#1A; DON'T WORK EITHER
+
+Veja também @code{obase}.
+
+@c NEED EXAMPLES HERE
+@end defvr
+
+@defvr {Variável de opção} inchar
+Valor por omissão: @code{%i}
+
+@code{inchar} é o prefixo dos rótulos de expressões fornecidas pelo utilizador.
+Maxima automaticamente constrói um rótulo para cada expressão de entrada
+por concatenação de @code{inchar} e @code{linenum}.
+A @code{inchar} pode ser atribuído qualquer sequência de caracteres ou símbolo, não necessariamente um caracter simples.
+
+@example
+(%i1) inchar: "input";
+(%o1)                                input
+(input1) expand ((a+b)^3);
+                            3        2      2      3
+(%o1)                      b  + 3 a b  + 3 a  b + a
+(input2)
+@end example
+
+Veja também @code{labels}.
+
+@end defvr
+
+@deffn {Função} ldisp (@var{expr_1}, ..., @var{expr_n})
+Mostra expressões @var{expr_1}, ..., @var{expr_n} para o console
+como saída impressa na tela.
+@code{ldisp} atribue um rótulo de expressão intermédia a cada argumento
+e retorna a lista de rótulos.
+
+Veja também @code{disp}.
+
+@example
+(%i1) e: (a+b)^3;
+                                   3
+(%o1)                       (b + a)
+(%i2) f: expand (e);
+                     3        2      2      3
+(%o2)               b  + 3 a b  + 3 a  b + a
+(%i3) ldisp (e, f);
+                                   3
+(%t3)                       (b + a)
+
+                     3        2      2      3
+(%t4)               b  + 3 a b  + 3 a  b + a
+
+(%o4)                      [%t3, %t4]
+(%i4) %t3;
+                                   3
+(%o4)                       (b + a)
+(%i5) %t4;
+                     3        2      2      3
+(%o5)               b  + 3 a b  + 3 a  b + a
+@end example
+
+@end deffn
+
+@deffn {Função} ldisplay (@var{expr_1}, ..., @var{expr_n})
+Mostra expressões @var{expr_1}, ..., @var{expr_n} para o console
+como saída impressa na tela.
+Cada expressão é impressa como uma equação da forma @code{lhs = rhs}
+na qual @code{lhs} é um dos argumentos de @code{ldisplay}
+e @code{rhs} é seu valor.
+Tipicamente cada argumento é uma variável.
+@code{ldisp} atribui um rótulo de expressão intermediáia a cada equação
+e retorna a lista de rótulos.
+
+Veja também @code{display}.
+
+@example
+(%i1) e: (a+b)^3;
+                                   3
+(%o1)                       (b + a)
+(%i2) f: expand (e);
+                     3        2      2      3
+(%o2)               b  + 3 a b  + 3 a  b + a
+(%i3) ldisplay (e, f);
+                                     3
+(%t3)                     e = (b + a)
+
+                       3        2      2      3
+(%t4)             f = b  + 3 a b  + 3 a  b + a
+
+(%o4)                      [%t3, %t4]
+(%i4) %t3;
+                                     3
+(%o4)                     e = (b + a)
+(%i5) %t4;
+                       3        2      2      3
+(%o5)             f = b  + 3 a b  + 3 a  b + a
+@end example
+
+@end deffn
+
+@defvr {Variável de opção} linechar
+Valor por omissão: @code{%t}
+
+@code{linechar} é o refixo de rótulos de expressões intermédias gerados pelo Maxima.
+Maxima constrói um rótulo para cada expressão intermédia (se for mostrada)
+pela concatenação de @code{linechar} e @code{linenum}.
+A @code{linechar} pode ser atribuído qualquer sequência de caracteres ou símbolo, não necessáriamente um caractere simples.
+
+Expressões intermédias podem ou não serem mostradas.
+See @code{programmode} e @code{labels}.
+
+@end defvr
+
+@defvr {Variável de opção} linel
+Valor por omissão: 79
+
+@code{linel} é a largura assumida (em caracteres) do console
+para o propósito de mostrar expressões.
+A @code{linel} pode ser atribuído qualquer valor pelo utilizador,
+embora valores muio pequenos ou muito grandes possam ser impraticáveis.
+Textos impressos por funções internas do Maxima, tais como mensagens de erro e a saída de @code{describe},
+não são afectadas por @code{linel}.
+
+@end defvr
+
+@defvr {Variável de opção} lispdisp
+Valor por omissão: @code{false}
+
+Quando @code{lispdisp} for @code{true},
+símbolos Lisp são mostrados com um ponto de interrogação @code{?} na frente.
+De outra forma,
+símbolos Lisp serão mostrados sem o ponto de interrogaçõ na frente.
+
+Exemplos:
+
+@c ===beg===
+@c lispdisp: false$
+@c ?foo + ?bar;
+@c lispdisp: true$
+@c ?foo + ?bar;
+@c ===end===
+@example
+(%i1) lispdisp: false$
+(%i2) ?foo + ?bar;
+(%o2)                       foo + bar
+(%i3) lispdisp: true$
+(%i4) ?foo + ?bar;
+(%o4)                      ?foo + ?bar
+@end example
+
+@end defvr
+
+@deffn {Função} load (@var{nomeficheiro})
+Avalia expressões em @var{nomeficheiro}, 
+dessa forma conduzindo variáveis, funções, e outros objectos dentro do Maxima.
+A associação de qualquer objecto existente é substituída pela associação recuperada de @var{nomeficheiro}.  
+Para achar o ficheiro,
+@code{load} chama @code{file_search} com @code{file_search_maxima} e @code{file_search_lisp}
+como directórios de busca.
+Se @code{load} obtém sucesso, isso retorna o nome do ficheiro.
+De outra forma @code{load} imprime uma mensagem e erro.
+
+@code{load} trabalha igualmente bem para códigos Lisp e códigos Maxima.
+Ficheiros criados por @code{save}, @code{translate_file}, e @code{compile_file}, que criam códigos Lisp,
+e @code{stringout}, que criam códigos Maxima,
+podem ser processadas por @code{load}.
+@code{load} chama @code{loadfile} para carregar ficheiros Lisp e @code{batchload} para carregar ficheiros Maxima.
+
+@code{load} não reconhece construções @code{:lisp} em ficheiros do Maxima,
+e quando processando @var{nomeficheiro},
+as variáveis globais @code{_}, @code{__}, @code{%}, e @code{%th} possuem as mesmas associações
+que possuiam quando @code{load} foi chamada.
+
+Veja também @code{loadfile}, @code{batch}, @code{batchload}, e @code{demo}.
+@code{loadfile} processa ficheiros Lisp;
+@code{batch}, @code{batchload}, e @code{demo} processam ficheiros Maxima.
+
+Veja @code{file_search} para mais detalhes sobre o mecanismo de busca de ficheiros.
+
+@code{load} avalia seu argumento.
+
+@end deffn
+
+@c RECOMMEND CUTTING THIS ITEM, AS THE load SUBSUMES FUNCTIONALITY OF loadfile
+@deffn {Função} loadfile (@var{nomeficheiro})
+Avalia expressões Lisp em @var{nomeficheiro}.
+@code{loadfile} não invoca @code{file_search}, então @code{nomeficheiro} deve obrigatóriamente incluir
+a extensão do ficheiro e tanto quanto o caminho como necessário para achar o ficheiro.
+
+@code{loadfile} pode processar ficheiros criados por @code{save}, @code{translate_file}, e @code{compile_file}.
+O utilizador pode achar isso mais conveniente para usar @code{load} em lugar de @code{loadfile}.
+
+@code{loadfile} avalia seu argumento, então @code{nomeficheiro} deve obrigatóriamente ser uma sequência de caracteres literal,
+não uma variável do tipo sequência de caracteres.
+O operador apóstrofo-apóstrofo @code{'@w{}'} não aceita avaliação.
+
+@end deffn
+
+@c loadprint DOESN'T EXACTLY WORK LIKE THIS, BUT IT HARDLY SEEMS WORTH FIXING
+@c I GUESS THIS COULD BE UPDATED TO DESCRIBE THE WAY IT ACTUALLY WORKS
+@defvr {Variável de opção} loadprint
+Valor por omissão: @code{true}
+
+@code{loadprint} diz se deve imprimir uma mensagem quando um ficheiro é chamado.
+
+@itemize @bullet
+@item
+Quando @code{loadprint} é @code{true}, sempre imprime uma mensagem.
+@item
+Quando @code{loadprint} é @code{'loadfile}, imprime uma mensagem somente se
+um ficheiro é chamado pela função @code{loadfile}.
+@item
+Quando @code{loadprint} é @code{'autoload},
+imprime uma mensagem somente se um ficheiro é automaticamente carregado.
+Veja @code{setup_autoload}.
+@item
+Quando @code{loadprint} é @code{false}, nunca imprime uma mensagem.
+@end itemize
+
+@end defvr
+
+@defvr {Variável de opção} obase
+Valor por omissão: 10
+
+@code{obase} é a base para inteiros mostrados pelo Maxima.
+
+A @code{obase} poode ser atribuído qualquer inteiro entre 2 e 35 (decimal), inclusive.
+@c WHY NOT 36, BY THE WAY ??
+Quando @code{obase} é maior que 10, os numerais compreendem os numerais decimais de 0 até 9
+e letras maiúsulas do alfabeto A, B, C, ..., quando necessário.
+Os numerais para a base 35, a maior base aceitável,
+compreendem de 0 até 9, e de A até Y.
+
+Veja também @code{ibase}.
+
+@c NEED EXAMPLES HERE
+@end defvr
+
+@defvr {Variável de opção} outchar
+Valor por omissão: @code{%o}
+
+@code{outchar} é o prefixo dos rótulos de expressões calculadas pelo Maxima.
+Maxima automaticamente constrói um rótulo para cada expressão calculada
+pela concatenação de @code{outchar} e @code{linenum}.
+A @code{outchar} pode ser atribuído qualquer sequência de caracteres ou símbolo, não necessáriamente um caractere simples.
+
+@example
+(%i1) outchar: "output";
+(output1)                           output
+(%i2) expand ((a+b)^3);
+                            3        2      2      3
+(output2)                  b  + 3 a b  + 3 a  b + a
+(%i3)
+@end example
+
+Veja também @code{labels}.
+
+@end defvr
+
+@c STILL EXISTS, NEEDS CLARIFICATION !!!
+@defvr {Variável de opção} packagefile
+Valor por omissão: @code{false}
+
+Projetistas de pacotes que usam @code{save}
+ou @code{translate} para criar pacotes (ficheiros) para outros
+usarem podem querer escolher @code{packagefile: true} para prevenir qu informações
+sejam acrescentadas à lista de informações do Maxima (e.g. @code{values},
+@code{funções}) excepto onde necessário quando o ficheiro é carregado.
+Nesse caminho, o conteúdo do pacote não pegará no
+caminho do utilizador quando ele adicionar seus próprios dados.  Note que isso não
+resolve o problema de possíveis conflitos de nome.  Também note que
+o sinalizador simplesmente afecta o que é saída para o ficheiro pacote.
+Escolhendo o sinalizador para @code{true} é também útil para criar ficheiros de
+init do Maxima.
+
+@end defvr
+
+@defvr {Variável de opção} pfeformat
+Valor por omissão: @code{false}
+
+Quando @code{pfeformat} é @code{true}, uma razão de inteiros é
+mostrada com o caractere sólido (barra normal),
+e um denominador inteiro @code{n}
+é mostrado como um termo multiplicativo em primeiro lugar @code{1/n}.
+
+@example
+(%i1) pfeformat: false$
+(%i2) 2^16/7^3;
+                              65536
+(%o2)                         -----
+                               343
+(%i3) (a+b)/8;
+                              b + a
+(%o3)                         -----
+                                8
+(%i4) pfeformat: true$ 
+(%i5) 2^16/7^3;
+(%o5)                       65536/343
+(%i6) (a+b)/8;
+(%o6)                      1/8 (b + a)
+@end example
+
+@end defvr
+
+@deffn {Função} print (@var{expr_1}, ..., @var{expr_n})
+Avalia e mostra @var{expr_1}, ..., @var{expr_n}
+uma após a outra, da esquerda para a direita,
+iniciando no lado esquerdo do console.
+
+O valor retornado por @code{print} é o valor de seu último argumento.
+@code{print} não gera rótulos de expressão intermédia.
+
+Veja também @code{display}, @code{disp}, @code{ldisplay}, e @code{ldisp}.
+Essas funções mostram uma expressão por linha, enquanto @code{print} tenta
+mostrar duas ou mais expressões por linha.
+
+Para mostrar o conteúdo de um ficheiro, veja @code{printfile}.
+
+@example
+(%i1) r: print ("(a+b)^3 is", expand ((a+b)^3), "log (a^10/b) is", radcan (log (a^10/b)))$
+            3        2      2      3
+(a+b)^3 is b  + 3 a b  + 3 a  b + a  log (a^10/b) is 
+
+                                              10 log(a) - log(b) 
+(%i2) r;
+(%o2)                  10 log(a) - log(b)
+(%i3) disp ("(a+b)^3 is", expand ((a+b)^3), "log (a^10/b) is", radcan (log (a^10/b)))$
+                           (a+b)^3 is
+
+                     3        2      2      3
+                    b  + 3 a b  + 3 a  b + a
+
+                         log (a^10/b) is
+
+                       10 log(a) - log(b)
+@end example
+
+@end deffn
+
+@c RECOMMEND CUTTING THIS ITEM AND CUTTING $tcl_output IN src/plot.lisp
+@c THIS REALLY, REALLY SEEMS LIKE CRUFT:
+@c $tcl_output IS NEVER CALLED WITHIN MAXIMA SOURCE,
+@c AND THIS EXTREMELY NARROW, LIMITED FUNCTIONALITY ISN'T USEFUL TO USERS
+@c AND IT'S BROKEN: INCORRECT OUTPUT FOR CLISP, DIES ON GCL
+@deffn {Função} tcl_output (@var{list}, @var{i0}, @var{skip})
+@deffnx {Função} tcl_output (@var{list}, @var{i0})
+@deffnx {Função} tcl_output ([@var{list_1}, ..., @var{list_n}], @var{i})
+
+Imprime os elementos de uma lista entre chaves @code{@{ @}},
+conveniente como parte de um programa na linguagem Tcl/Tk.
+
+@code{tcl_output (@var{list}, @var{i0}, @var{skip})}
+imprime @var{list}, começando com o elemento @var{i0} e imprimindo elementos
+@code{@var{i0} + @var{skip}}, @code{@var{i0} + 2 @var{skip}}, etc.
+
+@code{tcl_output (@var{list}, @var{i0})}
+é equivalente a @code{tcl_output (@var{list}, @var{i0}, 2)}.
+
+@code{tcl_output ([@var{list_1}, ..., @var{list_n}], @var{i})}
+imprime os @var{i}'ésimos elementos de @var{list_1}, ..., @var{list_n}.
+
+Exemplos:
+@c EXAMPLE INPUT
+@c tcl_output ([1, 2, 3, 4, 5, 6], 1, 3)$
+@c tcl_output ([1, 2, 3, 4, 5, 6], 2, 3)$
+@c tcl_output ([3/7, 5/9, 11/13, 13/17], 1)$
+@c tcl_output ([x1, y1, x2, y2, x3, y3], 2)$
+@c tcl_output ([[1, 2, 3], [11, 22, 33]], 1)$
+
+@c EXAMPLE OUTPUT: CLISP
+@c OUTPUT IS OK FOR FIRST TWO, BROKEN FOR OTHERS
+@c GCL OUTPUT: SAME FOR FIRST TWO
+@c GCL FAILS ON OTHERS (IN EACH CASE COMPLAINING ELEMENTS ARE "not of type (OR RATIONAL LISP:FLOAT)"
+@example
+(%i1) tcl_output ([1, 2, 3, 4, 5, 6], 1, 3)$
+
+ @{1.000000000     4.000000000     
+ @}
+(%i2) tcl_output ([1, 2, 3, 4, 5, 6], 2, 3)$
+
+ @{2.000000000     5.000000000     
+ @}
+(%i3) tcl_output ([3/7, 5/9, 11/13, 13/17], 1)$
+
+ @{((RAT SIMP) 3 7) ((RAT SIMP) 11 13) 
+ @}
+(%i4) tcl_output ([x1, y1, x2, y2, x3, y3], 2)$
+
+ @{$Y1 $Y2 $Y3 
+ @}
+(%i5) tcl_output ([[1, 2, 3], [11, 22, 33]], 1)$
+
+ @{SIMP 1.000000000     11.00000000     
+ @}
+@end example
+
+@end deffn
+
+@deffn {Função} read (@var{expr_1}, ..., @var{expr_n})
+Imprime @var{expr_1}, ..., @var{expr_n}, então lê uma expressão do console
+e retorna a expressão avaliada.
+A expressão é terminada com um ponto e vírgula @code{;} ou o sinal de dólar @code{$}.
+
+Veja também @code{readonly}.
+
+@example
+(%i1) foo: 42$ 
+(%i2) foo: read ("foo is", foo, " -- enter new value.")$
+foo is 42  -- enter new value.  
+(a+b)^3;
+(%i3) foo;
+                                     3
+(%o3)                         (b + a)
+@end example
+
+@end deffn
+
+@deffn {Função} readonly (@var{expr_1}, ..., @var{expr_n})
+Imprime @var{expr_1}, ..., @var{expr_n}, então lê uma expressão do console
+e retorna a expressão (sem avaliação).
+A expressão é terminada com um @code{;} (ponto e vírgula) ou @code{$} (sinal de dólar).
+
+@example
+(%i1) aa: 7$
+(%i2) foo: readonly ("Forneça uma expressão:");
+Enter an expressão: 
+2^aa;
+                                  aa
+(%o2)                            2
+(%i3) foo: read ("Forneça uma expressão:");
+Enter an expressão: 
+2^aa;
+(%o3)                            128
+@end example
+
+Veja também @code{read}.
+
+@end deffn
+
+@deffn {Função} reveal (@var{expr}, @var{depth})
+Substitue partes de @var{expr} no inteiro especificado @var{depth}
+com sumário descritivo.
+
+@itemize @bullet
+@item
+Somas e diferenças são substituídas por @code{sum(@var{n})}
+onde @var{n} é o número de operandos do produto.
+@item
+Produtos são substituídos por @code{product(@var{n})}
+onde @var{n} é o número de operandos da multiplicação.
+@item
+Exponenciais são substituídos por @code{expt}.  
+@item
+Quocientes são substituídos por @code{quotient}.
+@item
+Negação unária é substituída por @code{negterm}.
+@end itemize
+
+Quando @var{depth} é maior que ou igual à máxima intensidade de @var{expr},
+@code{reveal (@var{expr}, @var{depth})} retornam @var{expr} sem modificações.
+
+@code{reveal} avalia seus argumentos.
+@code{reveal} retorna expressão sumarizada.
+
+Exemplo:
+
+@example
+(%i1) e: expand ((a - b)^2)/expand ((exp(a) + exp(b))^2);
+                          2            2
+                         b  - 2 a b + a
+(%o1)               -------------------------
+                        b + a     2 b     2 a
+                    2 %e      + %e    + %e
+(%i2) reveal (e, 1);
+(%o2)                       quotient
+(%i3) reveal (e, 2);
+                             sum(3)
+(%o3)                        ------
+                             sum(3)
+(%i4) reveal (e, 3);
+                     expt + negterm + expt
+(%o4)               ------------------------
+                    product(2) + expt + expt
+(%i5) reveal (e, 4);
+                       2                 2
+                      b  - product(3) + a
+(%o5)         ------------------------------------
+                         product(2)     product(2)
+              2 expt + %e           + %e
+(%i6) reveal (e, 5);
+                         2            2
+                        b  - 2 a b + a
+(%o6)              --------------------------
+                       sum(2)     2 b     2 a
+                   2 %e       + %e    + %e
+(%i7) reveal (e, 6);
+                          2            2
+                         b  - 2 a b + a
+(%o7)               -------------------------
+                        b + a     2 b     2 a
+                    2 %e      + %e    + %e
+@end example
+
+@end deffn
+
+@defvr {Variável de opção} rmxchar
+Valor por omissão: @code{]}
+
+@code{rmxchar} é the caractere desenhado lado direito de uma matriz.
+
+Veja também @code{lmxchar}.
+
+@end defvr
+
+@c NEEDS EXAMPLES
+@deffn {Função} save (@var{filename}, @var{nome_1}, @var{nome_2}, @var{nome_3}, ...)
+@deffnx {Função} save (@var{filename}, values, functions, labels, ...)
+@deffnx {Função} save (@var{filename}, [@var{m}, @var{n}])
+@deffnx {Função} save (@var{filename}, @var{nome_1}=@var{expr_1}, ...)
+@deffnx {Função} save (@var{filename}, all)
+@deffnx {Função} save (@var{filename}, @var{nome_1}=@var{expr_1}, @var{nome_2}=@var{expr_2}, ...)
+
+Armazena os valores correntes de @var{nome_1}, @var{nome_2}, @var{nome_3}, ..., em @var{filename}.
+Os argumentos são os nomes das variáveis, funções, ou outros objectos.
+Se um nome não possui valore ou função associada a ele, esse nome sem nenhum valor ou função associado será ignorado.
+@code{save} retorna @var{filename}.
+
+@code{save} armazena dados na forma de expressões Lisp.
+Os dados armazenados por @code{save} podem ser recuperados por @code{load (@var{filename})}.
+
+O sinalizador global @code{file_output_append} governa
+se @code{save} anexa ao final ou trunca o ficheiro de saída.
+Quando @code{file_output_append} for @code{true},
+@code{save} anexa ao final doficheiro de saída.
+De outra forma, @code{save} trunca o ficheiro de saída.
+Nesse caso, @code{save} cria o ficheiro se ele não existir ainda.
+
+A forma especial @code{save (@var{filename}, values, functions, labels, ...)}
+armazena os ítens nomeados por @code{values}, @code{funções}, @code{labels}, etc.
+Os nomes podem ser quaisquer especificados pela variável @code{infolists}.
+@code{values} compreende todas as variáveis definidas pelo utilizador.
+
+A forma especial @code{save (@var{filename}, [@var{m}, @var{n}])} armazena os valores de
+rótulos de entrada e saída de @var{m} até @var{n}.
+Note que @var{m} e @var{n} devem obrigatóriamente ser inteiros literais.
+Rótulos de entrada e saída podem também ser armazenados um a um, e.g., @code{save ("foo.1", %i42, %o42)}.
+@code{save (@var{filename}, labels)} armazena todos os rótulos de entrada e saída.
+Quando rótulos armazenados são recuperados, eles substituem rótulos existentes.
+
+A forma especial @code{save (@var{filename}, @var{nome_1}=@var{expr_1}, @var{nome_2}=@var{expr_2}, ...)}
+armazena os valores de @var{expr_1}, @var{expr_2}, ...,
+com nomes @var{nome_1}, @var{nome_2}, ....
+Isso é útil para aplicar essa forma para rótulos de entrada e saída, e.g., @code{save ("foo.1", aa=%o88)}.
+O lado direito dessa igualdade nessa forma pode ser qualquer expressão, que é avaliada.
+Essa forma não introduz os novos nomes no ambiente corrente do Maxima,
+mas somente armazena-os em @var{filename}.
+
+Essa forma especial e a forma geral de @code{save} podem ser misturados.
+Por exemplo, @code{save (@var{filename}, aa, bb, cc=42, funções, [11, 17])}.
+
+A forma especial @code{save (@var{filename}, all)} armazena o estado corrente do Maxima.
+Isso inclui todas as variáveis definidas pelo utilizador, funções, arrays, etc., bem como
+alguns ítens definidos automaticamente.
+Os ítes salvos incluem variáveis de sistema,
+tais como @code{file_search_maxima} ou @code{showtime}, se a elas tiverem sido atribuídos novos valores pelo utilizador;
+veja @code{myoptions}.
+
+@code{save} avalia seus argumentos.  
+@var{filename} deve obrigatóriamente ser uma sequência de caracteres, não uma variável tipo sequência de caracteres.
+O primeiro e o último rótulos a salvar, se especificado, devem obrigatóriamente serem inteiros.
+O operador apóstrofo-apóstrofo @code{'@w{}'} avalia uma variável tipo sequência de caracteres para seu valor sequência de caracteres,
+e.g., @code{s: "foo.1"$ save (''s, all)$},
+e variáveis inteiras para seus valores inteiros, e.g., @code{m: 5$ n: 12$ save ("foo.1", [''m, ''n])$}.
+
+@c ANY USE FOR THE FOLLOWING ???
+@c The following device constructs a list of variables to save e saves them.
+@c 
+@c @example
+@c s: "foo.1"$
+@c l: ['aa, 'bb, 'cc, 'dd]$
+@c apply (save, append ([s], l))$
+@c @end example
+@end deffn
+
+@c NEEDS MORE WORK !!!
+@defvr {Variável de opção} savedef
+Valor por omissão: @code{true}
+
+Quando @code{savedef} é @code{true}, a vesão Maxima de uma
+função de utilizador é preservada quando a função é traduzida.
+Isso permite que a definição seja mostrada por @code{dispfun} e autoriza a função a
+ser editada.
+
+Quando @code{savedef} é @code{false}, os nomes de funções traduzidas são
+removidos da lista de @code{funções}.
+
+@end defvr
+
+@c THIS FUNCTION IS IN THE SHARE PACKAGE itensor.lisp
+@c MOVE THIS DESCRIPTION TO Itensor.texi
+@deffn {Função} show (@var{expr})
+Mostra @code{expr} com os objectos indexados
+tendo índices covariantes como subscritos, índices contravariantes como
+sobrescritos.  Os índices derivativos são mostrados como subscritos,
+separados dos índices covariantes por uma vírgula.
+
+@end deffn
+
+@deffn {Função} showratvars (@var{expr})
+Retorna uma lista de variáveis expressão racional canónica (CRE) na expressão @code{expr}.
+
+Veja também @code{ratvars}.
+
+@end deffn
+
+@defvr {Variável de opção} stardisp
+Valor por omissão: @code{false}
+
+Quando @code{stardisp} é @code{true}, multiplicação é
+mostrada com um asterisco @code{*} entre os operandos.
+
+@end defvr
+
+@c NEEDS CLARIFICATION AND EXAMPLES
+@deffn {Função} string (@var{expr})
+Converte @code{expr} para a notação linear do Maxima
+apenas como se tivesse sido digitada.
+
+O valor de retorno de @code{string} é uma sequência de caracteres,
+e dessa forma não pode ser usada em um cálculo.
+
+@end deffn
+
+@c SHOULD BE WRITTEN WITH LEADING ? BUT THAT CONFUSES CL-INFO SO WORK AROUND
+@c @defvr {Variãvel de opção} stringdisp
+@defvr {Variãvel de opção} stringdisp
+Valor por omissão: @code{false}
+
+Quando @code{stringdisp} for @code{true},
+sequências de caracteres serão mostradas contidas em aspas duplas.
+De outra forma,
+aspas não são mostradas.
+
+@code{stringdisp} é sempre @code{true} quando mostrando na tela uma definição de função.
+
+Exemplos:
+
+@c ===beg===
+@c stringdisp: false$
+@c "This is an example string.";
+@c foo () := print ("This is a string in a function definition.");
+@c stringdisp: true$
+@c "This is an example string.";
+@c ===end===
+@example
+(%i1) stringdisp: false$
+(%i2) "This is an example string.";
+(%o2)              This is an example string.
+(%i3) foo () := print ("This is a string in a function definition.");
+(%o3) foo() := 
+              print("This is a string in a function definition.")
+(%i4) stringdisp: true$
+(%i5) "This is an example string.";
+(%o5)             "This is an example string."
+@end example
+
+@end defvr
+
+@deffn {Função} stringout (@var{filename}, @var{expr_1}, @var{expr_2}, @var{expr_3}, ...)
+@deffnx {Função} stringout (@var{filename}, [@var{m}, @var{n}])
+@deffnx {Função} stringout (@var{filename}, input)
+@deffnx {Função} stringout (@var{filename}, functions)
+@deffnx {Função} stringout (@var{filename}, values)
+
+@code{stringout} escreve expressões para um ficheiro na mesma forma de
+expressões que foram digitadas para entrada.  O ficheiro pode então ser usado
+como entrada para comandos @code{batch} ou @code{demo}, e isso pode ser editado para
+qualquer propósito.  @code{stringout} pode ser executado enquanto @code{writefile} está em progresso.
+
+O sinalizador global @code{file_output_append} governa
+se @code{stringout} anexa ao final ou trunca o ficheiro de saída.
+Quando @code{file_output_append} for @code{true},
+@code{stringout} anexa ao final do ficheiro de sa@'da.
+De outra forma, @code{stringout} trunca o ficheiro de saída.
+Nesse caso, @code{stringout} cria o ficheiro de saída se ele não existir ainda.
+
+A forma geral de @code{stringout} escreve os valores de um ou mais 
+expressões para o ficheiro de saída.  Note que se uma expressão é uma
+variável, somente o valor da variável é escrito e não o nome
+da variável.  Como um útil caso especial, as expressões podem ser
+rótulos de entrada (@code{%i1}, @code{%i2}, @code{%i3}, ...) ou rótulos de saída (@code{%o1}, @code{%o2}, @code{%o3}, ...).
+
+Se @code{grind} é @code{true}, @code{stringout} formata a saída usando o formato 
+@code{grind}.  De outra forma o formato @code{string} é usado.  Veja @code{grind} e @code{string}.
+
+A forma especial @code{stringout (@var{filename}, [@var{m}, @var{n}])} escreve os
+valores dos rótulos de entrada de m até n, inclusive.  
+
+A forma especial @code{stringout (@var{filename}, input)} escreve todos
+os rótulos de entrada para o ficheiro.
+
+A forma especial @code{stringout (@var{filename}, functions)} escreve todas
+as funções definidas pelo utilizador (nomeadas pela lista global @code{functions}) para o ficheiro.
+
+A forma especial @code{stringout (@var{filename}, values)} escreve todas as
+variáveis atribuídas pelo utilizador (nomeadas pela lista global @code{values})
+para o ficheiro.  Cada variável é impressa como uma
+declaração de atribuição, com o nome da variável seguida de dois pontos, e seu
+valor.  Note que a forma geral de @code{stringout} não imprime 
+variáveis como declarações de atribuição.
+
+@end deffn
+
+@c NEEDS EXPANSION, CLARIFICATION, AND EXAMPLES
+@deffn {Função} tex (@var{expr})
+@deffnx {Função} tex (@var{rótulo})
+@deffnx {Função} tex (@var{expr}, @var{momeficheiro})
+@deffnx {Função} tex (@var{label}, @var{nomeficheiro})
+
+Imprime uma representação de uma expressão
+adequada para o sistema TeX  de preparação de documento.
+O resultado é um fragmento de um documento,
+que pode ser copiado dentro de um documento maior.
+Esse fragmento não pode ser processado de forma directa e isolada.
+
+@code{tex (@var{expr})} imprime uma representação TeX da @var{expr} no console.
+
+@code{tex (@var{rótulo})} imprime uma representação TeX de uma expressão chamada @var{rótulo}
+e atribui a essa um rótulo de equação (a ser mostrado à esquerda da expressão).
+O rótulo de equação TeX é o mesmo que o rótulo da equação no Maxima.
+
+@code{tex (@var{expr}, @var{nomeficheiro})} anexa ao final uma representação TeX de @var{expr}
+no ficheiro @var{nomeficheiro}.
+@code{tex} não avalia o argumento @var{nomeficheiro}; apóstrofo-apóstrofo @code{''} força a avaliação so argumento.
+
+@code{tex (@var{rótulo}, @var{nomeficheiro})} anexa ao final uma representação TeX da
+expressão chamada de @var{rótulo}, com um rótulo de equação, ao ficheiro @var{nomeficheiro}.
+
+
+@code{tex} não avalia o argumento @var{nomeficheiro}; apóstrofo-apóstrofo @code{''} força a avaliação so argumento.
+@code{tex} avalia seus argumentos após testar esse argumento para ver se é um rótulo.
+duplo apóstrofo @code{''} força a avaliação do argumento, desse modo frustrando o teste
+e prevenindo o rótulo.
+
+Veja também @code{texput}.
+
+Exemplos:
+
+@example
+(%i1) integrate (1/(1+x^3), x);
+                                    2 x - 1
+                  2            atan(-------)
+             log(x  - x + 1)        sqrt(3)    log(x + 1)
+(%o1)      - --------------- + ------------- + ----------
+                    6             sqrt(3)          3
+(%i2) tex (%o1);
+$$-@{@{\log \left(x^2-x+1\right)@}\over@{6@}@}+@{@{\arctan \left(@{@{2\,x-1
+ @}\over@{\sqrt@{3@}@}@}\right)@}\over@{\sqrt@{3@}@}@}+@{@{\log \left(x+1\right)
+ @}\over@{3@}@}\leqno@{\tt (\%o1)@}$$
+(%o2)                          (\%o1)
+(%i3) tex (integrate (sin(x), x));
+$$-\cos x$$
+(%o3)                           false
+(%i4) tex (%o1, "foo.tex");
+(%o4)                          (\%o1)
+@end example
+
+@end deffn
+
+@deffn {Função} texput (@var{a}, @var{s})
+@deffnx {Função} texput (@var{a}, @var{s}, @var{operator_type})
+@deffnx {Função} texput (@var{a}, [@var{s_1}, @var{s_2}], matchfix)
+@deffnx {Função} texput (@var{a}, [@var{s_1}, @var{s_2}, @var{s_3}], matchfix)
+
+Atribui a saída TeX para o átomo @var{a},
+que pode ser um símbolo ou o nome de um operador.
+
+@code{texput (@var{a}, @var{s})} faz com que a função @code{tex}
+interpole a sequência de caracteres @var{s} dentro da saída TeX em lugar de @var{a}.
+
+@code{texput (@var{a}, @var{s}, @var{operator_type})},
+onde @var{operator_type} é @code{prefix}, @code{infix}, @code{postfix}, @code{nary}, ou @code{nofix},
+faz com que a função @code{tex} interpole @var{s} dentro da saída TeX em lugar de @var{a},
+e coloca o texto interpolado na posição apropriada.
+
+@code{texput (@var{a}, [@var{s_1}, @var{s_2}], matchfix)}
+faz com que a função @code{tex} interpole @var{s_1} e @var{s_2} dentro da saída TeX
+sobre qualquer lado dos argumentos de @var{a}.
+Os argumentos (se mais de um) são separados por vírgulas.
+
+@code{texput (@var{a}, [@var{s_1}, @var{s_2}, @var{s_3}], matchfix)}
+faz com que a função @code{tex} interpole @var{s_1} e @var{s_2} dentro da saída TeX
+sobre qualquer lado dos argumentos de @var{a},
+com @var{s_3} separando os argumentos.
+
+Exemplos:
+
+Atribui saída TeX a uma variável.
+@c ===beg===
+@c texput (me,"\\mu_e");
+@c tex (me);
+@c ===end===
+
+@example
+(%i1) texput (me,"\\mu_e");
+(%o1)                         \mu_e
+(%i2) tex (me);
+$$\mu_e$$
+(%o2)                         false
+@end example
+
+Atribui saída TeX a uma função comum (não a um operador).
+@c ===beg===
+@c texput (lcm, "\\mathrm{lcm}");
+@c tex (lcm (a, b));
+@c ===end===
+
+@example
+(%i1) texput (lcm, "\\mathrm@{lcm@}");
+(%o1)                     \mathrm@{lcm@}
+(%i2) tex (lcm (a, b));
+$$\mathrm@{lcm@}\left(a , b\right)$$
+(%o2)                         false
+@end example
+
+Atribui saída TeX a um operador prefixado.
+@c ===beg===
+@c prefix ("grad");
+@c texput ("grad", " \\nabla ", prefix);
+@c tex (grad f);
+@c ===end===
+
+@example
+(%i1) prefix ("grad");
+(%o1)                         grad
+(%i2) texput ("grad", " \\nabla ", prefix);
+(%o2)                        \nabla 
+(%i3) tex (grad f);
+$$ \nabla f$$
+(%o3)                         false
+@end example
+
+Atribui saída TeX a um operador infixado.
+@c ===beg===
+@c infix ("~");
+@c texput ("~", " \\times ", infix);
+@c tex (a ~ b);
+@c ===end===
+
+@example
+(%i1) infix ("~");
+(%o1)                           ~
+(%i2) texput ("~", " \\times ", infix);
+(%o2)                        \times 
+(%i3) tex (a ~ b);
+$$a \times b$$
+(%o3)                         false
+@end example
+
+Atribui saída TeX a um operadro pósfixado.
+@c ===beg===
+@c postfix ("##");
+@c texput ("##", "!!", postfix);
+@c tex (x ##);
+@c ===end===
+
+@example
+(%i1) postfix ("##");
+(%o1)                          ##
+(%i2) texput ("##", "!!", postfix);
+(%o2)                          !!
+(%i3) tex (x ##);
+$$x!!$$
+(%o3)                         false
+@end example
+
+Atribui saída TeX a um operador n-ário.
+@c ===beg===
+@c nary ("@@");
+@c texput ("@@", " \\circ ", nary);
+@c tex (a @@ b @@ c @@ d);
+@c ===end===
+
+@example
+(%i1) nary ("@@@@");
+(%o1)                          @@@@
+(%i2) texput ("@@@@", " \\circ ", nary);
+(%o2)                         \circ 
+(%i3) tex (a @@@@ b @@@@ c @@@@ d);
+$$a \circ b \circ c \circ d$$
+(%o3)                         false
+@end example
+
+Atribui saída TeX a um operador nofix.
+@c ===beg===
+@c nofix ("foo");
+@c texput ("foo", "\\mathsc{foo}", nofix);
+@c tex (foo);
+@c ===end===
+
+@example
+(%i1) nofix ("foo");
+(%o1)                          foo
+(%i2) texput ("foo", "\\mathsc@{foo@}", nofix);
+(%o2)                     \mathsc@{foo@}
+(%i3) tex (foo);
+$$\mathsc@{foo@}$$
+(%o3)                         false
+@end example
+
+Atribui saída TeX a um operadro matchfix.
+@c ===beg===
+@c matchfix ("<<", ">>");
+@c texput ("<<", [" \\langle ", " \\rangle "], matchfix);
+@c tex (<<a>>);
+@c tex (<<a, b>>);
+@c texput ("<<", [" \\langle ", " \\rangle ", " \\, | \\,"], matchfix);
+@c tex (<<a>>);
+@c tex (<<a, b>>);
+@c ===end===
+
+@example
+(%i1) matchfix ("<<", ">>");
+(%o1)                          <<
+(%i2) texput ("<<", [" \\langle ", " \\rangle "], matchfix);
+(%o2)                [ \langle ,  \rangle ]
+(%i3) tex (<<a>>);
+$$ \langle a \rangle $$
+(%o3)                         false
+(%i4) tex (<<a, b>>);
+$$ \langle a , b \rangle $$
+(%o4)                         false
+(%i5) texput ("<<", [" \\langle ", " \\rangle ", " \\, | \\,"], matchfix);
+(%o5)           [ \langle ,  \rangle ,  \, | \,]
+(%i6) tex (<<a>>);
+$$ \langle a \rangle $$
+(%o6)                         false
+(%i7) tex (<<a, b>>);
+$$ \langle a \, | \,b \rangle $$
+(%o7)                         false
+@end example
+
+@end deffn
+
+@c NEEDS CLARIFICATION
+@deffn {Função} system (@var{comando})
+Executa @var{comando} como um processo separado.
+O comando é passado ao shell padraõ para execução.
+@code{system} não é suportado por todos os sistemas
+operacionais, mas geralmente existe em ambientes Unix e Unix-like.
+
+Supondo que @code{_hist.out} é uma lista de frequências que deseja
+imprimir como um gráfico em barras usando @code{xgraph}.
+
+@example
+(%i1) (with_stdout("_hist.out",
+           for i:1 thru length(hist) do (
+             print(i,hist[i]))),
+       system("xgraph -bar -brw .7 -nl < _hist.out"));
+@end example
+
+Com o objectivo de fazer com que a impressão do gráfico seja concluída em segundo plano (retornando o controle para o Maxima)
+e remover o ficheiro temporário após isso ter sido concluído faça:
+
+@example
+system("(xgraph -bar -brw .7 -nl < _hist.out;  rm -f _hist.out)&")
+@end example
+
+@end deffn
+
+@defvr {Variável de opção} ttyoff
+Valor por omissão: @code{false}
+
+Quando @code{ttyoff} é @code{true}, expressões de saída não são mostradas.
+Expressões de saída são ainda calculadas e atribuídas rótulos.  Veja @code{labels}.
+
+Textos impresso por funções internas do Maxima, tais como mensagens de erro e a saída de @code{describe},
+não são afectadas por @code{ttyoff}.
+
+@end defvr
+
+@deffn {Função} with_stdout (@var{filename}, @var{expr_1}, @var{expr_2}, @var{expr_3}, ...)
+Abre @var{filename} e então avalia @var{expr_1}, @var{expr_2}, @var{expr_3}, ....
+Os valores dos argumentos não são armazenados em @var{filename},
+mas qualquer saída impressa gerada pela avaliação dos argumentos
+(de @code{print}, @code{display}, @code{disp}, ou @code{grind}, por exemplo)
+vai para @var{filename} em lugar do console.
+
+O sinalizador global @code{file_output_append} governa
+se @code{with_stdout} anexa ao final ou trunca o ficheiro de saída.
+Quando @code{file_output_append} for @code{true},
+@code{with_stdout} anexa ao final do ficheiro de saída.
+De outra forma, @code{with_stdout} trunca o ficheiro de saída.
+Nesse caso, @code{with_stdout} cria o ficheiro se ele não existir ainda.
+
+@code{with_stdout} retorna o valor do seu argumento final.
+
+Veja também @code{writefile}.
+
+@c THIS DOESN'T SEEM VERY IMPORTANT TO MENTION ...
+@c Note the binding of display2d to be
+@c false, otherwise the printing will have things like "- 3" instead
+@c of "-3".
+@c
+@example
+@c THIS EXAMPLE USES SOME UNIX-ISH CONSTRUCTS -- WILL IT WORK IN WINDOWS ???
+@c ALSO IT'S SORT OF COMPLICATED AND THE SIMPLER SECOND EXAMPLE ILLUSTRATES with_stdout BETTER !!!
+@c mygnuplot (f, var, range, number_ticks) :=
+@c  block ([numer:true, display2d:false],
+@c  with_stdout("tmp.out",
+@c    dx: (range[2]-range[1])/number_ticks,
+@c    for x: range[1] thru range[2] step dx
+@c       do print (x, at (f, var=x))),
+@c  system ("echo \"set data style lines; set title '", f,"' ;plot '/tmp/gnu'
+@c ;pause 10 \" | gnuplot"))$
+(%i1) with_stdout ("tmp.out", for i:5 thru 10 do print (i, "! yields", i!))$
+(%i2) printfile ("tmp.out")$
+5 ! yields 120 
+6 ! yields 720 
+7 ! yields 5040 
+8 ! yields 40320 
+9 ! yields 362880 
+10 ! yields 3628800
+@end example
+
+@end deffn
+
+@deffn {Função} writefile (@var{filename})
+Começa escrevendo uma transcrição da sessão Maxima para @var{filename}.
+Toda interação entre o utilizador e Maxima é então gravada nesse ficheiro,
+@c FOLLOWING CLAIM PROBABLY NEEDS TO BE QUALIFIED
+da mesma forma que aparece no console.
+
+Como a transcrição é impressa no formato de saída do console,
+isso não pode ser reaproveitado pelo Maxima.
+Para fazer um ficheiro contendo expressões que podem ser reaproveitadas,
+veja @code{save} e @code{stringout}.
+@code{save} armazena expressões no formato Lisp, enquanto @code{stringout} armazena expressões no formato Maxima.
+
+O efeito de executar @code{writefile} quando @var{filename} ainda existe
+depende da implementação Lisp subjacente;
+o ficheiro transcrito pode ser substituído, ou o ficheiro pode receber um anexo.
+@code{appendfile} sempre anexa para o ficheiro transcrito.
+
+Isso pode ser conveniente para executar @code{playback} após
+@code{writefile} para salvar a visualização de interações prévias.
+Como @code{playback} mostra somente as variáveis de entrada e saída (@code{%i1}, @code{%o1}, etc.),
+qualquer saída gerada por uma declaração de impressão em uma função
+(como oposição a um valor de retorno) não é mostrada por @code{playback}.
+
+@code{closefile} fecha o ficheiro transcrito aberto por @code{writefile} ou @code{appendfile}.
+
+@end deffn
+

@@ -1,0 +1,246 @@
+@ifnottex
+@set figuresfolder ./figures
+@end ifnottex
+@iftex
+@set figuresfolder @abs_srcdir@/figures
+@end iftex
+
+@ifhtml
+@macro fname {name}
+@*@ @ @ @ @t{\name\}
+@end macro
+@end ifhtml
+@iftex
+@macro fname {name}
+@*@t{\name\}
+@end macro
+@end iftex
+@ifinfo
+@macro fname {name}
+@*\name\
+@end macro
+@end ifinfo
+@c Handle all the cases not handled above (xml, docbook, etc.)
+@ifnothtml
+@ifnottex
+@ifnotinfo
+@macro fname {name}
+@*\name\
+@end macro
+@end ifnotinfo
+@end ifnottex
+@end ifnothtml
+
+@ifhtml
+@macro figure {file}
+@image{@value{figuresfolder}/\file\}
+@end macro
+@end ifhtml
+@iftex
+@macro figure {file}
+@center @image{@value{figuresfolder}/\file\, 10cm}
+@end macro
+@end iftex
+@ifinfo
+@macro figure {file}
+(Figure \file\)
+@end macro
+@end ifinfo
+@c Handle all the cases not handled above (xml, docbook, etc.)
+@ifnothtml
+@ifnottex
+@ifnotinfo
+@macro figure {file}
+(Figure \file\)
+@end macro
+@end ifnotinfo
+@end ifnottex
+@end ifnothtml
+
+@ifhtml
+@macro opencatbox {label}
+@html
+<div class=categorybox>
+\label\
+@end html
+@end macro
+
+@macro category {name}
+@html
+@ref{Category: \name\, \name\}
+&middot;
+@end html
+@end macro
+
+@macro closecatbox {}
+@html
+</div>
+@end html
+@end macro
+
+@c Macros for cross references
+
+@macro mref {nodename}
+@code{@ref{\nodename\}}
+@end macro
+
+@macro mxref {nodename, text}
+@code{@ref{\nodename\, \text\}}
+@end macro
+
+@macro mrefdot {nodename}
+@code{@ref{\nodename\}}.
+@end macro
+
+@macro mxrefdot {nodename, text}
+@code{@ref{\nodename\, \text\}}.
+@end macro
+
+@macro mrefcomma {nodename}
+@code{@ref{\nodename\}},
+@end macro
+
+@macro mxrefcomma {nodename, text}
+@code{@ref{\nodename\, \text\}},
+@end macro
+
+@macro mrefparen {nodename}
+@code{@ref{\nodename\}})
+@end macro
+
+@macro nref {nodename}
+@ref{\nodename\}
+@end macro
+
+@macro nxref {nodename, text}
+@ref{\nodename\, \text\}
+@end macro
+
+@macro nrefdot {nodename}
+@ref{\nodename\}.
+@end macro
+
+@macro nrefcomma {nodename}
+@ref{\nodename\},
+@end macro
+
+@end ifhtml
+
+@c Non html versions of the macros
+
+@ifnothtml
+
+@macro opencatbox {label}
+@end macro
+
+@macro category {name}
+@end macro
+
+@macro closecatbox {}
+@end macro
+
+@c Macros for cross references
+
+@ifnottex
+@macro mref {nodename}
+@code{\nodename\}
+@end macro
+
+@macro mxref {nodename, text}
+@code{\text\}
+@end macro
+
+@macro mrefdot {nodename}
+@code{\nodename\}.
+@end macro
+
+@macro mxrefdot {nodename, text}
+@code{\text\}.
+@end macro
+
+@macro mrefcomma {nodename}
+@code{\nodename\},
+@end macro
+
+@macro mxrefcomma {nodename, text}
+@code{\text\},
+@end macro
+
+@macro mrefparen {nodename}
+@code{\nodename\})
+@end macro
+
+@macro nref {nodename}
+\nodename\
+@end macro
+
+@macro nxref {nodename, text}
+\text\
+@end macro
+
+@macro nrefdot {nodename}
+\nodename\.
+@end macro
+
+@macro nrefcomma {nodename}
+\nodename\,
+@end macro
+@end ifnottex
+
+@iftex
+@tex
+\gdef\linkcolor{0 .5 0}
+\gdef\urlcolor{0 0 .5}
+
+%% @set txiomitrefpg ==> in TeX, this creates a top-level csname SETtxiomitxrefpg
+%% bound to some other than \relax
+%% @clear txiomitrefpg ==> bind it to \relax
+\gdef\mmref#1{{\def\SETtxiomitxrefpg{true}\def\xrefprintnodename##1{##1}\ref{#1}}}
+@end tex
+
+@macro mref {nodename}
+@code{@mmref{\nodename\}}
+@end macro
+
+@macro mxref {nodename, text}
+@code{@ref{\nodename\, \text\}}
+@end macro
+
+@macro mrefdot {nodename}
+@mref{\nodename\}.
+@end macro
+
+@macro mxrefdot {nodename, text}
+@mxref{\nodename\,\text\}.
+@end macro
+
+@macro mrefcomma {nodename}
+@mref{\nodename\},
+@end macro
+
+@macro mxrefcomma {nodename, text}
+@mxref{\nodename\, \text\},
+@end macro
+
+@macro mrefparen {nodename}
+@mref{\nodename\})
+@end macro
+
+@macro nref {nodename}
+@ref{\nodename\}
+@end macro
+
+@macro nxref {nodename, text}
+@ref{\nodename\, \text\}
+@end macro
+
+@macro nrefdot {nodename}
+@ref{\nodename\}.
+@end macro
+
+@macro nrefcomma {nodename}
+@ref{\nodename\},
+@end macro
+
+@end iftex
+@end ifnothtml

@@ -1,0 +1,218 @@
+@menu
+* Functions and Variables for Bug Detection and Reporting::
+@end menu
+
+@c -----------------------------------------------------------------------------
+@node Functions and Variables for Bug Detection and Reporting
+@section Functions and Variables for Bug Detection and Reporting
+@c -----------------------------------------------------------------------------
+
+@c -----------------------------------------------------------------------------
+@anchor{run_testsuite}
+@deffn {Function} run_testsuite ([@var{options}])
+
+Run the Maxima test suite.  Tests producing the desired answer are
+considered ``passes,'' as are tests that do not produce the desired
+answer, but are marked as known bugs.
+
+@code{run_testsuite} takes the following optional keyword arguments
+
+@table @code
+@item display_all
+Display all tests.  Normally, the tests are not displayed, unless the test
+fails.  (Defaults to @code{false}).
+@item display_known_bugs
+Displays tests that are marked as known bugs.  (Default is @code{false}).
+@item tests
+This is a single test or a list of tests that should be run.  Each test can be specified by
+either a string or a symbol.  By default, all tests are run.  The complete set
+of tests is specified by @mrefdot{testsuite_files}
+@item time
+Display time information.  If @code{true}, the time taken for each
+test file is displayed.  If @code{all}, the time for each individual
+test is shown if @code{display_all} is @code{true}.  The default is
+@code{false}, so no timing information is shown.
+@item share_tests
+Load additional tests for the @code{share} directory.  If @code{true},
+these additional tests are run as a part of the testsuite.  If
+@code{false}, no tests from the @code{share} directory are run.  If
+@code{only}, only the tests from the @code{share} directory are run.
+Of course, the actual set of test that are run can be controlled by
+the @code{tests} option. The default is @code{false}.
+@end table
+
+For example @code{run_testsuite(display_known_bugs = true, tests=[rtest5])}
+runs just test @code{rtest5} and displays the test that are marked as
+known bugs.
+
+@code{run_testsuite(display_all = true, tests=["rtest1", rtest1a])} will
+run tests @code{rtest1} and @code{rtest2}, and displays each test.
+
+@code{run_testsuite} changes the Maxima environment.
+Typically a test script executes @mref{kill} to establish a known environment
+(namely one without user-defined functions and variables)
+and then defines functions and variables appropriate to the test.
+
+@code{run_testsuite} returns @code{done}.
+
+@opencatbox{Categories:}
+@category{Debugging}
+@closecatbox
+@end deffn
+
+@c -----------------------------------------------------------------------------
+@anchor{testsuite_files}
+@defvr {Option variable} testsuite_files
+
+@code{testsuite_files} is the set of tests to be run by
+@mrefdot{run_testsuite}  It is a list of names of the files containing
+the tests to run.  If some of the tests in a file are known to fail,
+then instead of listing the name of the file, a list containing the
+file name and the test numbers that fail is used.
+
+For example, this is a part of the default set of tests:
+
+@example
+ ["rtest13s", ["rtest14", 57, 63]]
+@end example
+
+This specifies the testsuite consists of the files "rtest13s" and
+"rtest14", but "rtest14" contains two tests that are known to fail: 57
+and 63.
+
+@opencatbox{Categories:}
+@category{Debugging}
+@category{Global variables}
+@closecatbox
+@end defvr
+
+@defvr {Option variable} share_testsuite_files
+
+@code{share_testsuite_files} is the set of tests from the @code{share}
+directory that is run as a part of the test suite by
+@mrefdot{run_testsuite}.
+
+@opencatbox{Categories:}
+@category{Debugging}
+@category{Global variables}
+@closecatbox
+@end defvr
+
+@c -----------------------------------------------------------------------------
+@anchor{bug_report}
+@deffn {Function} bug_report ()
+@ifinfo
+@fnindex Bugs
+@end ifinfo
+
+Prints out Maxima and Lisp version numbers, and gives a link
+to the Maxima project bug report web page.
+The version information is the same as reported by @mrefdot{build_info}
+
+When a bug is reported, it is helpful to copy the Maxima
+and Lisp version information into the bug report.
+
+@code{bug_report} returns an empty string @code{""}.
+
+@opencatbox{Categories:}
+@category{Debugging}
+@closecatbox
+@end deffn
+
+@c -----------------------------------------------------------------------------
+@anchor{build_info}
+@deffn {Function} build_info ()
+
+Returns a summary of the parameters of the Maxima build,
+as a Maxima structure (defined by @code{defstruct}).
+The fields of the structure are:
+@code{version}, @code{timestamp}, @code{host}, @code{lisp_name}, and @code{lisp_version}.
+When the pretty-printer is enabled (via @mref{display2d}),
+the structure is displayed as a short table.
+
+See also @mrefdot{bug_report}
+
+Examples:
+
+@c ===beg===
+@c build_info ();
+@c x : build_info ()$
+@c x@version;
+@c x@timestamp;
+@c x@host;
+@c x@lisp_name;
+@c x@lisp_version;
+@c x;
+@c ===end===
+@example
+@group
+(%i1) build_info ();
+(%o1) 
+Maxima version: "5.36.1"
+Maxima build date: "2015-06-02 11:26:48"
+Host type: "x86_64-unknown-linux-gnu"
+Lisp implementation type: "GNU Common Lisp (GCL)"
+Lisp implementation version: "GCL 2.6.12"
+@end group
+(%i2) x : build_info ()$
+@group
+(%i3) x@@version;
+(%o3)                               5.36.1
+@end group
+@group
+(%i4) x@@timestamp;
+(%o4)                         2015-06-02 11:26:48
+@end group
+@group
+(%i5) x@@host;
+(%o5)                      x86_64-unknown-linux-gnu
+@end group
+@group
+(%i6) x@@lisp_name;
+(%o6)                        GNU Common Lisp (GCL)
+@end group
+@group
+(%i7) x@@lisp_version;
+(%o7)                             GCL 2.6.12
+@end group
+@group
+(%i8) x;
+(%o8) 
+Maxima version: "5.36.1"
+Maxima build date: "2015-06-02 11:26:48"
+Host type: "x86_64-unknown-linux-gnu"
+Lisp implementation type: "GNU Common Lisp (GCL)"
+Lisp implementation version: "GCL 2.6.12"
+@end group
+@end example
+
+The Maxima version string can (here 5.36.1) can look very different:
+
+@example
+(%i1) build_info();
+(%o1) 
+Maxima version: "branch_5_37_base_331_g8322940_dirty"
+Maxima build date: "2016-01-01 15:37:35"
+Host type: "x86_64-unknown-linux-gnu"
+Lisp implementation type: "CLISP"
+Lisp implementation version: "2.49 (2010-07-07) (built 3605577779) (memory 3660647857)"
+@end example
+
+@c The version number comes from "git describe", and is (in that example)
+@c 331 commits after the latest tag, that is reachable from that commit
+@c don't know how to describe it better...
+In that case, Maxima was not build from a released sourcecode, 
+but directly from the GIT-checkout of the sourcecode.
+In the example, the checkout is 331 commits after the latest GIT tag
+(usually a Maxima (major) release (5.37 in our example)) and the 
+abbreviated commit hash of the last commit was "8322940".
+
+Front-ends for maxima can add information about currently being used
+by setting the variables @code{maxima_frontend} and
+@code{maxima_frontend_version} accordingly.
+
+@opencatbox{Categories:}
+@category{Debugging}
+@closecatbox
+@end deffn
+

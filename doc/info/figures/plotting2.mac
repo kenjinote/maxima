@@ -1,0 +1,2 @@
+plot2d([contour, u^3+v^2], [u,-4,4], [v,-4,4], [pdf_file,"./plotting2.pdf"]);
+plot2d([contour, u^3+v^2], [u,-4,4], [v,-4,4], [png_file,"./plotting2.png"]);

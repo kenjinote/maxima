@@ -1,0 +1,2 @@
+plot2d (exp(3*s), [s, -2, 2], logy, [pdf_file,"./plotting9.pdf"]);
+plot2d (exp(3*s), [s, -2, 2], logy, [png_file,"./plotting9.png"]);

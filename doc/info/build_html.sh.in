@@ -1,0 +1,171 @@
+#!/bin/sh
+
+usage () {
+    echo "build_html.sh [-Dh?]"
+    echo "    -l   Specify language"
+    echo "    -D   Enable simple debugging of this script"
+    echo "    -h   This help"
+    echo "    -?   This help"
+    echo "Build the html version of the manual, including both the single"
+    echo "page version and the multi-page version.  This also builds all the"
+    echo "category information."
+    exit 1
+}
+
+while getopts "h?Dl:" arg
+do
+  case $arg in
+      l) language=$OPTARG ;;
+      D) DEBUG=yes ;;
+      h) usage ;;
+      \?) usage ;;
+  esac
+done
+
+pwd=`pwd`
+if [ "x$language" = "x" ]
+then
+    language=en
+    languagedir=@abs_srcdir@
+    languagedestdir=$pwd
+else
+    languagedir=@abs_srcdir@/$language
+    languagedestdir=$pwd
+    if [ "$language" = "pt_BR" ]
+    then language=pt
+    fi
+fi
+
+echo "$0: abs_srcdir=@abs_srcdir@, pwd=$pwd, language=$language, languagedir=$languagedir"
+
+# THIS IS KIND OF TERRIBLE BECAUSE IT DEPENDS ON A CONVENTION ABOUT FILE NAMES IN DOC/INFO/*
+# Assume that per-topic Texinfo files are @include'd in
+# a top-level file. That top-level file is either maxima.texi
+# or include-maxima.texi for all languages at present (January 2022).
+
+if [ -e include-maxima.texi ]
+    then includerfile=include-maxima.texi
+    else includerfile=maxima.texi
+fi
+
+# Extract all filenames that are included using @include commands in the order
+# they are included
+includedfiles=`@AWK@ '/^[[:space:]]*@include/ { print $NF; }' $includerfile`
+
+# If output dir exists, remove it so we start clean
+if [ -d tmp_html ]; then
+    rm -rf tmp_html
+fi
+mkdir tmp_html
+cp -r @abs_srcdir@/figures tmp_html
+
+if [ -e include-maxima.texi ]
+    then cp include-maxima.texi tmp_html
+fi
+
+cd tmp_html
+
+for f in $includedfiles
+do
+  # Find the absolute path of the current element of $includedfiles
+  if [ -e $languagedir/$f ]
+      then includedfile_absolute=$languagedir/$f
+  else if [ -e @abs_srcdir@/$f ]
+       then includedfile_absolute=@abs_srcdir@/$f
+       else
+	   includedfile_absolute=`pwd`/../$f
+       fi
+  fi
+
+
+  filenamebase=`echo $includedfile_absolute | @SED@ -e 's/^.*\///;s/\.texi//'`
+  @SED@ -e 's/^@deffnx*  *{[^}]*}  *\([^[:blank:]]*\).*/@anchor{Item: '$filenamebase'\/deffn\/\1}\
+&/' \
+        -e 's/^@defvrx*  *{[^}]*}  *\([^[:blank:]]*\).*/@anchor{Item: '$filenamebase'\/defvr\/\1}\
+&/' \
+        -e 's/^@node  *\([^,]*\).*/@anchor{Item: '$filenamebase'\/node\/\1}\
+&/' $includedfile_absolute \
+  | @AWK@ 'BEGIN { iftex = 0; } /^@iftex/ {iftex = 1;} {if (!iftex) {print;}} /^@end iftex/ {iftex = 0;}' \
+  | @AWK@ '/@anchor/ {if (!(foo[$0])) {foo[$0] = 1; print;}} !/@anchor/' > $(basename $includedfile_absolute)
+done 
+
+catprogname=make-categories.lisp
+for f in *.texi
+do
+  filenamebase=`echo $f | @SED@ -e 's/^.*\///;s/\.texi//'`
+  echo "(setq *filenamebase* \"$filenamebase\")"
+  cat $f
+done | @AWK@ '!/^@c / && !/^@c$/ && (/^@deffn/ || /^@defvr/ || /^@end deffn/ || /^@end defvr/ || /@category/ || /@node/ || /^.setq .filenamebase/)' | @SED@ -f @abs_srcdir@/extract_categories1.sed | @AWK@ -f @abs_srcdir@/extract_categories1.awk > $catprogname 
+
+if [ "@DEFAULTLISP@" = "gcl" ]
+    then lispprog="@GCL_NAME@"
+         lispargs="-batch -load $catprogname"
+elif [ "@DEFAULTLISP@" = "clisp" ]
+    then lispprog="@CLISP_NAME@"
+         lispargs="$catprogname"
+elif [ "@DEFAULTLISP@" = "cmucl" ]
+    then lispprog="@CMUCL_NAME@"
+         lispargs="-load $catprogname -eval (quit)"
+elif [ "@DEFAULTLISP@" = "scl" ]
+    then lispprog="@SCL_NAME@"
+         lispargs="-load $catprogname -eval (quit)"
+elif [ "@DEFAULTLISP@" = "ecl" ]
+    then lispprog="@ECL_NAME@"
+         lispargs="--shell $catprogname"
+elif [ "@DEFAULTLISP@" = "ccl64" ]
+    then lispprog="@CCL64_NAME@"
+         lispargs="--load $catprogname --eval (quit)"
+# NOT SURE ABOUT OPENMCL; SAME ARGS AS CCL/CCL64 OR DIFFERENT ??
+elif [ "@DEFAULTLISP@" = "ccl" -o "@DEFAULTLISP@" = "openmcl" ]
+    then lispprog="@OPENMCL_NAME@"
+         lispargs="--load $catprogname --eval (quit)"
+elif [ "@DEFAULTLISP@" = "sbcl" ]
+    then lispprog="@SBCL_NAME@"
+         lispargs="--script $catprogname"
+elif [ "@DEFAULTLISP@" = "abcl" ]
+    then lispprog="@JRE@"
+         lispargs="-jar @ABCL_JAR@ --load $catprogname --eval (quit)"
+elif [ "@DEFAULTLISP@" = "acl" ]
+    then lispprog="@ACL_NAME@"
+         lispargs="-L $catprogname --kill"
+else
+    echo "$0: DEFAULTLISP = @DEFAULTLISP@ not recognized, assume '@DEFAULTLISP@ $catprogname' is acceptable."
+    lispprog="@DEFAULTLISP@"
+    lispargs="$catprogname"
+fi
+
+echo "$0: execute category program: \"$lispprog\" $lispargs"
+"$lispprog" $lispargs
+
+@SED@ -e 's/^@bye/@node Documentation Categories, , Function and Variable Index\n@chapter Documentation Categories/' $languagedir/maxima.texi > maxima.texi 
+
+# Add all Category-*.texi files to maxima.texi.
+# If there aren't any the file named "Category-*.texi" cannot be found
+# and therefore will be excluded by the 'if'.
+( for f in Category-*.texi; do
+      if [ -e "$f" ]; then
+	 echo '@include' $f
+      fi
+  done
+  echo @bye
+) >> maxima.texi 
+   
+if [ "X$DEBUG" = "Xyes" ]; then
+    set -x
+fi
+
+# --no-node-files so we don't have thousands of little html files
+# --force -e 10000 because the category stuff causes lots of errors.
+TEXIOPT="--html -c INLINE_CONTENTS=0 -c OUTPUT_ENCODING_NAME=UTF-8 --force -e 10000 --document-lang=$language -I . -I $languagedir -I ../.. --css-include=@abs_srcdir@/manual.css --init-file $pwd/texi2html.init"
+makeinfo --split=chapter --no-node-files --output="$languagedestdir" $TEXIOPT maxima.texi 
+makeinfo --no-split --output="$languagedestdir/maxima_singlepage.html" $TEXIOPT maxima.texi 
+
+if [ "X$DEBUG" = "Xyes" ]; then
+    set -x
+fi
+
+cd ..
+
+if [ "X$DEBUG" != "Xyes" ]; then
+    rm -r -f tmp_html
+fi

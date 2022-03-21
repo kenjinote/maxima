@@ -1,0 +1,52 @@
+Improvements / TODOs for the crosscompiling script
+==================================================
+
+And some reasons why I did make some decisions...
+
+1. The default installation directory (C:\Maxima-VERSION)
+---------------------------------------------------------
+
+The default installation directory is C:\maxima-VERSION.
+Users are dicouraged to change the path, because that may cause problems:
+
+- The default installation root ("C:\Program files") contains a space, which
+  might cause issues, because one needs to escape it.
+
+- The default installation path for a 32 Bit program is different on 32 and 
+  64 Bit Windows Systems.
+
+- When one builds Maxima using Autoconf, in './configure', the installation 
+  prefix (--prefix=...) is set to a fixed value - and that value is used when 
+  compiling maxima (at least in the manpage (not really relevant on Windows) 
+  but also for some Lisp-variables (e.g. *autoconf-prefix*, ...).
+
+- A user might choose a installation directory with problematic characters
+  (e.g. UTF8 chars in another language, special characters), which might
+  cause problems.
+
+
+
+2. Using other LISPs
+--------------------
+
+At first the crosscompiling procedure worked only with CLISP.
+CLISP was selected, because it worked nice with "Wine" (which is needed for
+crosscompiling) and they just released a ZIP file, which one can easy extract.
+
+Now SBCL is also included (the MSI-Installer can be extracted using 7z and
+a small shell script).
+
+Using other LISPs might be a good idea (I tried it), but there are some issues:
+
+GCL released exe installers (currently only for older versions), crosscompiling
+did not work for me.
+
+Crosscompiling ECL works and it seems to work with 'wine', but only in bytecode-mode -
+and Maxima can currently not compiled, if ECL uses the bytecode compiler.
+
+CCL released a ZIP File for windows (which is promising), but sadly it does
+not work with wine.
+
+
+
+Wolfgang Dautermann

@@ -1,0 +1,80 @@
+@c /opsubst.texi/1.1/Mon Feb 27 22:09:17 2006//
+
+@menu
+* Definições para  opsubst::
+@end menu
+
+@node Definições para opsubst,  , opsubst, opsubst
+@section Definições para  opsubst
+
+@deffn {Função} opsubst (@var{f},@var{g},@var{e})
+@deffnx {Função} opsubst (@var{g}=@var{f},@var{e})
+@deffnx {Função} opsubst ([@var{g1}=@var{f1},@var{g2}=@var{f2},..., @var{gn}=@var{fn}],@var{e})
+A função @code{opsubst}  similar à função @code{subst}, excepto que
+@code{opsubst} somente faz substituições para as operações em uma expressões. Em geral, 
+quando @var{f} for um operador em uma expressão @var{e}, substitui @var{g} 
+por @var{f} na expressão @var{e}.
+
+Para determinar o operador, @code{opsubst} escolhe @code{inflag} para verdadeiro ( true ). Isso significa que
+@code{opsubst} substitui para a forma de operador interna, não para a mostrada,
+na expressão.
+
+Exemplos:
+@example
+(%i1) load (opsubst)$
+
+(%i2) opsubst(f,g,g(g(x)));
+(%o2)                     f(f(x))
+(%i3) opsubst(f,g,g(g));
+(%o3)                       f(g)
+(%i4) opsubst(f,g[x],g[x](z));
+(%o4)                       f(z)
+(%i5) opsubst(g[x],f, f(z));
+(%o5)                      g (z)
+                            x
+(%i6) opsubst(tan, sin, sin(sin));
+(%o6)                     tan(sin)
+(%i7) opsubst([f=g,g=h],f(x));
+(%o7)                       h(x)
+@end example
+
+Internamente, Maxima não usa os operadores de negação unária,
+divisão, ou de subtração; dessa forma:
+@example
+(%i8) opsubst("+","-",a-b);
+(%o8)                     a - b
+(%i9) opsubst("f","-",-a);
+(%o9)                      - a
+(%i10) opsubst("^^","/",a/b);
+                             a
+(%o10)                       -
+                             b
+@end example
+
+A representação interna de -a*b é *(-1,a,b); dessa forma
+@example
+(%i11) opsubst("[","*", -a*b);
+(%o11)                  [- 1, a, b]
+@end example
+
+Quando o operador não for um símbolo Maxima, geralmente alguma outra função
+sinalizará um erro:
+@example
+(%i12) opsubst(a+b,f, f(x));
+
+Improper name or value in functional position:
+b + a
+ -- an error.  Quitting.  To debug this try debugmode(true);
+@end example
+
+Todavia, operadores subscritos são permitidos:
+@example
+(%i13) opsubst(g[5],f, f(x));
+(%o13)                     g (x)
+                            5
+@end example
+
+Para usar essa função escreva primeiramente @code{load("opsubst")}.
+@end deffn
+
+

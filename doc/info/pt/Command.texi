@@ -1,0 +1,1064 @@
+@c Language: Portuguese
+@c Source: Command.texi (en) 1.43
+@iftex
+@hyphenation{si-na-li-za-do-res}
+@hyphenation{de-mo-ra-da-men-te}
+@hyphenation{va-lo-res}
+@end iftex
+@menu
+* Introdução a Linha de Comandos::  
+* Definições para Linha de Comandos::  
+@end menu
+
+@node Introdução a Linha de Comandos, Definições para Linha de Comandos, Linha de Comandos, Linha de Comandos
+@section Introdução a Linha de Comandos
+
+@c NEEDS EXAMPLES
+@c THIS ITEM IS VERY IMPORTANT !!
+@deffn {Operador} '
+@ifinfo
+@fnindex Operador Apóstrofo
+@end ifinfo
+O operador apóstrofo @code{'} evita avaliação.
+
+Aplicado a um símbolo,
+o apóstrofo evita avaliação do símbolo.
+
+Aplicado a uma chamada de função,
+o apóstrofo evita avaliação da chamada de função,
+embora os argumentos da função sejam ainda avaliados (se a avaliação não for de outra forma evitada).
+O resultado é a forma substantiva da chamada de função.
+
+Aplicada a uma espressão com parêntesis,
+o apóstrofo evita avaliação de todos os símbolos e chamadas de função na expressão.
+@c DUNNO IF THESE EXAMPLES ARE STILL NEEDED -- COVERED BY ITEMS UNDER "Examples"
+E.g., @code{'(f(x))} significa não avalie a expressão @code{f(x)}.
+@code{'f(x)} (com apóstrofo aplicado a @code{f} em lugar de @code{f(x)})
+retorna a forma substantiva de @code{f} aplicada a @code{[x]}.
+
+O apóstrofo nao evita simplificação.
+
+Quando o sinalizador global @code{noundisp} for @code{true},
+substantivos são mostrados com um apóstrofo.
+Esse comutador é sempre @code{true} quando mostrando definições de funções.
+
+Veja também operador apóstrofo-apóstrofo @code{''} e @code{nouns}.
+
+Exemplos:
+
+Aplicado a um símbolo,
+o apóstrofo evita avaliação do símbolo.
+
+@c ===beg===
+@c aa: 1024;
+@c aa^2;
+@c 'aa^2;
+@c ''%;
+@c ===end===
+@example
+(%i1) aa: 1024;
+(%o1)                         1024
+(%i2) aa^2;
+(%o2)                        1048576
+(%i3) 'aa^2;
+                                 2
+(%o3)                          aa
+(%i4) ''%;
+(%o4)                        1048576
+@end example
+
+Aplicado a uma chamada de função,
+o apóstrofo evita avaliação da chamada de função.
+O resultado é a forma substantiva da chamada de função.
+
+@c ===beg===
+@c x0: 5;
+@c x1: 7;
+@c integrate (x^2, x, x0, x1);
+@c 'integrate (x^2, x, x0, x1);
+@c %, nouns;
+@c ===end===
+@example
+(%i1) x0: 5;
+(%o1)                           5
+(%i2) x1: 7;
+(%o2)                           7
+(%i3) integrate (x^2, x, x0, x1);
+                               218
+(%o3)                          ---
+                                3
+(%i4) 'integrate (x^2, x, x0, x1);
+                             7
+                            /
+                            [   2
+(%o4)                       I  x  dx
+                            ]
+                            /
+                             5
+(%i5) %, nouns;
+                               218
+(%o5)                          ---
+                                3
+@end example
+
+Aplicado a uma expressão com parêntesis,
+o apóstrofo evita avaliação de todos os símbolos e chamadas de função na expressão.
+
+@c ===beg===
+@c aa: 1024;
+@c bb: 19;
+@c sqrt(aa) + bb;
+@c '(sqrt(aa) + bb);
+@c ''%;
+@c ===end===
+@example
+(%i1) aa: 1024;
+(%o1)                         1024
+(%i2) bb: 19;
+(%o2)                          19
+(%i3) sqrt(aa) + bb;
+(%o3)                          51
+(%i4) '(sqrt(aa) + bb);
+(%o4)                     bb + sqrt(aa)
+(%i5) ''%;
+(%o5)                          51
+@end example
+
+O apóstrofo não evita simplificação.
+
+@c ===beg===
+@c sin (17 * %pi) + cos (17 * %pi);
+@c '(sin (17 * %pi) + cos (17 * %pi));
+@c ===end===
+@example
+(%i1) sin (17 * %pi) + cos (17 * %pi);
+(%o1)                          - 1
+(%i2) '(sin (17 * %pi) + cos (17 * %pi));
+(%o2)                          - 1
+@end example
+
+@end deffn
+
+@deffn {Operador} ''
+@ifinfo
+@fnindex Operador apóstrofo-apóstrofo
+@end ifinfo
+O operador apóstrofo-apóstrofo @code{'@w{}'} (dois apóstrofost) modifica avaliação em expressões de entrada.
+
+Aplicado a uma expressão geral @var{expr}, apóstrofo-apóstrofo faz com que o valor de @var{expr}
+seja substituído por @var{expr} na expressão de entrada.
+
+Aplicado ao operadro de uma expressão,
+apóstrofo-apóstrofo modifica o operadro de um susbstantivo para um verbo (se esse operador não for já um verbo).
+
+O operador apóstrofo-apóstrofo é aplicado através do passador de entrada;
+o apóstrofo-apóstrofo não é armazenado como parte de uma expressão de entrada passada.
+O operador apóstrofo-apóstrofo é sempre aplicado tão rapidamente quanto for passado,
+e não pode receber um terceiro apóstrofo.
+Dessa forma faz com que ocorra avaliação quando essa avaliação for de outra forma suprimida,
+da mesma forma que em definições de função, definições de expressãoes lambda, e expressões que recebem um apóstrofo simples @code{'}.
+
+Apóstrofo-apóstrofo é reconhecido por @code{batch} e @code{load}.
+
+Veja também o operador apóstrofo @code{'} e @code{nouns}.
+
+Exemplos:
+
+Aplicado a uma expressão geral @var{expr}, apóstrofo-apóstrofo fazem com que o valor de @var{expr}
+seja substituido por @var{expr} na expressão de entrada.
+
+@c ===beg===
+@c expand ((a + b)^3);
+@c [_, ''_];
+@c [%i1, ''%i1];
+@c [aa : cc, bb : dd, cc : 17, dd : 29];
+@c foo_1 (x) := aa - bb * x;
+@c foo_1 (10);
+@c ''%;
+@c ''(foo_1 (10));
+@c foo_2 (x) := ''aa - ''bb * x;
+@c foo_2 (10);
+@c [x0 : x1, x1 : x2, x2 : x3];
+@c x0;
+@c ''x0;
+@c '' ''x0;
+@c ===end===
+@example
+(%i1) expand ((a + b)^3);
+                     3        2      2      3
+(%o1)               b  + 3 a b  + 3 a  b + a
+(%i2) [_, ''_];
+                         3    3        2      2      3
+(%o2)     [expand((b + a) ), b  + 3 a b  + 3 a  b + a ]
+(%i3) [%i1, ''%i1];
+                         3    3        2      2      3
+(%o3)     [expand((b + a) ), b  + 3 a b  + 3 a  b + a ]
+(%i4) [aa : cc, bb : dd, cc : 17, dd : 29];
+(%o4)                   [cc, dd, 17, 29]
+(%i5) foo_1 (x) := aa - bb * x;
+(%o5)                 foo_1(x) := aa - bb x
+(%i6) foo_1 (10);
+(%o6)                      cc - 10 dd
+(%i7) ''%;
+(%o7)                         - 273
+(%i8) ''(foo_1 (10));
+(%o8)                         - 273
+(%i9) foo_2 (x) := ''aa - ''bb * x;
+(%o9)                 foo_2(x) := cc - dd x
+(%i10) foo_2 (10);
+(%o10)                        - 273
+(%i11) [x0 : x1, x1 : x2, x2 : x3];
+(%o11)                    [x1, x2, x3]
+(%i12) x0;
+(%o12)                         x1
+(%i13) ''x0;
+(%o13)                         x2
+(%i14) '' ''x0;
+(%o14)                         x3
+@end example
+
+Aplicado ao operador de uma expressão,
+apóstrofo-apóstrofo muda o operadro de um substantivo para um verbo (se esse operadro não for já um verbo).
+
+@c ===beg===
+@c sin (1);
+@c ''sin (1);
+@c declare (foo, noun);
+@c foo (x) := x - 1729;
+@c foo (100);
+@c ''foo (100);
+@c ===end===
+@example
+(%i1) sin (1);
+(%o1)                        sin(1)
+(%i2) ''sin (1);
+(%o2)                    0.8414709848079
+(%i3) declare (foo, noun);
+(%o3)                         done
+(%i4) foo (x) := x - 1729;
+(%o4)                 ''foo(x) := x - 1729
+(%i5) foo (100);
+(%o5)                       foo(100)
+(%i6) ''foo (100);
+(%o6)                        - 1629
+@end example
+
+O operador apóstrofo-apóstrofo é aplicado por meio de um passador de entrada;
+operador-apóstrofo não é armazenado como parte da expressão de entrada.
+
+@c ===beg===
+@c [aa : bb, cc : dd, bb : 1234, dd : 5678];
+@c aa + cc;
+@c display (_, op (_), args (_));
+@c ''(aa + cc);
+@c display (_, op (_), args (_));
+@c ===end===
+@example
+(%i1) [aa : bb, cc : dd, bb : 1234, dd : 5678];
+(%o1)                 [bb, dd, 1234, 5678]
+(%i2) aa + cc;
+(%o2)                        dd + bb
+(%i3) display (_, op (_), args (_));
+                           _ = cc + aa
+
+                         op(cc + aa) = +
+
+                    args(cc + aa) = [cc, aa]
+
+(%o3)                         done
+(%i4) ''(aa + cc);
+(%o4)                         6912
+(%i5) display (_, op (_), args (_));
+                           _ = dd + bb
+
+                         op(dd + bb) = +
+
+                    args(dd + bb) = [dd, bb]
+
+(%o5)                         done
+@end example
+
+Apóstrofo apóstrofo faz com que ocorra avaliação quando a avaliação tiver sido de outra forma suprimida,
+da mesma forma que em definições de função, da mesma forma que em definições de função lambda expressions, E expressões que recebem o apóstrofo simples @code{'}.
+
+@c ===beg===
+@c foo_1a (x) := ''(integrate (log (x), x));
+@c foo_1b (x) := integrate (log (x), x);
+@c dispfun (foo_1a, foo_1b);
+@c integrate (log (x), x);
+@c foo_2a (x) := ''%;
+@c foo_2b (x) := %;
+@c dispfun (foo_2a, foo_2b);
+@c F : lambda ([u], diff (sin (u), u));
+@c G : lambda ([u], ''(diff (sin (u), u)));
+@c '(sum (a[k], k, 1, 3) + sum (b[k], k, 1, 3));
+@c '(''(sum (a[k], k, 1, 3)) + ''(sum (b[k], k, 1, 3)));
+@c ===end===
+@example
+(%i1) foo_1a (x) := ''(integrate (log (x), x));
+(%o1)               foo_1a(x) := x log(x) - x
+(%i2) foo_1b (x) := integrate (log (x), x);
+(%o2)           foo_1b(x) := integrate(log(x), x)
+(%i3) dispfun (foo_1a, foo_1b);
+(%t3)               foo_1a(x) := x log(x) - x
+
+(%t4)           foo_1b(x) := integrate(log(x), x)
+
+(%o4)                      [%t3, %t4]
+(%i4) integrate (log (x), x);
+(%o4)                     x log(x) - x
+(%i5) foo_2a (x) := ''%;
+(%o5)               foo_2a(x) := x log(x) - x
+(%i6) foo_2b (x) := %;
+(%o6)                    foo_2b(x) := %
+(%i7) dispfun (foo_2a, foo_2b);
+(%t7)               foo_2a(x) := x log(x) - x
+
+(%t8)                    foo_2b(x) := %
+
+(%o8)                      [%t7, %t8]
+(%i8) F : lambda ([u], diff (sin (u), u));
+(%o8)             lambda([u], diff(sin(u), u))
+(%i9) G : lambda ([u], ''(diff (sin (u), u)));
+(%o9)                  lambda([u], cos(u))
+(%i10) '(sum (a[k], k, 1, 3) + sum (b[k], k, 1, 3));
+(%o10)         sum(b , k, 1, 3) + sum(a , k, 1, 3)
+                    k                  k
+(%i11) '(''(sum (a[k], k, 1, 3)) + ''(sum (b[k], k, 1, 3)));
+(%o11)             b  + a  + b  + a  + b  + a
+                    3    3    2    2    1    1
+@end example
+
+@end deffn
+
+@node Definições para Linha de Comandos,  , Introdução a Linha de Comandos, Linha de Comandos
+@section Definições para Linha de Comandos
+
+@c NEEDS WORK, ESPECIALLY EXAMPLES
+@deffn {Função} alias (@var{new_name_1}, @var{old_name_1}, ..., @var{new_name_n}, @var{old_name_n})
+provê um
+nome alternativo para uma função (de utilizador ou de sistema), variável, array, etc.
+Qualquer número de argumentos pode ser usado.
+
+@end deffn
+
+@defvr {Variável de opção} debugmode
+Valor por omissão: @code{false}
+
+Quando um erro do Maxima ocorre, Maxima iniciará o depurador se @code{debugmode} for @code{true}.
+O utilizador pode informar comandos para examinar o histórico de chamadas, marcar pontos de parada, percorrer uma linha por vez
+o código do Maxima, e assim por diante.  Veja @code{debugging} para uma lista de opções do depurador.
+
+Habilitando @code{debugmode} por meio da alteração de seu valor para @code{true}, não serão capturados erros do Lisp.
+@c DO WE WANT TO SAY MORE ABOUT DEBUGGING LISP ERRORS ???
+@c I'M NOT CONVINCED WE WANT TO OPEN THAT CAN OF WORMS !!!
+
+@end defvr
+
+@c NEEDS CLARIFICATION
+@c VERY IMPORTANT !!
+@deffn {Função} ev (@var{expr}, @var{arg_1}, ..., @var{arg_n})
+Avalia a expressão @var{expr} no ambiente
+especificado pelos argumentos @var{arg_1}, ..., @var{arg_n}.
+Os argumentos são comutadores (sinalizadores Booleanos), atribuições, equações, e funções.
+@code{ev} retorna o resultado (outra expressão) da avaliação.
+
+A avaliação é realizada em passos, como segue.
+
+@enumerate
+@item
+Primeiro o ambiente é preparado examinando os argumentos que podem
+ser quaisquer ou todos os seguintes.
+
+@itemize @bullet
+@item
+@code{simp} faz com que @var{expr} seja simplificado independentemente da posição do
+comutador @code{simp} que inibe simplificação se @code{false}.
+@item
+@code{noeval} suprime a fase de avaliação de @code{ev} (veja passo (4) adiante).
+Isso é útil juntamente com outros comutadores e faz com que
+@var{expr} seja simplificado novamente sem ser reavaliado.
+@item
+@code{nouns} causa a avaliação de formas substantivas
+(tipicamente funções não avaliadas tais como @code{'integrate} ou @code{'diff})
+em @var{expr}.
+@item
+@code{expand} causa expansão.
+@item
+@code{expand (@var{m}, @var{n})} causa expansão, alterando os valores de @code{maxposex} e
+@code{maxnegex} para @var{m} e @var{n} respectivamente.
+@item
+@code{detout} faz com que qualquer matriz inversa calculada em @var{expr} tenha seu
+determinante mantido fora da inversa ao invés de dividindo a
+cada elemento.
+@item
+@code{diff} faz com que todas as diferenciações indicadas em @var{expr} sejam executadas.
+@item
+@code{derivlist (@var{x}, @var{y}, @var{z}, ...)} causa somente diferenciações referentes às
+variáveis indicadas.
+@item
+@code{float} faz com que números racionais não inteiros sejam convertidos para ponto 
+flutuante.
+@item
+@code{numer} faz com que algumas funções matemáticas (incluindo a exponenciação)
+com argumentos sejam valiadas em ponto flutuante.  Isso faz com que
+variávels em @var{expr} que tenham sido dados numervals (valores numéricos) sejam substituídas por
+seus valores.  Isso também modifica o comutador @code{float} para activado.
+@item
+@code{pred} faz com que predicados (expressões que podem ser avaliados em @code{true} ou @code{false})
+sejam avaliadas.
+@item
+@code{eval} faz com que uma avaliação posterior de @var{expr} ocorra.  (Veja passo (5)
+adiante.)
+@code{eval} pode ocorrer múltiplas vezes.
+Para cada instância de @code{eval}, a expressão é avaliada novamente.
+@item
+@code{A} onde @code{A} é um átomo declarado seja um sinalizador de avaliação (veja @code{evflag})
+faz com que @code{A} seja associado a
+@code{true} durante a avaliação de @var{expr}.
+@item
+@code{V: expresão} (ou alternativamente @code{V=expressão}) faz com que @code{V} seja associado ao
+valor de @code{expressão} durante a avaliação de @var{expr}.  Note que se @code{V} é uma
+opção do Maxima, então @code{expression} é usada para seu valor durante a
+avaliação de @var{expr}.  Se mais que um argumento para @code{ev} é desse tipo
+então a associação termina em paralelo.  Se @code{V} é uma expressão não at@^omica
+então a substituição, ao invés de uma associação, é executada.
+@item
+@code{F} onde @code{F}, um nome de função, tenha sido declarado para ser uma função de avaliação (veja @code{evfun})
+faz com que @code{F}
+seja aplicado a @var{expr}.
+@item
+Qualquer outro nome de função (e.g., @code{sum}) causa a avaliação de ocorrências
+desses nomes em @var{expr} mesmo que eles tenham sido verbos.
+@item
+De forma adicional uma função ocorrendo em @var{expr} (digamos @code{F(x)}) pode ser definida
+localmente para o propósito dessa avaliação de @var{expr} dando
+@code{F(x) := expressão} como um argumento para @code{ev}.
+@item
+Se um átomo não mensionado acima ou uma variável subscrita ou
+expressão subscrita for dada como um argumento, isso é avaliado e
+se o resultado for uma equação ou uma atribuição então a associação indicada
+ou substituição é executada.  Se o resultado for uma lista então os
+membros da lista serão tratados  como se eles fossem argumentos adicionais
+dados para @code{ev}.  Isso permite que uma lista de equações seja dada (e.g. @code{[X=1, Y=A**2]})
+ou que seja dado uma lista de nomes de equações (e.g., @code{[%t1, %t2]} onde @code{%t1} e
+@code{%t2} são equações) tais como aquelas listas retornadas por @code{solve}.
+@end itemize
+
+Os argumentos de @code{ev} podem ser dados em qualquer ordem com exceção de
+substituições de equações que são manuseadas em sequência, da esquerda para a direita,
+e funções de avaliação que são compostas, e.g., @code{ev (@var{expr}, ratsimp, realpart)} são
+manuseadas como @code{realpart (ratsimp (@var{expr}))}.
+
+Os comutadores @code{simp}, @code{numer}, @code{float}, e @code{pred} podem também ser alterados localmente em um
+bloco, ou globalmente no Maxima dessa forma eles irã
+permanecer em efeito até serem resetados ao término da execução do bloco.
+
+Se @var{expr} for uma expressão racional canónica (CRE),
+então a expressão retornada por @code{ev} é também uma CRE,
+contanto que os comutadores @code{numer} e @code{float} não sejam ambos @code{true}.
+
+@item
+Durante o passo (1), é feito uma lista  de variáveis não subscritas
+aparecendo do lado esquerdo das equações nos argumentos ou nos
+valores de alguns argumentos se o valor for uma equação.  As variáveis
+(variáveis subscritas que não possuem funções array
+associadas bem como variáveis não subscritas) na expressão @var{expr} são
+substituídas por seus valores globais, excepto para esse aparecendo nessa 
+lista.  Usualmente, @var{expr} é apenas um rótulo ou @code{%}
+(como em @code{%i2} no exemplo adiante), então esse 
+passo simplesmente repete a expressão nomeada pelo rótulo, de modo que @code{ev}
+possa trabalhar sobre isso.
+
+@item
+Se quaisquer substituições tiveem sido indicadas pelos argumentos, elas serão
+realizadas agora.
+
+@item
+A expressão resultante é então reavaliada (a menos que um dos
+argumentos seja @code{noeval}) e simplificada conforme os argumentos.  Note que
+qualquer chamada de função em @var{expr} será completada depois das variáveis
+nela serem avalidas e que @code{ev(F(x))} dessa forma possa comportar-se como @code{F(ev(x))}.
+
+@item
+Para cada instância de @code{eval} nos argumentos, os passos (3) e (4) são repetidos.
+@end enumerate
+
+                     Exemplos
+
+@example
+(%i1) sin(x) + cos(y) + (w+1)^2 + 'diff (sin(w), w);
+                                     d                    2
+(%o1)              cos(y) + sin(x) + -- (sin(w)) + (w + 1)
+                                     dw
+(%i2) ev (%, sin, expand, diff, x=2, y=1);
+                          2
+(%o2)           cos(w) + w  + 2 w + cos(1) + 1.909297426825682
+@end example
+
+Uma sintaxe alternativa de alto nível tem sido provida por @code{ev}, por meio da qual
+se pode apenas digitar seus argumentos, sem o @code{ev()}.  Isto é, se pode
+escrever simplesmente
+
+@example
+@var{expr}, @var{arg_1}, ..., @var{arg_n}
+@end example
+
+Isso não é permitido como parte de
+outra expressão, e.g., em funções, blocos, etc.
+
+Observe o processo de associação paralela no seguinte exemplo.
+
+@example
+(%i3) programmode: false;
+(%o3)                                false
+(%i4) x+y, x: a+y, y: 2;
+(%o4)                              y + a + 2
+(%i5) 2*x - 3*y = 3$
+(%i6) -3*x + 2*y = -4$
+(%i7) solve ([%o5, %o6]);
+Solution
+
+                                          1
+(%t7)                               y = - -
+                                          5
+
+                                         6
+(%t8)                                x = -
+                                         5
+(%o8)                            [[%t7, %t8]]
+(%i8) %o6, %o8;
+(%o8)                              - 4 = - 4
+(%i9) x + 1/x > gamma (1/2);
+                                   1
+(%o9)                          x + - > sqrt(%pi)
+                                   x
+(%i10) %, numer, x=1/2;
+(%o10)                      2.5 > 1.772453850905516
+(%i11) %, pred;
+(%o11)                               true
+@end example
+
+@end deffn
+
+@defvr {Propriedade} evflag
+Quando um símbolo @var{x} tem a propriedade @code{evflag},
+as expressões @code{ev(@var{expr}, @var{x})} e @code{@var{expr}, @var{x}}
+(na linha de comando interativa) são equivalentes a @code{ev(@var{expr}, @var{x} = true)}.
+Isto é, @var{x} está associada a @code{true} enquanto @var{expr} for avaliada.
+
+A expressão @code{declare(@var{x}, evflag)}
+fornece a propriedade @code{evflag} para a variável @var{x}.
+
+Os sinalizadores que possuem a propriedade @code{evflag} por padrão são os seguintes:
+@c FOLLOWING LIST CONSTRUCTED FROM LIST UNDER (prog1 '(evflag properties) ...)
+@c NEAR LINE 2649 OF mlisp.lisp AT PRESENT (2004/11).
+@code{algebraic},
+@code{cauchysum},
+@code{demoivre},
+@code{dotscrules},
+@code{%emode},
+@code{%enumer},
+@code{exponentialize},
+@code{exptisolate},
+@code{factorflag},
+@code{float},
+@code{halfangles},
+@code{infeval},
+@code{isolate_wrt_times},
+@code{keepfloat},
+@code{letrat},
+@code{listarith},
+@code{logabs},
+@code{logarc},
+@code{logexpand},
+@code{lognegint},
+@code{lognumer},
+@code{m1pbranch},
+@code{numer_pbranch},
+@code{programmode},
+@code{radexpand},
+@code{ratalgdenom},
+@code{ratfac},
+@code{ratmx},
+@code{ratsimpexpons},
+@code{simp},
+@code{simpsum},
+@code{sumexpand}, e
+@code{trigexpand}.
+
+Exemplos:
+
+@c ===beg===
+@c sin (1/2);
+@c sin (1/2), float;
+@c sin (1/2), float=true;
+@c simp : false;
+@c 1 + 1;
+@c 1 + 1, simp;
+@c simp : true;
+@c sum (1/k^2, k, 1, inf);
+@c sum (1/k^2, k, 1, inf), simpsum;
+@c declare (aa, evflag);
+@c if aa = true then YES else NO;
+@c if aa = true then YES else NO, aa;
+@c ===end===
+@example
+(%i1) sin (1/2);
+                                 1
+(%o1)                        sin(-)
+                                 2
+(%i2) sin (1/2), float;
+(%o2)                   0.479425538604203
+(%i3) sin (1/2), float=true;
+(%o3)                   0.479425538604203
+(%i4) simp : false;
+(%o4)                         false
+(%i5) 1 + 1;
+(%o5)                         1 + 1
+(%i6) 1 + 1, simp;
+(%o6)                           2
+(%i7) simp : true;
+(%o7)                         true
+(%i8) sum (1/k^2, k, 1, inf);
+                            inf
+                            ====
+                            \     1
+(%o8)                        >    --
+                            /      2
+                            ====  k
+                            k = 1
+(%i9) sum (1/k^2, k, 1, inf), simpsum;
+                                 2
+                              %pi
+(%o9)                         ----
+                               6
+(%i10) declare (aa, evflag);
+(%o10)                        done
+(%i11) if aa = true then SIM else NÃO;
+(%o11)                         NÃO
+(%i12) if aa = true then SIM else NÃO, aa;
+(%o12)                         SIM
+@end example
+
+@end defvr
+
+@defvr {Propriedade}  evfun
+Quando uma função @var{F} tem a propriedade @code{evfun},
+as expressões @code{ev(@var{expr}, @var{F})} e @code{@var{expr}, @var{F}}
+(na linha de comando interativa)
+são equivalentes a @code{@var{F}(ev(@var{expr}))}.
+
+Se duas ou mais funções @var{F}, @var{G}, etc., que possuem a propriedade @code{evfun} forem especificadas,
+as funções serão aplicadas na ordem em que forem especificadas.
+
+A expressão @code{declare(@var{F}, evfun)}
+fornece a propriedade @code{evfun} para a função @var{F}.
+
+As funções que possuem a propriedade @code{evfun} por padrão são as seguintes:
+@c FOLLOWING LIST CONSTRUCTED FROM LIST UNDER (prog1 '(evfun properties) ...)
+@c NEAR LINE 2643 IN mlisp.lisp AT PRESENT (2004/11).
+@code{bfloat},
+@code{factor},
+@code{fullratsimp},
+@code{logcontract},
+@code{polarform},
+@code{radcan},
+@code{ratexpand},
+@code{ratsimp},
+@code{rectform},
+@code{rootscontract},
+@code{trigexpand}, e
+@code{trigreduce}.
+
+Exemplos:
+ 
+@c ===beg===
+@c x^3 - 1;
+@c x^3 - 1, factor;
+@c factor (x^3 - 1);
+@c cos(4 * x) / sin(x)^4;
+@c cos(4 * x) / sin(x)^4, trigexpand;
+@c cos(4 * x) / sin(x)^4, trigexpand, ratexpand;
+@c ratexpand (trigexpand (cos(4 * x) / sin(x)^4));
+@c declare ([F, G], evfun);
+@c (aa : bb, bb : cc, cc : dd);
+@c aa;
+@c aa, F;
+@c F (aa);
+@c F (ev (aa));
+@c aa, F, G;
+@c G (F (ev (aa)));
+@c ===end===
+@example
+(%i1) x^3 - 1;
+                              3
+(%o1)                        x  - 1
+(%i2) x^3 - 1, factor;
+                                2
+(%o2)                 (x - 1) (x  + x + 1)
+(%i3) factor (x^3 - 1);
+                                2
+(%o3)                 (x - 1) (x  + x + 1)
+(%i4) cos(4 * x) / sin(x)^4;
+                            cos(4 x)
+(%o4)                       --------
+                               4
+                            sin (x)
+(%i5) cos(4 * x) / sin(x)^4, trigexpand;
+                 4           2       2         4
+              sin (x) - 6 cos (x) sin (x) + cos (x)
+(%o5)         -------------------------------------
+                                4
+                             sin (x)
+(%i6) cos(4 * x) / sin(x)^4, trigexpand, ratexpand;
+                           2         4
+                      6 cos (x)   cos (x)
+(%o6)               - --------- + ------- + 1
+                          2          4
+                       sin (x)    sin (x)
+(%i7) ratexpand (trigexpand (cos(4 * x) / sin(x)^4));
+                           2         4
+                      6 cos (x)   cos (x)
+(%o7)               - --------- + ------- + 1
+                          2          4
+                       sin (x)    sin (x)
+(%i8) declare ([F, G], evfun);
+(%o8)                         done
+(%i9) (aa : bb, bb : cc, cc : dd);
+(%o9)                          dd
+(%i10) aa;
+(%o10)                         bb
+(%i11) aa, F;
+(%o11)                        F(cc)
+(%i12) F (aa);
+(%o12)                        F(bb)
+(%i13) F (ev (aa));
+(%o13)                        F(cc)
+(%i14) aa, F, G;
+(%o14)                      G(F(cc))
+(%i15) G (F (ev (aa)));
+(%o15)                      G(F(cc))
+@end example
+
+@end defvr
+
+@c NEEDS WORK
+@defvr {Variável de opção} infeval
+Habilita o modo "avaliação infinita".  @code{ev} repetidamente avalia
+uma expressão até que ela permaneça invariante.  Para prevenir uma
+variável, digamos @code{X}, seja demoradamente avaliada nesso modo, simplesmente
+inclua @code{X='X} como um argumento para @code{ev}.  Certamente expressões tais como
+@code{ev (X, X=X+1, infeval)} irão gerar um ciclo infinito.
+
+@end defvr
+
+@c REVIEW FOR ACCURACY AND COMPLETENESS
+@c THIS ITEM IS VERY IMPORTANT !!
+@c NEEDS EXAMPLES
+@deffn {Função} kill (@var{a_1}, ..., @var{a_n})
+@deffnx {Função} kill (labels)
+@deffnx {Função} kill (inlabels, outlabels, linelabels)
+@deffnx {Função} kill (@var{n})
+@deffnx {Função} kill ([@var{m}, @var{n}])
+@deffnx {Função} kill (values, functions, arrays, ...)
+@deffnx {Função} kill (all)
+@deffnx {Função} kill (allbut (@var{a_1}, ..., @var{a_n}))
+
+Remove todas as associações (valor, funções, array, ou regra) dos argumentos
+@var{a_1}, ..., @var{a_n}.
+Um argumento @var{a_k} pode ser um símbolo ou um elemento de array simples.
+Quando @var{a_k} for um elemento de array simples, @code{kill} remove a associação daquele elemento
+sem afectar qualquer outro elemento do array.
+
+Muitos argumentos especiais são reconhecidos.  
+Diferentes famílias de argumentos 
+podem ser combinadas, e.g., @code{kill (inlabels, functions, allbut (foo, bar))}
+
+todos os rótulos de entrada, de saída, e de expressões intermédias criados até então.
+@code{kill (inlabels)} libera somente rótudos de entrada 
+que começam com o valor corrente de @code{inchar}.
+De forma semelhante,
+@code{kill (outlabels)} libera somente rótulos de saída
+que começam com o valor corrente de @code{outchar},
+e @code{kill (linelabels)} libera somente rótulos de expressões intermédias
+que começam com o valor corrente de @code{linechar}.
+
+@code{kill (@var{n})}, onde @var{n} é um inteiro,
+libera os @var{n} mais recentes rótulos de entrada e saída.
+
+@code{kill ([@var{m}, @var{n}])} libera rótulos de entrada e saída de @var{m} até @var{n}.
+
+@code{kill (@var{infolist})}, onde @var{infolist} é um item em @code{infolists}
+(tais como @code{values}, @code{functions}, ou @code{arrays})
+libera todos os ítens em @var{infolist}.
+Veja também @code{infolists}.
+
+@code{kill (all)} liberar todos os ítens em todas as infolists.
+@code{kill (all)} não retorna variáveis globais para seus valores padrões;
+Veja @code{reset} sobre esse ponto.
+
+@code{kill (allbut (@var{a_1}, ..., @var{a_n}))}
+remove a associação de todos os itens sobre todas as infolistas excepto para @var{a_1}, ..., @var{a_n}.
+@code{kill (allbut (@var{infolist}))} libera todos os ítens excepto para si próprio em @var{infolist},
+onde @var{infolist} é @code{values}, @code{functions}, @code{arrays}, etc.
+
+A memória usada por uma propriedade de associação não será liberada até que todos os símbolos
+sejam liberados disso.
+Em particular, para liberar a memória usada pelo valor de um símbolo,
+deve-se liberar o rótulo de saída que mosta o valor associado, bem como liberando o próprio símbolo.
+
+@code{kill} coloca um apóstro em seus argumentos (não os avalia).
+O operador apóstrofo-apóstrofo, @code{'@w{}'}, faz com que ocorra avaliação.
+
+@code{kill (@var{símbolo})} libera todas as propriedades de @var{símbolo}.
+Em oposição, @code{remvalue}, @code{remfunction}, @code{remarray}, e @code{remrule}
+liberam uma propriedade específica.
+
+@code{kill} sempre retorna @code{done}, igualmente se um argumento não tem associações.
+
+@end deffn
+
+@deffn {Função} labels (@var{símbolo})
+@deffnx {Variável de sistema} labels
+Retorna a lista de rótulos de entradas, de saída, de expressões intermédias que começam com @var{símbolo}.
+Tipicamente @var{símbolo} é o valor de @code{inchar}, @code{outchar}, ou @code{linechar}.
+O caracter rótulo pode ser dado com ou sem o sinal de porcentagem,
+então, por exemplo, @code{i} e @code{%i} retornam o mesmo resultado.
+
+Se nenhum rótulo começa com @var{símbolo}, @code{labels} retorna uma lista vazia.
+
+A função @code{labels} não avalia seu argumento.
+O operador apóstrofo-apóstrofo @code{'@w{}'} faz com que ocorra avaliação.
+Por exemplo,
+@code{labels (''inchar)} retorna os rótulos de entrada que começam com o caractere corrente do rótulo de entrada.
+
+A variável @code{labels} é uma lista de rótulos de entrada, saída, e de expressões intermédias,
+incluindo todos os rótulos anteriores se @code{inchar}, @code{outchar}, ou @code{linechar} que tiverem sido redefinidos.
+
+Por padrão, Maxima mostra o resultado de cada expressão de entrada do utilizador,
+dando ao resultado um rótulo de saída.
+A exibição da saída é suprimida pelo encerramento da entrada com @code{$} (sinal de dolar)
+em lugar de @code{;} (ponto e vírgula).
+Um rótulo de saída é construido e associado ao resultado, mas não é mostrado, 
+e o rótulo pode ser referenciado da mesma forma que rótulos de saída mostrados.
+Veja também @code{%}, @code{%%}, e @code{%th}.
+
+Rótulos de expressões intermédias podem ser gerados por algumas funções.
+O sinalizador @code{programmode} controla se @code{solve} e algumas outras funções
+geram rótulos de expressões intermédias em lugar de retornar uma lista de expressões.
+Algumas outras funções, tais como @code{ldisplay}, sempre geram rótulos de expressões intermédias.
+
+Veja também @code{inchar}, @code{outchar}, @code{linechar}, e @code{infolists}.
+
+@end deffn
+
+@c EXPAND; SHOW WHAT HAPPENS WHEN linenum IS ASSIGNED A VALUE
+@defvr {Variável de sistema} linenum
+Retorna o número da linha do par corrente de expressões de entrada e saída.
+
+@end defvr
+
+@c NEEDS WORK
+@defvr {Variável de sistema} myoptions
+Valor por omissão: @code{[]}
+
+@code{myoptions} é a lista de todas as opções alguma vez alteradas pelo utilizador,
+tenha ou não ele retornado a alteração para o seu valor padrão.
+
+@end defvr
+
+@defvr {Variável de opção} nolabels
+Valor por omissão: @code{false}
+
+@c PREVIOUS DESCRIPTION OF nolabels: THIS IS OUT OF DATE
+@c When @code{nolabels} is @code{true}, then no labels will be bound
+@c except for intermediate expression lines generated by the solve functions.  This is most
+@c useful in the batch mode where it eliminates the need to do
+@c @code{kill (labels)} in order to free up storage.
+
+Quando @code{nolabels} for @code{true},
+rótulos de entrada e saída
+(@code{%i} e @code{%o}, respectivamente)
+são mostrados,
+mas os rótulos não são associados aos resultados,
+e os rótulos não são anexados ao final da lista @code{labels}.
+Uma vez que rótulos não são associados aos resultados,
+a reciclagem pode recuperar a memória tomada pelos resultados.
+
+De outra forma rótulos de entrada e saída são associados aos resultados,
+e os rótulos são anexados ao final da lista @code{labels}.
+
+Veja também @code{batch}, @code{batchload}, e @code{labels}.
+
+@end defvr
+
+@c NEEDS WORK
+@defvr {Variável de opção} optionset
+Valor por omissão: @code{false}
+
+Quando @code{optionset} for @code{true}, Maxima mostrará uma
+mensagem sempre que uma opção do Maxima for alterada.  Isso é útil se o
+utilizador está incerto sobre a ortografia de alguma opção e quer ter certeza
+que a variável por ele atribuído um valor foi realmente uma variável de opção.
+
+@end defvr
+
+@deffn {Função} playback ()
+@deffnx {Função} playback (@var{n})
+@deffnx {Função} playback ([@var{m}, @var{n}])
+@deffnx {Função} playback ([@var{m}])
+@deffnx {Função} playback (input)
+@deffnx {Função} playback (slow)
+@deffnx {Função} playback (time)
+@deffnx {Função} playback (grind)
+Mostra expressões de entrada, de saída, e expressões intermédias,
+sem refazer os cálculos.
+@code{playback} somente mostra as expressões associadas a rótulos;
+qualquer outra saída (tais como textos impressos por @code{print} ou @code{describe}, ou messagens de erro)
+não é mostrada.
+Veja também @code{labels}.
+
+@code{playback} não avalia seus argumentos.
+O operador apóstrofo-apóstrofo, @code{'@w{}'}, sobrepõe-se às aspas.
+@code{playback} sempre retorna @code{done}.
+
+@code{playback ()} (sem argumentos) mostra todas as entradas, saídas e expressões intermédias
+geradas até então.
+Uma expressão de saída é mostrada mesmo se for suprimida pelo terminador @code{$}
+quando ela tiver sido originalmente calculada.
+
+@code{playback (@var{n})} mostra as mais recentes @var{n} expressões.
+Cada entrada, saída e expressão intermédia
+conta como um.
+
+@code{playback ([@var{m}, @var{n}])} mostra entradas, saídas e expressões intermédias
+com os números de @var{m} até @var{n}, inclusive.
+
+@code{playback ([@var{m}])} é equivalente a @code{playback ([@var{m}, @var{m}])};
+isso usualmente imprime um par de expressões de entrada e saída.
+
+@code{playback (input)} mostra todas as expressões de entrada geradas até então.
+
+@code{playback (slow)} insere pausas entre expressões
+e espera que o utilizador pressione @code{enter}.
+Esse comportamento é similar a @code{demo}.
+@c WHAT DOES THE FOLLOWING MEAN ???
+@code{playback (slow)} é útil juntamente com @code{save} ou @code{stringout}
+quando criamos um ficheiro secundário de armazenagem com a finalidade de capturar expressões úteis.
+
+@code{playback (time)} mostra o tempo de computação de cada expressão.
+@c DON'T BOTHER TO MENTION OBSOLETE OPTIONS !!!
+@c The arguments @code{gctime} e @code{totaltime} have the same effect as @code{time}.
+
+@code{playback (grind)} mostra expressões de entrada
+no mesmo formato da função @code{grind}.
+Expressões de saída não são afectadas pela opção @code{grind}.
+Veja @code{grind}.
+
+Argumentos podem ser combinados, e.g., 
+@code{playback ([5, 10], grind, time, slow)}.
+@c APPEARS TO BE input INTERSECT (UNION OF ALL OTHER ARGUMENTS).  CORRECT ???
+
+@end deffn
+
+@c NEEDS WORK ESPECIALLY EXAMPLES
+@c WHOLE BUSINESS WITH PROPERTIES IS PRETTY CONFUSING, TRY TO CLEAR IT UP
+@deffn {Função} printprops (@var{a}, @var{i})
+@deffnx {Função} printprops ([@var{a_1}, ..., @var{a_n}], @var{i})
+@deffnx {Função} printprops (all, @var{i})
+Mostra a propriedade como o indicador @var{i}
+associada com o átomo @var{a}.  @var{a} pode também ser uma lista de átomos ou o átomo
+@code{all} nesse caso todos os átomos com a propriedade dada serão
+usados.  Por exemplo, @code{printprops ([f, g], atvalue)}.  @code{printprops} é para
+propriedades que não podem  ser mostradas de outra forma, i.e. para
+@code{atvalue}, @code{atomgrad}, @code{gradef}, e @code{matchdeclare}.
+
+@end deffn
+
+@defvr {Variável de opção} prompt
+Valor por omissão: @code{_}
+
+@code{prompt} é o símbolo de linha de comando da função @code{demo},
+modo @code{playback (slow)}, e da interrupção de ciclos do Maxima (como invocado por @code{break}).
+
+@end defvr
+
+@deffn {Função} quit ()
+Encerra a sessão do Maxima.
+Note que a função pode ser invocada como @code{quit();} ou @code{quit()$},
+não por sí mesma @code{quit}.
+
+Para parar um cálculo muito longo,
+digite @code{control-C}.
+A ação padrão é retornar à linha de comando do Maxima.
+Se @code{*debugger-hook*} é @code{nil},
+@code{control-C} abre o depurador Lisp.
+Veja também @code{debugging}.
+
+@end deffn
+
+@deffn {Função} remfunction (@var{f_1}, ..., @var{f_n})
+@deffnx {Função} remfunction (all)
+Desassocia as definições de função dos síbolos @var{f_1}, ..., @var{f_n}.
+Os argumentos podem ser os nomes de funções comuns (criadas por meio de @code{:=} ou @code{define})
+ou funções macro (criadas por meio de @code{::=}).
+
+@code{remfunction (all)} desassocia todas as definições de funcção.
+
+@code{remfunction} coloca um ap'ostrofo em seus argumentos (não os avalia).
+
+@code{remfunction} retorna uma lista de símbolos para a qual a definição de função foi desassociada.
+@code{false} é retornado em lugar de qualquer símbolo para o qual não exista definição de função.
+
+@end deffn
+
+@deffn {Função} reset ()
+Retorna muitas variáveis globais e opções, e algumas outras variáveis, para seus valores padrões.
+
+@code{reset} processa as variáveis na lista Lisp @code{*variable-initial-values*}.
+A macro Lisp @code{defmvar} coloca variáveis nessa lista (entre outras ações).
+Muitas, mas não todas, variáveis globais e opções são definidas por @code{defmvar},
+ e algumas variáveis definidas por @code{defmvar} não são variáveis globais ou variáveis de opção.
+
+@end deffn
+
+@defvr {Variável de opção} showtime
+Valor por omissão: @code{false}
+
+Quando @code{showtime} for @code{true}, o tempo de computação e o tempo decorrido são
+impressos na tela com cada expressão de saída.
+
+O tempo de cálculo é sempre gravado,
+então @code{time} e @code{playback} podem mostrar o tempo de cálculo
+mesmo quando @code{showtime} for @code{false}.
+
+Veja também @code{timer}.
+
+@end defvr
+
+@c IS THIS ANY DIFFERENT FROM ASSIGNING A PROPERTY ??
+@c THIS REALLY SEEMS LIKE A HACK
+@deffn {Função} sstatus (@var{recurso}, @var{pacote})
+Altera o status de @var{recurso} em @var{pacote}.
+Após @code{sstatus (@var{recurso}, @var{pacote})} ser executado,
+@code{status (@var{recurso}, @var{pacote})} retorna @code{true}.
+Isso pode ser útil para quem escreve pacotes, para
+manter um registro de quais recursos os pacotes usam.
+
+@end deffn
+
+@c NEEDS EXPANSION, EXAMPLES
+@deffn {Função} to_lisp ()
+Insere o sistema Lisp dentro do Maxima.  @code{(to-maxima)} retorna para o Maxima.
+
+@end deffn
+
+@defvr {Variável de sistema} values
+Valor inicial: @code{[]}
+
+@code{values} é uma lista de todas as varáveis de utilizador associadas (não opções Maxima ou comutadores).
+A lista compreende símbolos associados por @code{:} , @code{::}, ou @code{:=}.
+
+@end defvr
+

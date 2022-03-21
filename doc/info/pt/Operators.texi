@@ -1,0 +1,2319 @@
+@c /Operators.texi/1.37/Fri Mar  2 00:44:42 2007/-ko/
+@iftex
+@hyphenation{con-se-cu-ti-vos}
+@hyphenation{u-san-do}
+@end iftex
+@menu
+* N-Argumentos::                        
+* Operador não fixado::                       
+* Operador Pósfixado::                     
+* Operador Préfixado::                      
+* Operadores Aritméticos::   
+* Operadores Relacionais::   
+* Operadores Geral::   
+@end menu
+
+
+@node N-Argumentos, Operador não fixado, Operadores, Operadores
+@section N-Argumentos
+Um operador @code{nary} é usado para denotar uma função com qualquer número de
+argumentos, cada um dos quais é separado por uma ocorrência do
+operador, e.g. A+B ou A+B+C.  A função @code{nary("x")}  é uma função
+de extensão sintática para declarar x como sendo um operador @code{nary}.
+Funções podem ser declaradas para serem
+@code{nary}.  Se @code{declare(j,nary);} é concluída, diz ao simplicador para
+simplificar, e.g. @code{j(j(a,b),j(c,d))} para @code{j(a, b, c, d)}.
+
+Veja também @code{syntax}.
+
+@node Operador não fixado, Operador Pósfixado, N-Argumentos, Operadores
+@section Operador não fixado
+Operadores @code{nofix} são usados para denotar funções sem argumentos.
+A mera presença de tal operador em um comando fará com que a
+função correspondente seja avaliada.  Por exemplo, quando se digita
+"exit;" para sair de uma parada do Maxima, "exit" tem comportamento similar a um
+operador @code{nofix}.  A função @code{nofix("x")} é uma função de extensão
+sintática que declara x como sendo um operador @code{nofix}. 
+
+Veja também @code{syntax}.
+
+@node Operador Pósfixado, Operador Préfixado, Operador não fixado, Operadores
+@section Operador Pósfixado
+Operadores @code{postfix} como a variedade @code{prefix} denotam funções
+de um argumento simples, mas nesse caso  o argumento sucede
+imediatamente uma ocorrência do operador na sequência de caracteres de entrada, e.g. 3! .
+Uma função @code{postfix("x")} é uma função de extensão
+sintática que declara x como sendo um operador @code{postfix}.
+
+Veja também @code{syntax}.
+
+@node Operador Préfixado, Operadores Aritméticos, Operador Pósfixado, Operadores
+@section Operador Préfixado
+Um operador @code{prefix} é um que significa uma função de um
+argumento, o qual imediatamente segue uma ocorrência do
+operador.  @code{prefix("x")} é uma função de extensão
+sintática que declara x como sendo um operador @code{prefix}.
+
+Veja também @code{syntax}.
+
+@node Operadores Aritméticos, Operadores Relacionais, Operador Préfixado, Operadores
+@section Operadores Aritméticos
+
+@deffn {Operador} +
+@ifinfo
+@fnindex Adição
+@end ifinfo
+@deffnx {Operador} -
+@ifinfo
+@fnindex Subtração
+@end ifinfo
+@deffnx {Operador} *
+@ifinfo
+@fnindex Multiplicação
+@end ifinfo
+@deffnx {Operador} /
+@ifinfo
+@fnindex Divisão
+@end ifinfo
+@deffnx {Operador} ^
+@ifinfo
+@fnindex Exponenciação
+@end ifinfo
+
+Os símbolos @code{+} @code{*} @code{/} e @code{^} representam
+adição, multiplicação, divisão, e exponenciação, respectivamente.
+O nome desses operadores são @code{"+"} @code{"*"} @code{"/"} e @code{"^"},
+os quais podem aparecer em lugares onde o nome da função ou operador é requerido.
+
+Os símbolos @code{+} e @code{-} representam a adição unária e a negação unária, respectivamente,
+e os nomes desses operadores são @code{"+"} e @code{"-"}, respectivamente.
+
+A subtração @code{a - b} é representada dentro do Maxima como a adição, @code{a + (- b)}.
+Expressões tais como @code{a + (- b)} são mostradas como subtração.
+Maxima reconhece @code{"-"} somente como o nome do operador unário de negação,
+e não como o nome do operador binário de subração.
+
+A divisão @code{a / b} é representada dentro do Maxima como multiplicação, @code{a * b^(- 1)}.
+Expressões tais como @code{a * b^(- 1)} são mostradas como divisão.
+Maxima reconhece @code{"/"} como o nome do operador de divisão.
+
+A adição e a multiplicação são operadores enários e comutativos.
+a divisão e a exponenciação são operadores binários e não comutativos.
+
+Maxima ordena os operandos de operadores não comutativos para construir uma representação canónica.
+Para armazenamento interno, a ordem é determinada por @code{orderlessp}.
+Para mostrar na tela, a ordem para adição é determinada por @code{ordergreatp},
+e para a multiplicação, a ordem é a mesma da ordenação para armazenamento interno.
+
+Computações aritiméticas são realizadas sobre números literais
+(inteiro, racionais, números comuns em ponto flutuante, e grandes números em ponto flutuante de dupla precisão).
+Execto a exponenciação, todas as operações aritméticas sobre números são simplificadas para números.
+A exponenciação é simplificada para um número se ou o operando é um número comum em ponto flutuante ou um grande número em ponto flutuante de dupla precisão
+ou se o resultado for um inteiro exato ou um racional exato;
+de outra forma uma exponenciação pode ser simplificada para @code{sqrt} ou outra exponenciação ou permanecer inalterada.
+
+A propagação de números em ponto flutuante aplica-se a computações aritiméticas:
+Se qualquer operando for um grande número em ponto flutuante, o resultado é um grande número em ponto flutuante;
+de outra forma, se qualquer operando for um número em ponto flutuante comum, o resultado é um número comum em ponto flutuante;
+de outra forma, se os operandos forem racioanis ou inteiros e o resultado será um racional ou inteiro.
+
+Computaçãoes aritiméticas são uma simplificação, não uma avaliação.
+Dessa forma a aritmética é realizada em  expressões com apóstrofo (mas simplificadas).
+
+Operações aritméticas são aplicadas elemento-por-elemento
+para listas quando a variável global @code{listarith} for @code{true},
+e sempre aplicada elemento-por-elemento para matrizes.
+Quando um operando for uma lista ou uma matriz e outro for um operando de algum outro tipo,
+o outro operando é combinado com cada um dos elementos da lista ou matriz.
+
+Exemplos:
+
+Adição e multiplicação são opeadores enários comutativos.
+Maxima ordena os operandos para construir uma representação canónica.
+Os nomes desses operadores são @code{"+"} e @code{"*"}.
+@c ===beg===
+@c c + g + d + a + b + e + f;
+@c [op (%), args (%)];
+@c c * g * d * a * b * e * f;
+@c [op (%), args (%)];
+@c apply ("+", [a, 8, x, 2, 9, x, x, a]);
+@c apply ("*", [a, 8, x, 2, 9, x, x, a]);
+@c ===end===
+
+@example
+(%i1) c + g + d + a + b + e + f;
+(%o1)               g + f + e + d + c + b + a
+(%i2) [op (%), args (%)];
+(%o2)              [+, [g, f, e, d, c, b, a]]
+(%i3) c * g * d * a * b * e * f;
+(%o3)                     a b c d e f g
+(%i4) [op (%), args (%)];
+(%o4)              [*, [a, b, c, d, e, f, g]]
+(%i5) apply ("+", [a, 8, x, 2, 9, x, x, a]);
+(%o5)                    3 x + 2 a + 19
+(%i6) apply ("*", [a, 8, x, 2, 9, x, x, a]);
+                                 2  3
+(%o6)                       144 a  x
+@end example
+
+Divisão e exponenciação são operadores binários e não comutativos.
+Os nomes desses operadores são @code{"/"} e @code{"^"}.
+@c ===beg===
+@c [a / b, a ^ b];
+@c [map (op, %), map (args, %)];
+@c [apply ("/", [a, b]), apply ("^", [a, b])];
+@c ===end===
+
+@example
+(%i1) [a / b, a ^ b];
+                              a   b
+(%o1)                        [-, a ]
+                              b
+(%i2) [map (op, %), map (args, %)];
+(%o2)              [[/, ^], [[a, b], [a, b]]]
+(%i3) [apply ("/", [a, b]), apply ("^", [a, b])];
+                              a   b
+(%o3)                        [-, a ]
+                              b
+@end example
+
+Subtração e divisão são representados internamente
+em termos de adição e multiplicação, respectivamente.
+@c ===beg===
+@c [inpart (a - b, 0), inpart (a - b, 1), inpart (a - b, 2)];
+@c [inpart (a / b, 0), inpart (a / b, 1), inpart (a / b, 2)];
+@c ===end===
+
+@example
+(%i1) [inpart (a - b, 0), inpart (a - b, 1), inpart (a - b, 2)];
+(%o1)                      [+, a, - b]
+(%i2) [inpart (a / b, 0), inpart (a / b, 1), inpart (a / b, 2)];
+                                   1
+(%o2)                       [*, a, -]
+                                   b
+@end example
+
+Cálculos são realizados sobre números lterais.
+A propagação de números em poto flutuante aplica-se.
+@c ===beg===
+@c 17 + b - (1/2)*29 + 11^(2/4);
+@c [17 + 29, 17 + 29.0, 17 + 29b0];
+@c ===end===
+
+@example
+(%i1) 17 + b - (1/2)*29 + 11^(2/4);
+                                       5
+(%o1)                   b + sqrt(11) + -
+                                       2
+(%i2) [17 + 29, 17 + 29.0, 17 + 29b0];
+(%o2)                   [46, 46.0, 4.6b1]
+@end example
+
+Computações aritméticas são uma simplificação, não uma avaliação.
+@c ===beg===
+@c simp : false;
+@c '(17 + 29*11/7 - 5^3);
+@c simp : true;
+@c '(17 + 29*11/7 - 5^3);
+@c ===end===
+
+@example
+(%i1) simp : false;
+(%o1)                         false
+(%i2) '(17 + 29*11/7 - 5^3);
+                              29 11    3
+(%o2)                    17 + ----- - 5
+                                7
+(%i3) simp : true;
+(%o3)                         true
+(%i4) '(17 + 29*11/7 - 5^3);
+                                437
+(%o4)                         - ---
+                                 7
+@end example
+
+A aritmética é realizada elemento-por-elemento para listas lists (dependendo de @code{listarith}) e dependendo de matrizes.
+@c ===beg===
+@c matrix ([a, x], [h, u]) - matrix ([1, 2], [3, 4]);
+@c 5 * matrix ([a, x], [h, u]);
+@c listarith : false;
+@c [a, c, m, t] / [1, 7, 2, 9];
+@c [a, c, m, t] ^ x;
+@c listarith : true;
+@c [a, c, m, t] / [1, 7, 2, 9];
+@c [a, c, m, t] ^ x;
+@c ===end===
+
+@example
+(%i1) matrix ([a, x], [h, u]) - matrix ([1, 2], [3, 4]);
+                        [ a - 1  x - 2 ]
+(%o1)                   [              ]
+                        [ h - 3  u - 4 ]
+(%i2) 5 * matrix ([a, x], [h, u]);
+                          [ 5 a  5 x ]
+(%o2)                     [          ]
+                          [ 5 h  5 u ]
+(%i3) listarith : false;
+(%o3)                         false
+(%i4) [a, c, m, t] / [1, 7, 2, 9];
+                          [a, c, m, t]
+(%o4)                     ------------
+                          [1, 7, 2, 9]
+(%i5) [a, c, m, t] ^ x;
+                                      x
+(%o5)                     [a, c, m, t]
+(%i6) listarith : true;
+(%o6)                         true
+(%i7) [a, c, m, t] / [1, 7, 2, 9];
+                              c  m  t
+(%o7)                     [a, -, -, -]
+                              7  2  9
+(%i8) [a, c, m, t] ^ x;
+                          x   x   x   x
+(%o8)                   [a , c , m , t ]
+@end example
+
+@end deffn
+
+@deffn {Operador} **
+
+Operador de exponenciação.
+Maxima reconhece @code{**} como o mesmo operador que @code{^} em entrada,
+e @code{**} é mostrado como @code{^} em saída unidimensional,
+ou colocando o expoente  como sobrescrito em saída bidimensional.
+
+A função @code{fortran} mostra o operador de exponenciação com como @code{**},
+independente de a entrada ter sido na forma @code{**} ou a forma @code{^}.
+
+Exemplos:
+
+@c ===beg===
+@c is (a**b = a^b);
+@c x**y + x^z;
+@c string (x**y + x^z);
+@c fortran (x**y + x^z);
+@c ===end===
+@example
+(%i1) is (a**b = a^b);
+(%o1)                         true
+(%i2) x**y + x^z;
+                              z    y
+(%o2)                        x  + x
+(%i3) string (x**y + x^z);
+(%o3)                        x^z+x^y
+(%i4) fortran (x**y + x^z);
+      x**z+x**y
+(%o4)                         done
+@end example
+
+@end deffn
+
+@node Operadores Relacionais, Operadores Geral, Operadores Aritméticos, Operadores
+@section Operadores Relacionais
+
+@deffn {Operador} <
+@ifinfo
+@fnindex Menor que
+@end ifinfo
+@deffnx {Operador} <=
+@ifinfo
+@fnindex Menor que ou igual a
+@end ifinfo
+@deffnx {Operador} >=
+@ifinfo
+@fnindex Maior que ou igual a
+@end ifinfo
+@deffnx {Operador} >
+@ifinfo
+@fnindex Maior que
+@end ifinfo
+
+@end deffn
+
+@node Operadores Geral, , Operadores Relacionais, Operadores
+@section Operadores Geral
+
+@deffn {Operador} ^^
+@ifinfo
+@fnindex exponenciação não comutativa
+@end ifinfo
+
+@end deffn
+
+@deffn {Operador} !
+@ifinfo
+@fnindex Factorial
+@end ifinfo
+O operador factorial.
+Para qualquer número complexo @code{x} (incluíndo números inteiros, racionais, e reais) excepto para
+inteiros negativos, @code{x!} é definido como @code{gamma(x+1)}.
+
+Para um inteiro @code{x}, @code{x!} simplifica para o produto de inteiros de 1 a @code{x} inclusive.
+@code{0!} simplifica para 1.
+Para um número em ponto flutuante @code{x}, @code{x!} simplifica para o valor de @code{gamma (x+1)}.
+Para @code{x} igual a @code{n/2} onde @code{n} é um inteiro ímpar,
+@code{x!} simplifica para um factor racional vezes @code{sqrt (%pi)}
+(uma vez que @code{gamma (1/2)} é igual a @code{sqrt (%pi)}).
+Se @code{x} for qualquer outra coisa,
+@code{x!} não é simplificado.
+
+As variáveis
+@code{factlim}, @code{minfactorial}, e @code{factcomb} controlam a simplificação
+de expressões contendo factoriais.
+
+As funções @code{gamma}, @code{bffac}, e @code{cbffac}
+são variedades da função @code{gamma}. 
+@code{makegamma} substitui @code{gamma} para funções relacionadas a factoriais.
+
+Veja também @code{binomial}.
+
+O factorial de um inteiro, inteiro dividido por dois, ou argumento em ponto flutuante é simplificado
+a menos que o operando seja maior que @code{factlim}.
+
+@c ===beg===
+@c factlim : 10;
+@c [0!, (7/2)!, 4.77!, 8!, 20!];
+@c ===end===
+@example
+(%i1) factlim : 10;
+(%o1)                          10
+(%i2) [0!, (7/2)!, 4.77!, 8!, 20!];
++            105 sqrt(%pi)
++(%o2)   [1, -------------, 81.44668037931199, 40320, 20!]
++                 16
+@end example
+
+O factorial de um número complexo, constante conhecida, ou expressão geral não é simplificado.
+Ainda assim pode ser possível simplificar o factorial após avaliar o operando.
+
+@c ===beg===
+@c [(%i + 1)!, %pi!, %e!, (cos(1) + sin(1))!];
+@c ev (%, numer, %enumer);
+@c ===end===
+@example
+(%i1) [(%i + 1)!, %pi!, %e!, (cos(1) + sin(1))!];
+(%o1)      [(%i + 1)!, %pi!, %e!, (sin(1) + cos(1))!]
+(%i2) ev (%, numer, %enumer);
+(%o2) [(%i + 1)!, 7.188082728976037, 4.260820476357, 
+                                               1.227580202486819]
+@end example
+
+O factorial de um símbolo não associado não é simplificado.
+
+@c ===beg===
+@c kill (foo);
+@c foo!;
+@c ===end===
+@example
+(%i1) kill (foo);
+(%o1)                         done
+(%i2) foo!;
+(%o2)                         foo!
+@end example
+
+Factoriais são simplificados, não avaliados.
+Dessa forma @code{x!} pode ser substituído mesmo em uma expressão com apóstrofo.
+
+@c ===beg===
+@c '([0!, (7/2)!, 4.77!, 8!, 20!]);
+@c ===end===
+@example
+(%i1) '([0!, (7/2)!, 4.77!, 8!, 20!]);
+          105 sqrt(%pi)
+(%o1) [1, -------------, 81.44668037931199, 40320, 
+               16
+                                             2432902008176640000]
+@end example
+
+@end deffn
+
+@deffn {Operador} !!
+@ifinfo
+@fnindex Duplo factorial
+@end ifinfo
+O operador de duplo factorial.
+
+Para um número inteiro, número em ponto flutuante, ou número racional @code{n},
+@code{n!!} avalia para o produto @code{n (n-2) (n-4) (n-6) ... (n - 2 (k-1))}
+onde @code{k} é igual a @code{entier (n/2)},
+que é, o maior inteiro menor que ou igual a @code{n/2}.
+Note que essa definição não coincide com outras definições publicadas
+para argumentos que não são inteiros.
+@c REPORTED TO BUG TRACKER AS BUG # 1093138 !!!
+
+Para um inteiro par (ou ímpar) @code{n}, @code{n!!} avalia para o produto de
+todos os inteiros consecutivos pares (ou ímpares) de 2 (ou 1) até @code{n} inclusive.
+
+Para um argumento @code{n} que não é um número inteiro, um número em ponto flutuante, ou um número racional,
+@code{n!!} retorna uma forma substantiva @code{genfact (n, n/2, 2)}.
+@c n!! IS NEITHER SIMPLIFIED NOR EVALUATED IN THIS CASE -- MENTION THAT? OR TOO MUCH DETAIL ???
+
+@end deffn
+
+@deffn {Operador} #
+@ifinfo
+@fnindex Não igual (desigualdade sintática)
+@end ifinfo
+Representa a negação da igualdade sintática @code{=}.
+
+Note que pelo facto de as regras de avaliação de expressões predicadas
+(em particular pelo facto de @code{not @var{expr}} fazer com que ocorra a avaliação de @var{expr}),
+a forma @code{not @var{a} = @var{b}} não é equivalente à forma @code{@var{a} # @var{b}} em alguns casos.
+
+Note que devido às regras para avaliação de expressões predicadas
+(em particular devido a @code{not @var{expr}} fazer com que a avaliação de @var{expr} ocorra),
+@code{not @var{a} = @var{b}} é equivalente a @code{is(@var{a} # @var{b})},
+em lugar de ser equivalente a @code{@var{a} # @var{b}}.
+
+Exemplos:
+@c ===beg===
+@c a = b;
+@c é (a = b);
+@c a # b;
+@c not a = b;
+@c é (a # b);
+@c é (not a = b);
+@c ===end===
+@example
+(%i1) a = b;
+(%o1)                         a = b
+(%i2) é (a = b);
+(%o2)                         false
+(%i3) a # b;
+(%o3)                         a # b
+(%i4) not a = b;
+(%o4)                         true
+(%i5) é (a # b);
+(%o5)                         true
+(%i6) é (not a = b);
+(%o6)                         true
+@end example
+
+@end deffn
+
+@deffn {Operador} .
+@ifinfo
+@fnindex Multiplicação não comutativa matricial
+@end ifinfo
+O operador ponto, para multiplicação (não comutativa) de matrizes.
+Quando "." é usado com essa finalidade, espaços devem ser colocados em ambos os lados desse
+operador, e.g. A . B.  Isso distingue o operador ponto plenamente de um ponto decimal em
+um número em ponto flutuante.
+
+Veja também
+@code{dot},
+@code{dot0nscsimp},
+@code{dot0simp},
+@code{dot1simp},
+@code{dotassoc},
+@code{dotconstrules},
+@code{dotdistrib},
+@code{dotexptsimp},
+@code{dotident},
+e
+@code{dotscrules}.
+
+@end deffn
+
+@deffn {Operador} :
+@ifinfo
+@fnindex Operador de atribuição
+@end ifinfo
+O operador de atribuição.  E.g. A:3 escolhe a variável A para 3.
+
+@end deffn
+
+@deffn {Operador} ::
+@ifinfo
+@fnindex Operador de atribuição (avalia o lado esquerdo da igualdade)
+@end ifinfo
+Operador de atribuição.  :: atribui o valor da expressão
+em seu lado direito para o valor da quantidade na sua esquerda, que pode
+avaliar para uma variável at@^omica ou variável subscrita.
+
+@end deffn
+
+@deffn {Operador} ::=
+@ifinfo
+@fnindex Operador de definição de função de macro
+@end ifinfo
+Operador de definição de função de macro.
+@code{::=} define uma função (chamada uma "macro" por razões históricas)
+que coloca um apóstrofo em seus argumentos (evitando avaliação),
+e a expressão que é retornada (chamada a "expansão de macro")
+é avaliada no contexto a partir do qual a macro foi chamada.
+Uma função de macro é de outra forma o mesmo que uma função comum.
+
+@code{macroexpand} retorna uma expansão de macro (sem avaliar a expansão).
+@code{macroexpand (foo (x))} seguida por @code{''%} é equivalente a @code{foo (x)}
+quando @code{foo} for uma função de macro.
+
+@code{::=} coloca o nome da nova função de macro dentro da lista global @code{macros}.
+@code{kill}, @code{remove}, e @code{remfunction} desassocia definições de função de macro
+e remove nomes de @code{macros}.
+
+@code{fundef} e @code{dispfun} retornam respectivamente uma definição de função de macro
+e uma atribuição dessa definição a um rótulo, respectivamente.
+
+Funções de macro comumente possuem expressões @code{buildq} e
+@code{splice} para construir uma expressão,
+que é então avaliada.
+
+Exemplos
+
+Uma função de macro coloca um apóstrofo em seus argumentos evitando então a avaliação,
+então mensagem (1) mostra @code{y - z}, não o valor de @code{y - z}.
+A expansão de macro (a expressão com apóstrofo @code{'(print ("(2) x is equal to", x))}
+é avaliada no contexto a partir do qual a macro for chamada,
+mostrando a mensagem (2).
+
+@c ===beg===
+@c x: %pi;
+@c y: 1234;
+@c z: 1729 * w;
+@c printq1 (x) ::= block (print ("(1) x is equal to", x), '(print ("(2) x is equal to", x)));
+@c printq1 (y - z);
+@c ===end===
+@example
+(%i1) x: %pi;
+(%o1)                          %pi
+(%i2) y: 1234;
+(%o2)                         1234
+(%i3) z: 1729 * w;
+(%o3)                        1729 w
+(%i4) printq1 (x) ::= block (print ("(1) x é igual a", x), '(print ("(2) x é igual a", x)));
+(%o4) printq1(x) ::= block(print("(1) x é igual a", x), 
+                                '(print("(2) x é igual a", x)))
+(%i5) printq1 (y - z);
+(1) x é igual a y - z 
+(2) x é igual a %pi 
+(%o5)                          %pi
+@end example
+
+Uma função comum avalia seus argumentos, então message (1) mostra o valor de @code{y - z}.
+O valor de retorno não é avaliado, então mensagem (2) não é mostrada
+até a avaliação explícita @code{''%}.
+
+@c ===beg===
+@c x: %pi;
+@c y: 1234;
+@c z: 1729 * w;
+@c printe1 (x) := block (print ("(1) x é igual a", x), '(print ("(2) x é igual a", x)));
+@c printe1 (y - z);
+@c ''%;
+@c ===end===
+@example
+(%i1) x: %pi;
+(%o1)                          %pi
+(%i2) y: 1234;
+(%o2)                         1234
+(%i3) z: 1729 * w;
+(%o3)                        1729 w
+(%i4) printe1 (x) := block (print ("(1) x é igual a", x), '(print ("(2) x é igual a", x)));
+(%o4) printe1(x) := block(print("(1) x é igual a", x), 
+                                '(print("(2) x é igual a", x)))
+(%i5) printe1 (y - z);
+(1) x é igual a 1234 - 1729 w 
+(%o5)              print((2) x é igual a, x)
+(%i6) ''%;
+(2) x é igual a %pi 
+(%o6)                          %pi
+@end example
+
+@code{macroexpand} retorna uma expansão de macro.
+@code{macroexpand (foo (x))} seguido por @code{''%} é equivalente a @code{foo (x)}
+quando @code{foo} for uma função de macro.
+
+@c ===beg===
+@c x: %pi;
+@c y: 1234;
+@c z: 1729 * w;
+@c g (x) ::= buildq ([x], print ("x é igual a", x));
+@c macroexpand (g (y - z));
+@c ''%;
+@c g (y - z);
+@c ===end===
+@example
+(%i1) x: %pi;
+(%o1)                          %pi
+(%i2) y: 1234;
+(%o2)                         1234
+(%i3) z: 1729 * w;
+(%o3)                        1729 w
+(%i4) g (x) ::= buildq ([x], print ("x é igual a", x));
+(%o4)    g(x) ::= buildq([x], print("x é igual a", x))
+(%i5) macroexpand (g (y - z));
+(%o5)              print(x é igual a, y - z)
+(%i6) ''%;
+x é igual a 1234 - 1729 w 
+(%o6)                     1234 - 1729 w
+(%i7) g (y - z);
+x é igual a 1234 - 1729 w 
+(%o7)                     1234 - 1729 w
+@end example
+
+@end deffn
+
+@deffn {Operador} :=
+@ifinfo
+@fnindex Operador de definição de função
+@end ifinfo
+O operador de definição de função.  E.g. @code{f(x):=sin(x)} define
+uma função @code{f}.
+
+@end deffn
+
+@deffn {Operador} =
+@ifinfo
+@fnindex Operador de equação
+@fnindex Igual (igualdade sintática)
+@end ifinfo
+O operador de equação.
+
+Uma expressão @code{@var{a} = @var{b}}, por si mesma, representa
+uma equação não avaliada, a qual pode ou não se manter.
+Equações não avaliadas podem aparecer como argumentos para @code{solve} e @code{algsys}
+ou algumas outras funções.
+
+A função @code{is} avalia @code{=} para um valor Booleano.
+@code{is(@var{a} = @var{b})} avalia @code{@var{a} = @var{b}} para @code{true} quando @var{a} e @var{b}
+forem idênticos. Isto é, @var{a} e @var{b} forem átomos que são idênticos,
+ou se eles não forem átomos e seus operadores forem idênticos e seus argumentos forem idênticos.
+De outra forma, @code{is(@var{a} = @var{b})} avalia para @code{false};
+@code{is(@var{a} = @var{b})} nunca avalia para @code{unknown}.
+Quando @code{is(@var{a} = @var{b})} for @code{true}, @var{a} e @var{b} são ditos para serem sintaticamente iguais,
+em contraste para serem expressões equivalentes, para as quais @code{is(equal(@var{a}, @var{b}))} é @code{true}.
+Expressões podem ser equivalentes e não sintáticamente iguais.
+
+A negação de @code{=} é representada por @code{#}.
+Da mesma forma que com @code{=}, uma expressão @code{@var{a} # @var{b}}, por si mesma, não é avaliada.
+@code{is(@var{a} # @var{b})} avalia @code{@var{a} # @var{b}} para
+@code{true} ou @code{false}.
+
+Complementando a função @code{is},
+alguns outros operadores avaliam @code{=} e @code{#} para @code{true} ou @code{false},
+a saber @code{if}, @code{and}, @code{or}, e @code{not}.
+
+Note que pelo facto de as regras de avaliação de expressões predicadas
+(em particular pelo facto de @code{not @var{expr}} fazer com que ocorra a avaliação de @var{expr}),
+a forma @code{not @var{a} = @var{b}} é equivalente a @code{is(@var{a} # @var{b})},
+em lugar de ser equivalente a @code{@var{a} # @var{b}}.
+
+@code{rhs} e @code{lhs} retornam o primeiro membro e o segundo membro de uma equação,
+respectivamente, de uma equação ou inequação.
+
+Veja também @code{equal} e @code{notequal}.
+
+Exemplos:
+
+Uma expressão @code{@var{a} = @var{b}}, por si mesma, representa
+uma equação não avaliada, a qual pode ou não se manter.
+
+@c ===beg===
+@c eq_1 : a * x - 5 * y = 17;
+@c eq_2 : b * x + 3 * y = 29;
+@c solve ([eq_1, eq_2], [x, y]);
+@c subst (%, [eq_1, eq_2]);
+@c ratsimp (%);
+@c ===end===
+@example
+(%i1) eq_1 : a * x - 5 * y = 17;
+(%o1)                    a x - 5 y = 17
+(%i2) eq_2 : b * x + 3 * y = 29;
+(%o2)                    3 y + b x = 29
+(%i3) solve ([eq_1, eq_2], [x, y]);
+                        196         29 a - 17 b
+(%o3)          [[x = ---------, y = -----------]]
+                     5 b + 3 a       5 b + 3 a
+(%i4) subst (%, [eq_1, eq_2]);
+         196 a     5 (29 a - 17 b)
+(%o4) [--------- - --------------- = 17, 
+       5 b + 3 a      5 b + 3 a
+                                  196 b     3 (29 a - 17 b)
+                                --------- + --------------- = 29]
+                                5 b + 3 a      5 b + 3 a
+(%i5) ratsimp (%);
+(%o5)                  [17 = 17, 29 = 29]
+@end example
+
+@code{is(@var{a} = @var{b})} avalia @code{@var{a} = @var{b}} para @code{true} quando @var{a} e @var{b}
+são sintaticamente iguais (isto é, identicos).
+Expressões podem ser equivalentes e não sintaticamente iguais.
+
+@c ===beg===
+@c a : (x + 1) * (x - 1);
+@c b : x^2 - 1;
+@c [is (a = b), is (a # b)];
+@c [is (equal (a, b)), is (notequal (a, b))];
+@c ===end===
+@example
+(%i1) a : (x + 1) * (x - 1);
+(%o1)                    (x - 1) (x + 1)
+(%i2) b : x^2 - 1;
+                              2
+(%o2)                        x  - 1
+(%i3) [is (a = b), is (a # b)];
+(%o3)                     [false, true]
+(%i4) [is (equal (a, b)), is (notequal (a, b))];
+(%o4)                     [true, false]
+@end example
+
+Alguns operadores avaliam @code{=} e @code{#} para @code{true} ou @code{false}.
+
+@c ===beg===
+@c if expand ((x + y)^2) = x^2 + 2 * x * y + y^2 then FOO else BAR;
+@c eq_3 : 2 * x = 3 * x;
+@c eq_4 : exp (2) = %e^2;
+@c [eq_3 and eq_4, eq_3 or eq_4, not eq_3];
+@c ===end===
+@example
+(%i1) if expand ((x + y)^2) = x^2 + 2 * x * y + y^2 then FOO else BAR;
+(%o1)                          FOO
+(%i2) eq_3 : 2 * x = 3 * x;
+(%o2)                       2 x = 3 x
+(%i3) eq_4 : exp (2) = %e^2;
+                              2     2
+(%o3)                       %e  = %e
+(%i4) [eq_3 and eq_4, eq_3 or eq_4, not eq_3];
+(%o4)                  [false, true, true]
+@end example
+
+Devido a @code{not @var{expr}} fazer com que a avaliação de @var{expr} ocorra,
+@code{not @var{a} = @var{b}} é equivalente a @code{is(@var{a} # @var{b})}.
+
+@c ===beg===
+@c [2 * x # 3 * x, not (2 * x = 3 * x)];
+@c is (2 * x # 3 * x);
+@c ===end===
+@example
+(%i1) [2 * x # 3 * x, not (2 * x = 3 * x)];
+(%o1)                   [2 x # 3 x, true]
+(%i2) is (2 * x # 3 * x);
+(%o2)                         true
+@end example
+
+@end deffn
+
+@c NEEDS EXAMPLES
+@deffn {Operador} and
+@ifinfo
+@fnindex Conjunção lógica
+@end ifinfo
+O operador lógico de conjunção.
+@code{and} é um operador n-ário infixo;
+seus operandos são expressões Booleanas, e seu resultado é um valor Booleano.
+
+@code{and} força avaliação (como @code{is}) de um ou mais operandos,
+e pode forçar a avaliação de todos os operandos.
+
+Operandos são avaliados na ordem em que aparecerem.
+@code{and} avalia somente quantos de seus operandos forem necessários para determinar o resultado.
+Se qualquer operando for @code{false},
+o resultado é @code{false} e os operandos restantes não são avaliados.
+
+O sinalizador global @code{prederror} governa o comportamento de @code{and}
+quando um operando avaliado não pode ser determinado como sendo @code{true} ou @code{false}.
+@code{and} imprime uma mensagem de erro quando @code{prederror} for @code{true}.  
+De outra forma, @code{and} retorna @code{unknown} (desconhecido).
+
+@code{and} não é comutativo:
+@code{a and b} pode não ser igual a @code{b and a} devido ao tratamento de operandos indeterminados.
+
+@end deffn
+
+@c NEEDS EXAMPLES
+@deffn {Operador} or
+@ifinfo
+@fnindex Disjunção lógica
+@end ifinfo
+O operador lógico de disjunção.
+@code{or} é um operador n-ário infixo;
+seus operandos são expressões Booleanas, e seu resultado é um valor Booleano.
+
+@code{or} força avaliação (como @code{is}) de um ou mais operandos,
+e pode forçar a avaliação de todos os operandos.
+
+Operandos são avaliados na ordem em que aparecem.
+@code{or} avalia somente quantos de seus operandos forem necessários para determinar o resultado.
+Se qualquer operando for @code{true},
+o resultado é @code{true} e os operandos restantes não são avaliados.
+
+O sinalizador global @code{prederror} governa o comportamento de @code{or}
+quando um operando avaliado não puder ser determinado como sendo @code{true} ou @code{false}.
+@code{or} imprime uma mensagem de erro quando @code{prederror} for @code{true}.
+De outra forma, @code{or} retorna @code{unknown}.
+
+@code{or} não é comutativo:
+@code{a or b} pode não ser igual a @code{b or a} devido ao tratamento de operando indeterminados.
+
+@end deffn
+
+@c NEEDS EXAMPLES
+@deffn {Operador} not
+@ifinfo
+@fnindex Negação lógica
+@end ifinfo
+O operador lógico de negação.
+@code{not} é operador prefixado;
+Seu operando é uma expressão Booleana, e seu resultado é um valor Booleano.
+
+@code{not} força a avaliação (como @code{is}) de seu operando.
+
+O sinalizador global @code{prederror} governa o comportamento de @code{not}
+quando seu operando não pode ser determinado em termos de @code{true} ou @code{false}.
+@code{not} imprime uma mensagem de erro quando @code{prederror} for @code{true}.
+De outra forma, @code{not} retorna @code{unknown}.
+
+@end deffn
+
+@deffn {Função} abs (@var{expr})
+Retorna o valor absoluto de @var{expr}.  Se @var{expr} for um número complexo, retorna o módulo
+complexo de @var{expr}.
+
+@end deffn
+
+@defvr {Palavra chave} additive
+Se @code{declare(f,additive)} tiver sido executado, então:
+
+(1) Se @code{f} for uma função de uma única variável, sempre que o simplificador encontrar @code{f} aplicada
+a uma adição, @code{f} será distribuído sobre aquela adição.  I.e. @code{f(y+x)} irá
+simplificar para @code{f(y)+f(x)}.
+
+(2) Se @code{f} for uma função de 2 ou mais argumentos, a adição é definida como 
+adição no primeiro argumento para @code{f}, como no caso de @code{sum} ou  
+@code{integrate}, i.e. @code{f(h(x)+g(x),x)} irá simplificar para @code{f(h(x),x)+f(g(x),x)}.
+Essa simplificação não ocorre quando @code{f} é aplicada para expressões da
+forma @code{sum(x[i],i,lower-limit,upper-limit)}.
+
+@end defvr
+
+@c NEEDS TO BE REWORKED. NOT CONVINCED THIS SYMBOL NEEDS ITS OWN ITEM
+@c (SHOULD BE DESCRIBED IN CONTEXT OF EACH FUNCTION WHICH RECOGNIZES IT)
+@defvr {Palavra chave} allbut
+trabalha com os comandos @code{part} (i.e. @code{part}, @code{inpart}, @code{substpart},
+@code{substinpart}, @code{dpart}, e @code{lpart}).  Por exemplo,
+
+@c ===beg===
+@c expr : e + d + c + b + a;
+@c part (expr, [2, 5]);
+@c ===end===
+@example
+(%i1) expr : e + d + c + b + a;
+(%o1)                   e + d + c + b + a
+(%i2) part (expr, [2, 5]);
+(%o2)                         d + a
+@end example
+
+enquanto
+
+@c ===beg===
+@c expr : e + d + c + b + a;
+@c part (expr, allbut (2, 5));
+@c ===end===
+@example
+(%i1) expr : e + d + c + b + a;
+(%o1)                   e + d + c + b + a
+(%i2) part (expr, allbut (2, 5));
+(%o2)                       e + c + b
+@end example
+
+@code{allbut} é também reconhecido por @code{kill}.
+ 
+@c ===beg===
+@c [aa : 11, bb : 22, cc : 33, dd : 44, ee : 55];
+@c kill (allbut (cc, dd));
+@c [aa, bb, cc, dd];
+@c ===end===
+@example
+(%i1) [aa : 11, bb : 22, cc : 33, dd : 44, ee : 55];
+(%o1)                 [11, 22, 33, 44, 55]
+(%i2) kill (allbut (cc, dd));
+(%o0)                         done
+(%i1) [aa, bb, cc, dd];
+(%o1)                   [aa, bb, 33, 44]
+@end example
+
+@code{kill(allbut(@var{a_1}, @var{a_2}, ...))} tem o mesmo efeito que @code{kill(all)}
+excepto que não elimina os símbolos @var{a_1}, @var{a_2}, ... .
+
+@end defvr
+
+@defvr {Declaração} antisymmetric
+Se @code{declare(h,antisymmetric)} é concluída, diz ao
+simplicador que @code{h} é uma função antisimétrica.  E.g. @code{h(x,z,y)} simplificará para
+@code{- h(x, y, z)}.  Isto é, dará (-1)^n vezes o resultado dado por
+@code{symmetric} ou @code{commutative}, quando n for o número de interescolhas de dois
+argumentos necessários para converter isso naquela forma.
+
+@end defvr
+
+@deffn {Função} cabs (@var{expr})
+Retorna o valor absoluto complexo (o módulo complexo) de
+@var{expr}.
+
+@end deffn
+
+@deffn {Função} ceiling (@var{x})
+
+Quando @var{x} for um número real, retorna o último inteiro que 
+é maior que ou igual a @var{x}.  
+
+Se @var{x} for uma expressão constante (@code{10 * %pi}, por exemplo), 
+@code{ceiling} avalia @var{x} usando grandes números em ponto flutuante, e 
+aplica @code{ceiling} para o grande número em ponto flutuante resultante. Porque @code{ceiling} usa
+avaliação de ponto flutuante, é possível, embora improvável, 
+que @code{ceiling} possa retornar uma valor err@^oneo para entradas
+constantes. Para prevenir erros, a avaliação de ponto flutuante
+é concluída usando três valores para @code{fpprec}.
+
+Para entradas não constantes, @code{ceiling} tenta retornar um valor
+simplificado.  Aqui está um exemplo de simplificações que @code{ceiling}
+conhece:
+
+@c ===beg===
+@c ceiling (ceiling (x));
+@c ceiling (floor (x));
+@c declare (n, integer)$
+@c [ceiling (n), ceiling (abs (n)), ceiling (max (n, 6))];
+@c assume (x > 0, x < 1)$
+@c ceiling (x);
+@c tex (ceiling (a));
+@c ===end===
+@example
+(%i1) ceiling (ceiling (x));
+(%o1)                      ceiling(x)
+(%i2) ceiling (floor (x));
+(%o2)                       floor(x)
+(%i3) declare (n, integer)$
+(%i4) [ceiling (n), ceiling (abs (n)), ceiling (max (n, 6))];
+(%o4)                [n, abs(n), max(n, 6)]
+(%i5) assume (x > 0, x < 1)$
+(%i6) ceiling (x);
+(%o6)                           1
+(%i7) tex (ceiling (a));
+$$\left \lceil a \right \rceil$$
+(%o7)                         false
+@end example
+
+A função @code{ceiling} não mapeia automaticamente sobre listas ou matrizes.
+Finalmente, para todas as entradas que forem manifestamente complexas, @code{ceiling} retorna 
+uma forma substantiva.
+
+Se o intervalo de uma função é um subconjunto dos inteiros, o intervalo pode ser
+declarado @code{integervalued}. Ambas as funções @code{ceiling} e @code{floor}
+podem usar essa informação; por exemplo:
+
+@c ===beg===
+@c declare (f, integervalued)$
+@c floor (f(x));
+@c ceiling (f(x) - 1);
+@c ===end===
+@example
+(%i1) declare (f, integervalued)$
+(%i2) floor (f(x));
+(%o2)                         f(x)
+(%i3) ceiling (f(x) - 1);
+(%o3)                       f(x) - 1
+@end example
+
+@end deffn
+
+@deffn {Função} charfun (@var{p})
+
+Retorna 0 quando o predicado @var{p} avaliar para @code{false}; retorna
+1 quando o predicado avaliar para @code{true}.  Quando o predicado
+avaliar para alguma coisa que não @code{true} ou @code{false} (@code{unknown}), 
+retorna uma forma substantiva.
+
+Exemplos:
+
+@c ===beg===
+@c charfun (x < 1);
+@c subst (x = -1, %);
+@c e : charfun ('"and" (-1 < x, x < 1))$
+@c [subst (x = -1, e), subst (x = 0, e), subst (x = 1, e)];
+@c ===end===
+@example
+(%i1) charfun (x < 1);
+(%o1)                    charfun(x < 1)
+(%i2) subst (x = -1, %);
+(%o2)                           1
+(%i3) e : charfun ('"and" (-1 < x, x < 1))$
+(%i4) [subst (x = -1, e), subst (x = 0, e), subst (x = 1, e)];
+(%o4)                       [0, 1, 0]
+@end example
+
+@end deffn
+
+@defvr {Declaração} commutative
+Se @code{declare(h,commutative)} é concluída, diz ao
+simplicador que @code{h} é uma função comutativa.  E.g. @code{h(x,z,y)} irá
+simplificar para @code{h(x, y, z)}.  Isto é o mesmo que @code{symmetric}.
+
+@end defvr
+
+@deffn {Função} compare (@var{x}, @var{y})
+
+Retorna um operador de comparação @var{op}
+(@code{<}, @code{<=}, @code{>}, @code{>=}, @code{=}, ou @code{#}) tal que
+@code{is (@var{x} @var{op} @var{y})} avalia para @code{true};
+quando ou @var{x} ou @var{y} dependendo de @code{%i} e
+@code{@var{x} # @var{y}}, retorna @code{notcomparable};
+Quando não existir tal operador ou
+Maxima não estiver apto a determinar o operador, retorna @code{unknown}.
+
+Exemplos:
+
+@c ===beg===
+@c compare (1, 2);
+@c compare (1, x);
+@c compare (%i, %i);
+@c compare (%i, %i + 1);
+@c compare (1/x, 0);
+@c compare (x, abs(x));
+@c ===end===
+@example
+(%i1) compare (1, 2);
+(%o1)                           <
+(%i2) compare (1, x);
+(%o2)                        unknown
+(%i3) compare (%i, %i);
+(%o3)                           =
+(%i4) compare (%i, %i + 1);
+(%o4)                     notcomparable
+(%i5) compare (1/x, 0);
+(%o5)                           #
+(%i6) compare (x, abs(x));
+(%o6)                          <=
+@end example
+
+A função @code{compare} não tenta de terminar se o domínio real de
+seus argumentos é não vazio; dessa forma
+
+@c ===beg===
+@c compare (acos (x^2 + 1), acos (x^2 + 1) + 1);
+@c ===end===
+@example
+(%i1) compare (acos (x^2 + 1), acos (x^2 + 1) + 1);
+(%o1)                           <
+@end example
+
+O domínio real de @code{acos (x^2 + 1)} é vazio.
+
+@end deffn
+
+@deffn {Função} entier (@var{x})
+Retorna o último inteiro menor que ou igual a @var{x} onde @var{x} é numérico.  @code{fix} (como em
+@code{fixnum}) é um sin@^onimo disso, então @code{fix(@var{x})} é precisamente o mesmo.
+
+@end deffn
+
+@c NEEDS CLARIFICATION
+@deffn {Função} equal (@var{a}, @var{b})
+
+Representa a equivalência, isto é, valor igual.
+ 
+Por si mesma, @code{equal} não avalia ou simplifica.
+A função @code{is} tenta avaliar @code{equal} para um valor Booleano.
+@code{is(equal(@var{a}, @var{b}))} 
+retorna @code{true} (ou @code{false}) se
+e somente se @var{a} e @var{b} forem iguais (ou não iguais) para todos os possíveis
+valores de suas variáveis, como determinado através da avaliação de @code{ratsimp(@var{a} - @var{b})};
+se @code{ratsimp} retornar 0, as duas expressões são consideradas equivalentes.
+Duas expressões podem ser equivalentes mesmo se mesmo se elas não forem sintaticamente iguais (i.e., identicas).
+
+Quando @code{is} falhar em reduzir @code{equal} a @code{true} ou @code{false},
+o resultado é governado através do sinalizador global @code{prederror}.
+Quando @code{prederror} for @code{true},
+@code{is} reclama com uma mensagem de erro.
+De outra forma, @code{is} retorna @code{unknown}.
+
+Complementando @code{is},
+alguns outros operadores avaliam @code{equal} e @code{notequal} para @code{true} ou @code{false},
+a saber @code{if}, @code{and}, @code{or}, e @code{not}.
+
+@c FOLLOWING STATEMENT IS MORE OR LESS TRUE BUT I DON'T THINK THE DETAILS ARE CORRECT
+@c Declarations (integer, complex, etc)
+@c for variables appearing in @var{a} and @var{b} are ignored by @code{equal}.
+@c All variables are effectively assumed to be real-valued.
+
+A negação de @code{equal} é @code{notequal}.
+Note que devido às regras de avaliação de expressões predicadas
+(em particular pelo facto de @code{not @var{expr}} causar a avaliação de @var{expr}),
+@code{not equal(@var{a}, @var{b})}
+é equivalente a @code{is(notequal(@var{a}, @var{b}))}
+em lugar de ser equivalente a @code{notequal(@var{a}, @var{b})}.
+
+Exemplos:
+
+Por si mesmo, @code{equal} não avalia ou simplifica.
+
+@c ===beg===
+@c equal (x^2 - 1, (x + 1) * (x - 1));
+@c equal (x, x + 1);
+@c equal (x, y);
+@c ===end===
+@example
+(%i1) equal (x^2 - 1, (x + 1) * (x - 1));
+                        2
+(%o1)            equal(x  - 1, (x - 1) (x + 1))
+(%i2) equal (x, x + 1);
+(%o2)                    equal(x, x + 1)
+(%i3) equal (x, y);
+(%o3)                      equal(x, y)
+@end example
+
+A função @code{is} tenta avaliar @code{equal} para um valor Booleano.
+@code{is(equal(@var{a}, @var{b}))} retorna @code{true} quando @code{ratsimp(@var{a} - @var{b})} retornar 0.
+Duas expressões podem ser equivalentes mesmo se não forem sintaticamente iguais (i.e., identicas).
+
+@c ===beg===
+@c ratsimp (x^2 - 1 - (x + 1) * (x - 1));
+@c is (equal (x^2 - 1, (x + 1) * (x - 1)));
+@c is (x^2 - 1 = (x + 1) * (x - 1));
+@c ratsimp (x - (x + 1));
+@c is (equal (x, x + 1));
+@c is (x = x + 1);
+@c ratsimp (x - y);
+@c is (equal (x, y));
+@c is (x = y);
+@c ===end===
+@example
+(%i1) ratsimp (x^2 - 1 - (x + 1) * (x - 1));
+(%o1)                           0
+(%i2) is (equal (x^2 - 1, (x + 1) * (x - 1)));
+(%o2)                         true
+(%i3) is (x^2 - 1 = (x + 1) * (x - 1));
+(%o3)                         false
+(%i4) ratsimp (x - (x + 1));
+(%o4)                          - 1
+(%i5) is (equal (x, x + 1));
+(%o5)                         false
+(%i6) is (x = x + 1);
+(%o6)                         false
+(%i7) ratsimp (x - y);
+(%o7)                         x - y
+(%i8) is (equal (x, y));
+Maxima was unable to evaluate the predicate:
+equal(x, y)
+ -- an error.  Quitting.  To debug this try debugmode(true);
+(%i9) is (x = y);
+(%o9)                         false
+@end example
+ 
+Quando @code{is} falha em reduzir @code{equal} a @code{true} ou @code{false},
+o resultado é governado através do sinalizador global @code{prederror}.
+ 
+@c ===beg===
+@c [aa : x^2 + 2*x + 1, bb : x^2 - 2*x - 1];
+@c ratsimp (aa - bb);
+@c prederror : true;
+@c is (equal (aa, bb));
+@c prederror : false;
+@c is (equal (aa, bb));
+@c ===end===
+ @example
+(%i1) [aa : x^2 + 2*x + 1, bb : x^2 - 2*x - 1];
+                    2             2
+(%o1)             [x  + 2 x + 1, x  - 2 x - 1]
+(%i2) ratsimp (aa - bb);
+(%o2)                        4 x + 2
+(%i3) prederror : true;
+ (%o3)                         true
+(%i4) is (equal (aa, bb));
+Maxima was unable to evaluate the predicate:
+       2             2
+equal(x  + 2 x + 1, x  - 2 x - 1)
+ -- an error.  Quitting.  To debug this try debugmode(true);
+(%i5) prederror : false;
+(%o5)                         false
+(%i6) is (equal (aa, bb));
+(%o6)                        unknown
+@end example
+
+Alguns operadores avaliam @code{equal} e @code{notequal} para @code{true} ou @code{false}.
+
+@c ===beg===
+@c if equal (a, b) then FOO else BAR;
+@c eq_1 : equal (x, x + 1);
+@c eq_2 : equal (y^2 + 2*y + 1, (y + 1)^2);
+@c [eq_1 and eq_2, eq_1 or eq_2, not eq_1];
+@c ===end===
+@example
+(%i1) if equal (a, b) then FOO else BAR;
+Maxima was unable to evaluate the predicate:
+equal(a, b)
+ -- an error.  Quitting.  To debug this try debugmode(true);
+(%i2) eq_1 : equal (x, x + 1);
+(%o2)                    equal(x, x + 1)
+(%i3) eq_2 : equal (y^2 + 2*y + 1, (y + 1)^2);
+                         2                   2
+(%o3)             equal(y  + 2 y + 1, (y + 1) )
+(%i4) [eq_1 and eq_2, eq_1 or eq_2, not eq_1];
+(%o4)                  [false, true, true]
+@end example
+
+Devido a @code{not @var{expr}} fazer com que ocorra a avaliação de @var{expr},
+@code{not equal(@var{a}, @var{b})} é equivalente a @code{is(notequal(@var{a}, @var{b}))}.
+
+@c ===beg===
+@c [notequal (2*z, 2*z - 1), not equal (2*z, 2*z - 1)];
+@c is (notequal (2*z, 2*z - 1));
+@c ===end===
+@example
+(%i1) [notequal (2*z, 2*z - 1), not equal (2*z, 2*z - 1)];
+(%o1)            [notequal(2 z, 2 z - 1), true]
+(%i2) is (notequal (2*z, 2*z - 1));
+(%o2)                         true
+@end example
+
+@end deffn
+
+@deffn {Função} floor (@var{x})
+
+Quando @var{x} for um número real, retorna o maior inteiro que 
+é menor que ou igual a @var{x}.
+
+Se @var{x} for uma expressão constante (@code{10 * %pi}, for exemplo), 
+@code{floor} avalia @var{x} usando grandes números em ponto flutuante, e 
+aplica @code{floor} ao grande número em ponto flutuante resultante. Porque @code{floor} usa
+avaliação em ponto flutuante, é possível, embora improvável, 
+que @code{floor} não possa retornar um valor err@^oneo para entradas
+constantes.  Para prevenir erros, a avaliação de ponto flutuante
+é concluída usando três valores para @code{fpprec}.
+
+Para entradas não constantes, @code{floor} tenta retornar um valor
+simplificado.  Aqui está exemplos de simplificações que @code{floor}
+conhece:
+
+@c ===beg===
+@c floor (ceiling (x));
+@c floor (floor (x));
+@c declare (n, integer)$
+@c [floor (n), floor (abs (n)), floor (min (n, 6))];
+@c assume (x > 0, x < 1)$
+@c floor (x);
+@c tex (floor (a));
+@c ===end===
+@example
+(%i1) floor (ceiling (x));
+(%o1)                      ceiling(x)
+(%i2) floor (floor (x));
+(%o2)                       floor(x)
+(%i3) declare (n, integer)$
+(%i4) [floor (n), floor (abs (n)), floor (min (n, 6))];
+(%o4)                [n, abs(n), min(n, 6)]
+(%i5) assume (x > 0, x < 1)$
+(%i6) floor (x);
+(%o6)                           0
+(%i7) tex (floor (a));
+$$\left \lfloor a \right \rfloor$$
+(%o7)                         false
+@end example
+
+A função @code{floor} não mapeia automaticamente sobre listas ou matrizes.
+Finalmente, para todas as entradas que forem manifestamente complexas, @code{floor} retorna
+uma forma substantiva.
+
+Se o intervalo de uma função for um subconjunto dos inteiros, o intervalo pode ser
+declarado @code{integervalued}. Ambas as funções @code{ceiling} e @code{floor}
+podem usar essa informação; por exemplo:
+
+@c ===beg===
+@c declare (f, integervalued)$
+@c floor (f(x));
+@c ceiling (f(x) - 1);
+@c ===end===
+@example
+(%i1) declare (f, integervalued)$
+(%i2) floor (f(x));
+(%o2)                         f(x)
+(%i3) ceiling (f(x) - 1);
+(%o3)                       f(x) - 1
+@end example
+
+@end deffn
+
+@deffn {Função} notequal (@var{a}, @var{b})
+Represents the negation of @code{equal(@var{a}, @var{b})}.
+
+Note que pelo facto de as regras de avaliação de expressões predicadas
+(em particular pelo facto de @code{not @var{expr}} causar a avaliação de @var{expr}),
+@code{not equal(@var{a}, @var{b})}
+é equivalente a @code{is(notequal(@var{a}, @var{b}))}
+em lugar de ser equivalente a @code{notequal(@var{a}, @var{b})}.
+
+Exemplos:
+
+@c ===beg===
+@c equal (a, b);
+@c maybe (equal (a, b));
+@c notequal (a, b);
+@c not equal (a, b);
+@c maybe (notequal (a, b));
+@c maybe (not equal (a, b));
+@c assume (a > b);
+@c equal (a, b);
+@c maybe (equal (a, b));
+@c notequal (a, b);
+@c not equal (a, b);
+@c maybe (notequal (a, b));
+@c maybe (not equal (a, b));
+@c ===end===
+@example
+(%i1) equal (a, b);
+(%o1)                      equal(a, b)
+(%i2) maybe (equal (a, b));
+(%o2)                        unknown
+(%i3) notequal (a, b);
+(%o3)                    notequal(a, b)
+(%i4) not equal (a, b);
+Maxima was unable to evaluate the predicate:
+equal(a, b)
+ -- an error.  Quitting.  To debug this try debugmode(true);
+(%i5) maybe (notequal (a, b));
+(%o5)                        unknown
+(%i6) maybe (not equal (a, b));
+(%o6)                        unknown
+(%i7) assume (a > b);
+(%o7)                        [a > b]
+(%i8) equal (a, b);
+(%o8)                      equal(a, b)
+(%i9) maybe (equal (a, b));
+(%o9)                         false
+(%i10) notequal (a, b);
+(%o10)                   notequal(a, b)
+(%i11) not equal (a, b);
+(%o11)                        true
+(%i12) maybe (notequal (a, b));
+(%o12)                        true
+(%i13) maybe (not equal (a, b));
+(%o13)                        true
+@end example
+
+@end deffn
+
+@c NEEDS EXPANSION, CLARIFICATION, AND EXAMPLES
+@c NOTE THAT eval IS RECOGNIZED ONLY AS AN ARGUMENT TO ev,
+@c BUT FOR SOME REASON eval DOES NOT HAVE THE evflag PROPERTY
+@deffn {Operador} eval
+Como um argumento em uma chamada a @code{ev (@var{expr})},
+@code{eval} causa uma avaliação extra de @var{expr}.
+Veja @code{ev}.
+
+@end deffn
+
+@deffn {Função} evenp (@var{expr})
+Retorna @code{true} se @var{expr} for um inteiro sempre.
+@c THIS IS STRANGE -- SHOULD RETURN NOUN FORM IF INDETERMINATE
+@code{false} é retornado em todos os outros casos.
+
+@end deffn
+
+@deffn {Função} fix (@var{x})
+Um sin@^onimo para @code{entier (@var{x})}.
+
+@end deffn
+
+@deffn {Função} fullmap (@var{f}, @var{expr_1}, ...)
+Similar a @code{map}, mas @code{fullmap} mantém mapeadas para
+baixo todas as subexpressões até que os operadores principais não mais sejam os
+mesmos.
+
+@code{fullmap} é usada pelo simplificador do
+Maxima para certas manipulações de matrizes; dessa forma, Maxima algumas vezes gera
+uma mensagem de erro concernente a @code{fullmap} mesmo apesar de @code{fullmap} não ter sido
+explicitamente chamada pelo utilizador.
+
+Exemplos:
+
+@c ===beg===
+@c a + b * c;
+@c fullmap (g, %);
+@c map (g, %th(2));
+@c ===end===
+@example
+(%i1) a + b * c;
+(%o1)                        b c + a
+(%i2) fullmap (g, %);
+(%o2)                   g(b) g(c) + g(a)
+(%i3) map (g, %th(2));
+(%o3)                     g(b c) + g(a)
+@end example
+
+@end deffn
+
+@deffn {Função} fullmapl (@var{f}, @var{list_1}, ...)
+Similar a @code{fullmap}, mas @code{fullmapl} somente mapeia sobre
+listas e matrizes.
+
+Exemplo:
+
+@c ===beg===
+@c fullmapl ("+", [3, [4, 5]], [[a, 1], [0, -1.5]]);
+@c ===end===
+@example
+(%i1) fullmapl ("+", [3, [4, 5]], [[a, 1], [0, -1.5]]);
+(%o1)                [[a + 3, 4], [4, 3.5]]
+@end example
+
+@end deffn
+
+@deffn {Função} is (@var{expr})
+Tenta determinar se a @var{expr} predicada (expressões que avaliam para @code{true}
+ou @code{false}) é dedutível de factos localizados na base de dados de @code{assume}.
+
+Se a dedutibilidade do predicado for @code{true} ou @code{false},
+@code{is} retorna @code{true} ou @code{false}, respectivamente.
+De outra forma, o valor de retorno é governado através do sinalizador global @code{prederror}.
+Quando @code{prederror} for @code{true},
+@code{is} reclama com uma mensagem de erro.
+De outra forma, @code{is} retorna @code{unknown}.
+
+@code{ev(@var{expr}, pred)}
+(que pode ser escrita da forma  @code{@var{expr}, pred} na linha de comando interativa)
+é equivalente a @code{is(@var{expr})}.
+
+Veja também @code{assume}, @code{facts}, e @code{maybe}.
+
+Exemplos:
+
+@code{is} causa avaliação de predicados.
+@c GENERATED FROM:
+@c %pi > %e;
+@c é (%pi > %e);
+
+@example
+(%i1) %pi > %e;
+(%o1)                       %pi > %e
+(%i2) é (%pi > %e);
+(%o2)                         true
+@end example
+
+@code{is} tenta derivar predicados da base de dados do @code{assume}.
+
+@c ===beg===
+@c assume (a > b);
+@c assume (b > c);
+@c é (a < b);
+@c é (a > c);
+@c é (equal (a, c));
+@c ===end===
+@example
+(%i1) assume (a > b);
+(%o1)                        [a > b]
+(%i2) assume (b > c);
+(%o2)                        [b > c]
+(%i3) é (a < b);
+(%o3)                         false
+(%i4) é (a > c);
+(%o4)                         true
+(%i5) é (equal (a, c));
+(%o5)                         false
+@end example
+
+Se @code{is} não puder nem comprovar nem refutar uma forma predicada a partir da base de dados de @code{assume},
+o sinalizador global @code{prederror} governa o comportamento de @code{is}.
+
+@c ===beg===
+@c assume (a > b);
+@c prederror: true$
+@c é (a > 0);
+@c prederror: false$
+@c é (a > 0);
+@c ===end===
+@example
+(%i1) assume (a > b);
+(%o1)                        [a > b]
+(%i2) prederror: true$
+(%i3) é (a > 0);
+Maxima was unable to evaluate the predicate:
+a > 0
+ -- an error.  Quitting.  To debug this try debugmode(true);
+(%i4) prederror: false$
+(%i5) é (a > 0);
+(%o5)                        unknown
+@end example
+
+@end deffn
+
+@deffn {Função} maybe (@var{expr})
+Tenta determinar se a @var{expr} predicada
+é dedutível dos factos na base de dados de @code{assume}.
+
+Se a dedutibilidade do predicado for @code{true} ou @code{false},
+@code{maybe} retorna @code{true} ou @code{false}, respectivamente.
+De outra forma, @code{maybe} retorna @code{unknown}.
+
+@code{maybe} é funcinalmente equivalente a @code{is} com @code{prederror: false},
+mas o resultado é computado sem actualmente atribuir um valor a @code{prederror}.
+
+Veja também @code{assume}, @code{facts}, e @code{is}.
+
+Exemplos:
+
+@c ===beg===
+@c maybe (x > 0);
+@c assume (x > 1);
+@c maybe (x > 0);
+@c ===end===
+@example
+(%i1) maybe (x > 0);
+(%o1)                        unknown
+(%i2) assume (x > 1);
+(%o2)                        [x > 1]
+(%i3) maybe (x > 0);
+(%o3)                         true
+@end example
+
+@end deffn
+
+@deffn {Função} isqrt (@var{x})
+Retorna o "inteiro raíz quadrada"
+do valor absoluto de @var{x},
+que é um inteiro.
+
+@end deffn
+
+@deffn {Função} lmax (@var{L})
+
+Quando @var{L} for uma lista ou um conjunto, retorna @code{apply ('max, args (@var{L}))}.  Quando @var{L} não for uma
+lista ou também não for um conjunto, sinaliza um erro.
+
+@end deffn
+
+@deffn {Função} lmin (@var{L})
+
+Quando @var{L} for uma lista ou um conjunto, retorna @code{apply ('min, args (@var{L}))}. Quando @var{L} não for uma
+lista ou ou também não for um conjunto, sinaliza um erro.
+
+@end deffn
+
+@deffn {Função} max (@var{x_1}, ..., @var{x_n})
+
+Retorna um valor simplificado para o máximo entre as expressões @var{x_1} a @var{x_n}.
+Quando @code{get (trylevel, maxmin)}, for dois ou mais, @code{max} usa a simplificação 
+@code{max (e, -e) --> |e|}.  Quando @code{get (trylevel, maxmin)} for 3 ou mais, @var{max} tenta
+eliminar expressões que estiverem entre dois outros argumentos; por exemplo,
+@code{max (x, 2*x, 3*x) --> max (x, 3*x)}. Para escolher o valor de @code{trylevel} para 2, use
+@code{put (trylevel, 2, maxmin)}.
+
+@end deffn
+
+@deffn {Função} min (@var{x_1}, ..., @var{x_n})
+
+Retorna um valor simplificado para o mínimo entre as expressões @code{x_1} até @code{x_n}.
+Quando @code{get (trylevel, maxmin)}, for 2 ou mais, @code{min} usa a simplificação 
+@code{min (e, -e) --> -|e|}.  Quando @code{get (trylevel, maxmin)} for 3 ou mais, @code{min} tenta
+eliminar expressões que estiverem entre dois outros argumentos; por exemplo,
+@code{min (x, 2*x, 3*x) --> min (x, 3*x)}. Para escolher o valor de @code{trylevel} para 2, use
+@code{put (trylevel, 2, maxmin)}.
+
+@end deffn
+
+@deffn {Função} polymod (@var{p})
+@deffnx {Função} polymod (@var{p}, @var{m})
+Converte o polinómio @var{p} para uma representação modular
+com relação ao módulo corrente que é o valor da variável
+@code{modulus}.  
+
+@code{polymod (@var{p}, @var{m})} especifica um módulo @var{m} para ser usado 
+em lugar do valor corrente de @code{modulus}.
+
+Veja @code{modulus}.
+
+@end deffn
+
+@deffn {Função} mod (@var{x}, @var{y})
+
+Se @var{x} e @var{y} forem números reais e @var{y} for não nulo,
+retorna @code{@var{x} - @var{y} * floor(@var{x} / @var{y})}.
+Adicionalmente para todo real @var{x}, nós temos @code{mod (@var{x}, 0) = @var{x}}. Para uma discursão da
+definição @code{mod (@var{x}, 0) = @var{x}}, veja a Seção 3.4, de "Concrete Mathematics," 
+por Graham, Knuth, e Patashnik. A função @code{mod (@var{x}, 1)} 
+é uma função dente de serra com período 1 e com @code{mod (1, 1) = 0} e 
+@code{mod (0, 1) = 0}.
+
+Para encontrar o argumento (um número no intervalo @code{(-%pi, %pi]}) de um 
+número complexo, use a função @code{@var{x} |-> %pi - mod (%pi - @var{x}, 2*%pi)}, onde 
+@var{x} é um argumento.
+
+Quando @var{x} e @var{y} forem expressões constantes (@code{10 * %pi}, por exemplo), @code{mod}
+usa o mesmo esquema de avaliação em ponto flutuante que @code{floor} e @code{ceiling} usam.
+Novamente, é possível, embora improvável, que @code{mod} possa retornar um
+valor err@^oneo nesses casos.
+
+Para argumentos não numéricos @var{x} ou @var{y}, @code{mod }conhece muitas regras de
+simplificação:
+
+@c ===beg===
+@c mod (x, 0);
+@c mod (a*x, a*y);
+@c mod (0, x);
+@c ===end===
+@example
+(%i1) mod (x, 0);
+(%o1)                           x
+(%i2) mod (a*x, a*y);
+(%o2)                      a mod(x, y)
+(%i3) mod (0, x);
+(%o3)                           0
+@end example
+
+@end deffn
+
+@deffn {Função} oddp (@var{expr})
+é @code{true} se @var{expr} for um inteiro ímpar.
+@c THIS IS STRANGE -- SHOULD RETURN NOUN FORM IF INDETERMINATE
+@code{false} é retornado em todos os outros casos.
+
+@end deffn
+
+@c NEEDS EXPANSION, CLARIFICATION, AND EXAMPLES
+@c NOTE THAT pred IS RECOGNIZED ONLY AS AN ARGUMENT TO ev,
+@c BUT FOR SOME REASON pred DOES NOT HAVE THE evflag PROPERTY
+@deffn {Operador} pred
+Como um argumento em uma chamada a @code{ev (@var{expr})},
+@code{pred} faz com que predicados (expressões que avaliam para @code{true}
+ou @code{false}) sejam avaliados.
+Veja @code{ev}.
+
+@end deffn
+
+@deffn {Função} make_random_state (@var{n})
+@deffnx {Função} make_random_state (@var{s})
+@deffnx {Função} make_random_state (true)
+@deffnx {Função} make_random_state (false)
+@c OMIT THIS FOR NOW. SEE COMMENT BELOW.
+@c @defunx make_random_state (@var{a})
+Um objecto de estado aleatório representa o estado do gerador de números aleatórios (aleatórios).
+O estado compreende 627 palavras de 32 bits.
+
+@code{make_random_state (@var{n})} retorna um novo objecto de estado aleatório
+criado de um valor inteiro semente igual a @var{n} modulo 2^32.  
+@var{n} pode ser negativo.
+
+@c OMIT THIS FOR NOW. NOT SURE HOW THIS IS SUPPOSED TO WORK.
+@c @code{make_random_state (@var{a})} returns a new random state object
+@c created from an array @var{a}, which must be a Lisp array of 32 unsigned bytes.
+
+@code{make_random_state (@var{s})} retorna uma copia do estado aleatório @var{s}.
+
+@code{make_random_state (true)} retorna um novo objecto de estado aleatório,
+usando a hora corrente  do relógio do computador como semente.
+
+@code{make_random_state (false)} retorna uma cópia do estado corrente
+do gerador de números aleatórios.
+
+@end deffn
+
+@deffn {Função} set_random_state (@var{s})
+Copia @var{s} para o estado do gerador de números aleatórios.
+
+@code{set_random_state} sempre retorna @code{done}.
+
+@end deffn
+
+@deffn {Função} random (@var{x})
+Retorna um número pseudoaleatório. Se @var{x} é um inteiro, @code{random (@var{x})} retorna um
+inteiro de 0 a @code{@var{x} - 1} inclusive. Se @var{x} for um número em ponto flutuante,
+@code{random (@var{x})} retorna um número não negativo em ponto flutuante menor que @var{x}.
+@code{random} reclama com um erro se @var{x} não for nem um inteiro nem um número em ponto flutuante,
+ou se @var{x} não for positivo.
+
+As funções @code{make_random_state} e @code{set_random_state}
+mantém o estado do gerador de números aleatórios.
+
+O gerador de números aleatórios do Maxima é uma implementação do algoritmo de Mersenne twister MT 19937.
+
+Exemplos:
+
+@c ===beg===
+@c s1: make_random_state (654321)$
+@c set_random_state (s1);
+@c random (1000);
+@c random (9573684);
+@c random (2^75);
+@c s2: make_random_state (false)$
+@c random (1.0);
+@c random (10.0);
+@c random (100.0);
+@c set_random_state (s2);
+@c random (1.0);
+@c random (10.0);
+@c random (100.0);
+@c ===end===
+@example
+(%i1) s1: make_random_state (654321)$
+(%i2) set_random_state (s1);
+(%o2)                         done
+(%i3) random (1000);
+(%o3)                          768
+(%i4) random (9573684);
+(%o4)                        7657880
+(%i5) random (2^75);
+(%o5)                11804491615036831636390
+(%i6) s2: make_random_state (false)$
+(%i7) random (1.0);
+(%o7)                   .2310127244107132
+(%i8) random (10.0);
+(%o8)                   4.394553645870825
+(%i9) random (100.0);
+(%o9)                   32.28666704056853
+(%i10) set_random_state (s2);
+(%o10)                        done
+(%i11) random (1.0);
+(%o11)                  .2310127244107132
+(%i12) random (10.0);
+(%o12)                  4.394553645870825
+(%i13) random (100.0);
+(%o13)                  32.28666704056853
+@end example
+
+@end deffn
+
+@deffn {Função} rationalize (@var{expr})
+
+Converte todos os números em ponto flutuante de precisão dupla e
+grandes números em ponto flutuante na expressão do Maxima @var{expr}
+para seus exatos equivalentes racionais. Se vnão estiver familiarizado
+com a representação binária dos números em ponto
+flutuante, pode ficar surpreendido em saber que @code{rationalize (0.1)}
+não é igual a 1/10.  Esse comportamento não é especial do Maxima
+-- o número 1/10 tem uma representação binária
+repetitiva e não terminada.
+
+@c ===beg===
+@c rationalize (0.5);
+@c rationalize (0.1);
+@c fpprec : 5$
+@c rationalize (0.1b0);
+@c fpprec : 20$
+@c rationalize (0.1b0);
+@c rationalize (sin (0.1*x + 5.6));
+@c ===end===
+@example
+(%i1) rationalize (0.5);
+                                1
+(%o1)                           -
+                                2
+(%i2) rationalize (0.1);
+                               1
+(%o2)                          --
+                               10
+ (%i3) fpprec : 5$
+(%i4) rationalize (0.1b0);
+                             209715
+(%o4)                        -------
+                             2097152
+(%i5) fpprec : 20$
+(%i6) rationalize (0.1b0);
+                     236118324143482260685
+(%o6)                ----------------------
+                     2361183241434822606848
+(%i7) rationalize (sin (0.1*x + 5.6));
+                              x    28
+(%o7)                     sin(-- + --)
+                              10   5
+@end example
+
+Exemplo de utilização:
+
+@c ===beg===
+@c unitfrac(r) := block([uf : [], q],
+@c     if not(ratnump(r)) then error("A entrada para 'unitfrac' deve ser um número racional"),
+@c     while r # 0 do (
+@c         uf : cons(q : 1/ceiling(1/r), uf),
+@c         r : r - q),
+@c     reverse(uf)); 
+@c unitfrac (9/10);
+@c apply ("+", %);
+@c unitfrac (-9/10);
+@c apply ("+", %);
+@c unitfrac (36/37);
+@c apply ("+", %);
+@c ===end===
+@example
+(%i1) unitfrac(r) := block([uf : [], q],
+    if not(ratnump(r)) then error("The input to 'unitfrac' must be a rational number"),
+    while r # 0 do (
+        uf : cons(q : 1/ceiling(1/r), uf),
+        r : r - q),
+    reverse(uf)); 
+(%o1) unitfrac(r) := block([uf : [], q], 
+if not ratnump(r) then error("The input to 'unitfrac' must be a rational number"
+                                     1
+), while r # 0 do (uf : cons(q : ----------, uf), r : r - q), 
+                                         1
+                                 ceiling(-)
+                                         r
+reverse(uf))
+(%i2) unitfrac (9/10);
+                            1  1  1
+(%o2)                      [-, -, --]
+                            2  3  15
+(%i3) apply ("+", %);
+                               9
+(%o3)                          --
+                               10
+(%i4) unitfrac (-9/10);
+                                  1
+(%o4)                       [- 1, --]
+                                  10
+(%i5) apply ("+", %);
+                                9
+(%o5)                         - --
+                                10
+(%i6) unitfrac (36/37);
+                        1  1  1  1    1
+(%o6)                  [-, -, -, --, ----]
+                        2  3  8  69  6808
+(%i7) apply ("+", %);
+                               36
+(%o7)                          --
+                               37
+@end example
+
+@end deffn
+
+@deffn {Função} sign (@var{expr})
+Tenta determinar o sinal de @var{expr}
+a partir dos factos na base de dados corrente.  Retorna uma das
+seguintes respostar: @code{pos} (positivo), @code{neg} (negativo), @code{zero}, @code{pz}
+(positivo ou zero), @code{nz} (negativo ou zero), @code{pn} (positivo ou negativo),
+ou @code{pnz} (positivo, negativo, ou zero, i.e. nada se sabe sobre o sinal da epressão).
+
+@end deffn
+
+@deffn {Função} signum (@var{x})
+Para um @var{x} numérico retorna 0 se @var{x} for 0, de outra forma retorna -1 ou +1
+à medida que @var{x} seja menor ou maior que 0, respectivamente.
+
+Se @var{x} não for numérico então uma forma simplificada mas equivalente é retornada.
+Por exemplo, @code{signum(-x)} fornece @code{-signum(x)}.
+@c UMM, THIS ISN'T THE WHOLE STORY, AS IT APPEARS signum CONSULTS THE assume DATABASE FOR SYMBOLIC ARGUMENT
+
+@end deffn
+
+@deffn {Função} sort (@var{L}, @var{P})
+@deffnx {Função} sort (@var{L})
+Organiza uma lista @var{L} coforme o predicado @code{P} de dois argumentos,
+de forma que @code{@var{P} (@var{L}[k], @var{L}[k + 1])} seja @code{true}
+para qualquer dois elementos sucessivos.
+O predicado pode ser especificado como o nome de uma função ou operador binário infixo,
+ou como uma expressão @code{lambda}.
+Se especificado como o nome de um operador,
+o nome deve ser contido entre "aspas duplas".
+
+A lista ordenada é retornada como novo objecto;
+o argumento @var{L} não é modificado.
+Para construir o valor de retorno,
+@code{sort} faz uma cópia superficial dos elementos de @var{L}.
+@c DUNNO IF WE NEED TO GO INTO THE IMPLICATIONS OF SHALLOW COPY HERE ...
+@c MIGHT CONSIDER A REF FOR TOTAL ORDER HERE
+Se o predicado @var{P} não for uma ordem total sobre os elementos de @var{L},
+então @code{sort} possivelvente pode executar para concluir sem error,
+mas os resultados são indefinidos.
+@code{sort} reclama se o predicado avaliar para alguma outra coisa
+que não seja @code{true} ou @code{false}.
+
+@code{sort (@var{L})} é equivalente a @code{sort (@var{L}, orderlessp)}.
+Isto é, a ordem padrão de organização é ascendente,
+como determinado por @code{orderlessp}.
+Todos os átomos do Maxima e expressões são comparáveis sob @code{orderlessp},
+embora exista exemplos isolados de expressões para as quais @code{orderlessp} não é transitiva;
+isso é uma falha.
+ 
+Exemplos:
+ 
+@c ===beg===
+@c sort ([11, -17, 29b0, 7.55, 3, -5/2, b + a, 9 * c, 19 - 3 * x]);
+@c sort ([11, -17, 29b0, 7.55, 3, -5/2, b + a, 9 * c, 19 - 3 * x], ordergreatp);
+@c sort ([%pi, 3, 4, %e, %gamma]);
+@c sort ([%pi, 3, 4, %e, %gamma], "<");
+@c my_list : [[aa, hh, uu], [ee, cc], [zz, xx, mm, cc], [%pi, %e]];
+@c sort (my_list);
+@c sort (my_list, lambda ([a, b], orderlessp (reverse (a), reverse (b))));
+@c ===end===
+@example
+(%i1) sort ([11, -17, 29b0, 7.55, 3, -5/2, b + a, 9 * c, 19 - 3 * x]);
+               5
+(%o1) [- 17, - -, 3, 7.55, 11, 2.9b1, b + a, 9 c, 19 - 3 x]
+               2
+(%i2) sort ([11, -17, 29b0, 7.55, 3, -5/2, b + a, 9 * c, 19 - 3 * x], ordergreatp);
+                                                   5
+(%o2) [19 - 3 x, 9 c, b + a, 2.9b1, 11, 7.55, 3, - -, - 17]
+                                                   2
+(%i3) sort ([%pi, 3, 4, %e, %gamma]);
+(%o3)                [3, 4, %e, %gamma, %pi]
+(%i4) sort ([%pi, 3, 4, %e, %gamma], "<");
+(%o4)                [%gamma, %e, 3, %pi, 4]
+(%i5) my_list : [[aa, hh, uu], [ee, cc], [zz, xx, mm, cc], [%pi, %e]];
+(%o5) [[aa, hh, uu], [ee, cc], [zz, xx, mm, cc], [%pi, %e]]
+(%i6) sort (my_list);
+(%o6) [[%pi, %e], [aa, hh, uu], [ee, cc], [zz, xx, mm, cc]]
+(%i7) sort (my_list, lambda ([a, b], orderlessp (reverse (a), reverse (b))));
+(%o7) [[%pi, %e], [ee, cc], [zz, xx, mm, cc], [aa, hh, uu]]
+@end example
+ 
+@end deffn
+
+@deffn {Função} sqrt (@var{x})
+A raíz quadrada de @var{x}. É representada internamente por
+@code{@var{x}^(1/2)}.  Veja também @code{rootscontract}.
+
+@code{radexpand} se @code{true} fará com que n-ésimas raízes de factores de um produto
+que forem potências de n sejam colocados fora do radical, e.g.
+@code{sqrt(16*x^2)} retonará @code{4*x} somente se @code{radexpand} for @code{true}.
+
+@end deffn
+
+@defvr {Variável de opção} sqrtdispflag
+Valor por omissão: @code{true}
+
+Quando @code{sqrtdispflag} for @code{false},
+faz com que @code{sqrt} seja mostrado como expoente 1/2.
+@c AND OTHERWISE ... ??
+
+@end defvr
+
+@c NEEDS EXPANSION, CLARIFICATION, MORE EXAMPLES
+@c sublis CAN ONLY SUBSTITUTE FOR ATOMS, RIGHT ?? IF SO, SAY SO
+@deffn {Função} sublis (@var{lista}, @var{expr})
+Faz múltiplas substituições paralelas dentro de uma expressão.
+
+A variável @code{sublis_apply_lambda} controla a simplificação após
+@code{sublis}.
+
+Exemplo:
+
+@example
+@c ===beg===
+@c sublis ([a=b, b=a], sin(a) + cos(b));
+@c ===end===
+@end example
+
+@end deffn
+
+@deffn {Função} sublist (@var{lista}, @var{p})
+Retorna a lista de elementos da @var{lista} da qual o
+predicado @code{p} retornar @code{true}.
+
+Exemplo:
+
+@c ===beg===
+@c L: [1, 2, 3, 4, 5, 6];
+@c sublist (L, evenp);
+@c ===end===
+@example
+(%i1) L: [1, 2, 3, 4, 5, 6];
+(%o1)                  [1, 2, 3, 4, 5, 6]
+(%i2) sublist (L, evenp);
+(%o2)                       [2, 4, 6]
+@end example
+
+@end deffn
+
+@defvr {Variável de opção} sublis_apply_lambda
+Valor por omissão: @code{true} - controla se os substitutos de
+@code{lambda} são aplicados na simplificação após as
+@code{sublis} serem usadas ou se tiver que fazer um @code{ev} para obter
+coisas para aplicar.  @code{true} significa faça a
+aplicação.
+
+@end defvr
+
+@c NEEDS CLARIFICATION, MORE EXAMPLES
+@deffn {Função} subst (@var{a}, @var{b}, @var{c})
+Substitue @var{a} por @var{b} em @var{c}.  @var{b} deve ser um átomo ou uma
+subexpressão completa de @var{c}.  Por exemplo, @code{x+y+z} é uma subexpressão
+completa de @code{2*(x+y+z)/w} enquanto @code{x+y} não é. Quando @var{b} não tem
+essas características, pode-se algumas vezes usar @code{substpart} ou @code{ratsubst}
+(veja abaixo).  Alternativamente, se @var{b} for da forma de @code{e/f} então se poderá
+usar @code{subst (a*f, e, c)} enquanto se @var{b} for da forma @code{e^(1/f)} então se poderá
+usar @code{subst (a^f, e, c)}.  O comando @code{subst} também discerne o @code{x^y} de @code{x^-y}
+de modo que @code{subst (a, sqrt(x), 1/sqrt(x))} retorna @code{1/a}.  @var{a} e @var{b} podem também ser
+operadores de uma expressão contida entre aspas duplas @code{"} ou eles podem ser nomes de
+função.  Se se desejar substituir por uma variável independente em
+formas derivadas então a função @code{at} (veja abaixo) poderá ser usada.
+
+@c UMM, REVERSE THIS AND MOVE IT TO substitute ??
+@code{subst} é um álias para @code{substitute}.
+
+@code{subst (@var{eq_1}, @var{expr})} ou @code{subst ([@var{eq_1}, ..., @var{eq_k}], @var{expr})}
+são outras formas
+permitidas.  As @var{eq_i} são equações indicando substituições a serem feitas.
+Para cada equação, o lado direito será substituído pelo lado esquerdo na
+expressão @var{expr}.
+
+@code{exptsubst} se @code{true} permite que substituições
+como @code{y} por @code{%e^x} em @code{%e^(a*x)} ocorram.
+
+@c WHAT IS THIS ABOUT ??
+Quando @code{opsubst} for @code{false},
+@code{subst} tentará substituir dentro do operador de uma expressão.
+E.g. @code{(opsubst: false, subst (x^2, r, r+r[0]))} trabalhará.
+
+Exemplos:
+
+@example
+(%i1) subst (a, x+y, x + (x+y)^2 + y);
+                                    2
+(%o1)                      y + x + a
+(%i2) subst (-%i, %i, a + b*%i);
+(%o2)                       a - %i b
+@end example
+
+@noindent
+Para exemplos adicionais, faça @code{example (subst)}.
+
+@end deffn
+
+@c NEEDS CLARIFICATION
+@deffn {Função} substinpart (@var{x}, @var{expr}, @var{n_1}, ..., @var{n_k})
+Similar a @code{substpart}, mas @code{substinpart} trabalha sobre a
+representação interna de @var{expr}.
+
+Exemplos:
+
+@c ===beg===
+@c x . 'diff (f(x), x, 2);
+@c substinpart (d^2, %, 2);
+@c substinpart (f1, f[1](x + 1), 0);
+@c ===end===
+@example
+(%i1) x . 'diff (f(x), x, 2);
+                              2
+                             d
+(%o1)                   x . (--- (f(x)))
+                               2
+                             dx
+(%i2) substinpart (d^2, %, 2);
+                                  2
+(%o2)                        x . d
+(%i3) substinpart (f1, f[1](x + 1), 0);
+(%o3)                       f1(x + 1)
+@end example
+
+Se o último argumento para a função @code{part} for uma lista de índices então
+muitas subexpressões são escolhidas, cada uma correspondendo a um
+índice da lista.  Dessa forma
+
+@c ===beg===
+@c part (x + y + z, [1, 3]);
+@c ===end===
+@example
+(%i1) part (x + y + z, [1, 3]);
+(%o1)                         z + x
+@end example
+
+@code{piece} recebe o valor da última expressão seleccionada quando usando as
+funções @code{part}.  @code{piece} é escolhida durante a execução da função e
+dessa forma pode ser referenciada para a própria função como mostrado abaixo.
+Se @code{partswitch} for escolhida para @code{true} então @code{end} é retornado quando uma
+parte seleccionada de uma expressão não existir, de outra forma uma mensagem
+de erro é fornecida.
+
+@c ===beg===
+@c expr: 27*y^3 + 54*x*y^2 + 36*x^2*y + y + 8*x^3 + x + 1;
+@c part (expr, 2, [1, 3]);
+@c sqrt (piece/54);
+@c substpart (factor (piece), expr, [1, 2, 3, 5]);
+@c expr: 1/x + y/x - 1/z;
+@c substpart (xthru (piece), expr, [2, 3]);
+@c ===end===
+@example
+(%i1) expr: 27*y^3 + 54*x*y^2 + 36*x^2*y + y + 8*x^3 + x + 1;
+              3         2       2            3
+(%o1)     27 y  + 54 x y  + 36 x  y + y + 8 x  + x + 1
+(%i2) part (expr, 2, [1, 3]);
+                                  2
+(%o2)                         54 y
+(%i3) sqrt (piece/54);
+(%o3)                        abs(y)
+(%i4) substpart (factor (piece), expr, [1, 2, 3, 5]);
+                               3
+(%o4)               (3 y + 2 x)  + y + x + 1
+(%i5) expr: 1/x + y/x - 1/z;
+                             1   y   1
+(%o5)                      - - + - + -
+                             z   x   x
+(%i6) substpart (xthru (piece), expr, [2, 3]);
+                            y + 1   1
+(%o6)                       ----- - -
+                              x     z
+@end example
+
+Também, escolhendo a opção @code{inflag} para @code{true} e chamando @code{part} ou @code{substpart} é
+o mesmo que chamando @code{inpart} ou @code{substinpart}.
+
+@end deffn
+
+@c NEEDS CLARIFICATION
+@deffn {Função} substpart (@var{x}, @var{expr}, @var{n_1}, ..., @var{n_k})
+Substitue @var{x} para a subexpressão
+seleccionada pelo resto dos argumentos como em @code{part}.  Isso retorna o
+novo valor de @var{expr}.  @var{x} pode ser algum operador a ser substituído por um
+operador de @var{expr}.  Em alguns casos @var{x} precisa ser contido em aspas duplas @code{"}
+(e.g.  @code{substpart ("+", a*b, 0)} retorna @code{b + a}).
+
+@c ===beg===
+@c 1/(x^2 + 2);
+@c substpart (3/2, %, 2, 1, 2);
+@c a*x + f(b, y);
+@c substpart ("+", %, 1, 0);
+@c ===end===
+@example
+(%i1) 1/(x^2 + 2);
+                               1
+(%o1)                        ------
+                              2
+                             x  + 2
+(%i2) substpart (3/2, %, 2, 1, 2);
+                               1
+(%o2)                       --------
+                             3/2
+                            x    + 2
+(%i3) a*x + f (b, y);
+(%o3)                     a x + f(b, y)
+(%i4) substpart ("+", %, 1, 0);
+(%o4)                    x + f(b, y) + a
+@end example
+
+Também, escolhendo a opção @code{inflag} para @code{true} e chamando @code{part} ou @code{substpart} é
+o mesmo que chamando @code{inpart} ou @code{substinpart}.
+
+@end deffn
+
+@c NEEDS EXPANSION AND EXAMPLES
+@deffn {Função} subvarp (@var{expr})
+Retorna @code{true} se @var{expr} for uma variável subscrita (i.e. que possui índice ou subscrito em sua grafia), por exemplo
+@code{a[i]}.
+
+@end deffn
+
+@deffn {Função} symbolp (@var{expr})
+Retorna @code{true} se @var{expr} for um símbolo, de outra forma retorna @code{false}.
+com efeito, @code{symbolp(x)} é equivalente ao predicado @code{atom(x) and not numberp(x)}.
+
+@c FOLLOWING REALLY WANTS TO BE @xref{Identiifers} BUT THAT
+@c LEAVES THE UNPLEASANT RESIDUE *Note ...:: IN THE OUTPUT OF describe
+Veja também @emph{Identificadores}
+
+@end deffn
+
+@deffn {Função} unorder ()
+Disabilita a ação de alias criada pelo último uso dos comandos
+de ordenação @code{ordergreat} e @code{orderless}. @code{ordergreat} e @code{orderless} não podem
+ser usados mais que uma vez cada sem chamar @code{unorder}. 
+Veja também @code{ordergreat} e @code{orderless}.
+
+Exemplos:
+
+@c HMM, IN THIS EXAMPLE, WHY ISN'T %o5 EQUAL TO ZERO ???
+@c ===beg===
+@c unorder();
+@c b*x + a^2;
+@c ordergreat (a);
+@c b*x + a^2;
+@c  %th(1) - %th(3);
+@c unorder();
+@c ===end===
+@example
+(%i1) unorder();
+(%o1)                          []
+(%i2) b*x + a^2;
+                                   2
+(%o2)                       b x + a
+(%i3) ordergreat (a);
+(%o3)                         done
+(%i4) b*x + a^2;
+ %th(1) - %th(3);
+                             2
+(%o4)                       a  + b x
+(%i5) unorder();
+                              2    2
+(%o5)                        a  - a
+@end example
+
+@end deffn
+
+@c THIS ITEM SEEMS OUT OF PLACE -- IS IT FROM A SHARE PACKAGE ??
+@c NEEDS EXAMPLES
+@deffn {Função} vectorpotential (@var{givencurl})
+Retorna o potencial do vector de um dado
+vector de torção, no sistema de coordenadas corrente.
+@code{potentialzeroloc} tem um papel similar ao de @code{potential}, mas a ordem dos
+lados esquerdos das equações deve ser uma permutação cíclica das
+variáveis de coordenadas.
+
+@end deffn
+
+@deffn {Função} xthru (@var{expr})
+Combina todos os termos de @var{expr} (o qual pode ser uma adição) sobre um
+denominador comum sem produtos e somas exponenciadas
+como @code{ratsimp} faz.  @code{xthru} cancela factores comuns no numerador e
+denominador de expressões racionais mas somente se os factores são
+explícitos.
+
+@c REPHRASE IN NEUTRAL TONE (GET RID OF "IT IS BETTER")
+Algumas vezes é melhor usar @code{xthru} antes de @code{ratsimp} em uma
+expressão com o objectivo de fazer com que factores explicitos do máximo divisor comum entre o
+numerador e o denominador seja cancelado simplificando dessa forma a
+expressão a ser aplicado o @code{ratsimp}.
+
+@c ===beg===
+@c ((x+2)^20 - 2*y)/(x+y)^20 + (x+y)^(-19) - x/(x+y)^20;
+@c xthru (%);
+@c ===end===
+@example
+(%i1) ((x+2)^20 - 2*y)/(x+y)^20 + (x+y)^(-19) - x/(x+y)^20;
+                                20
+                 1       (x + 2)   - 2 y       x
+(%o1)        --------- + --------------- - ---------
+                    19             20             20
+             (y + x)        (y + x)        (y + x)
+(%i2) xthru (%);
+                                 20
+                          (x + 2)   - y
+(%o2)                     -------------
+                                   20
+                            (y + x)
+@end example
+
+@end deffn
+
+@c THIS FUNCTION APPEARS TO BE A HACK; SEE 4'TH ITEM BELOW
+@c DUNNO WHETHER WE CAN CLEAR THIS UP
+@deffn {Função} zeroequiv (@var{expr}, @var{v})
+Testa se a expressão @var{expr} na variável
+@var{v} é equivalente a zero, retornando @code{true}, @code{false}, ou
+@code{dontknow} (não sei).
+
+@code{zeroequiv} Tem essas restrições:
+@enumerate
+@item
+Não use funções que o Maxima não sabe como
+diferenciar e avaliar.
+@item
+Se a expressão tem postes sobre o eixo real, podem existir erros
+no resultado (mas isso é improvável ocorrer).
+@item
+Se a expressão contem funções que não são soluções para
+equações diferenciais de primeira ordem (e.g.  funções de Bessel) pode ocorrer
+resultados incorrectos.
+@item
+O algoritmo usa avaliação em pontos aleatóriamente escolhidos para
+subexpressões seleccionadas cuidadosamente.  Isso é sempre negócio um tanto
+quanto perigoso, embora o algoritmo tente minimizar o
+potencial de erro.
+@end enumerate
+
+Por exemplo
+ @code{zeroequiv (sin(2*x) - 2*sin(x)*cos(x), x)} retorna
+@code{true} e @code{zeroequiv (%e^x + x, x)} retorna @code{false}.
+Por outro lado @code{zeroequiv (log(a*b) - log(a) - log(b), a)} retorna @code{dontknow} devido à
+presença de um parâmetro extra @code{b}.
+
+@end deffn
+

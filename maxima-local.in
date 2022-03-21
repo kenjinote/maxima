@@ -1,0 +1,35 @@
+#!/bin/sh
+# This should be written for a classic Bourne shell.  Therefore avoid
+# things like $() and other bash-isms and ksh-isms that don't work
+# with a classic Bourne shell.
+MAXIMA_PREFIX="@abs_top_srcdir@"
+export MAXIMA_PREFIX
+MAXIMA_DOC_PREFIX="@abs_top_builddir@"
+export MAXIMA_DOC_PREFIX
+MAXIMA_LAYOUT_AUTOTOOLS=false
+export MAXIMA_LAYOUT_AUTOTOOLS
+MAXIMA_OBJDIR="@abs_top_builddir@/binary"
+export MAXIMA_OBJDIR
+
+# report the compiled in Lisp versions
+if [ x"$1" = "x--list-avail" ]; then
+    V=`./maxima-local --version | sed s/Maxima.//`
+    echo "Available versions:"
+    for i in src/binary-* ; do
+        L=`echo $i | sed s/src.binary-//`
+        echo "version $V, lisp $L"
+    done;
+    exit;
+fi;
+
+# quick fix for plotting with plot_format=openmath (bug 3052)
+if [ ! -d "@abs_top_srcdir@/bin" ]; then
+    mkdir -p "@abs_top_srcdir@/bin"
+    ln -sf "@abs_top_srcdir@/xmaxima-local" "@abs_top_srcdir@/bin/xmaxima"
+    ln -sf "@abs_top_srcdir@/doc" "@abs_top_srcdir@/bin/doc"
+    ln -sf "@abs_top_srcdir@/src" "@abs_top_srcdir@/bin/src"
+    ln -sf "@abs_top_srcdir@/interfaces" "@abs_top_srcdir@/bin/interfaces"
+fi
+
+POSIX_SHELL=@POSIX_SHELL@
+exec $POSIX_SHELL "@abs_top_builddir@/src/maxima" "$@"

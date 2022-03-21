@@ -1,0 +1,2093 @@
+@c /Itensor.texi/1.40/Sat Nov  4 16:15:55 2006//
+@c RECOMMEND REVISE TEXT THROUGHOUT TO LOSE NOTION OF TIME RELATIVE TO PRESENT
+@c LOOK FOR "NOW", "OLD", "NEW", "RECENT", "EARLIER", DATES
+
+@c RERUN EXAMPLES WITH ADDT'L WHITESPACE IN INPUT TO AID LEGIBILITY
+
+@menu
+* Introdução a itensor::
+* Definições para itensor::
+@end menu
+
+@node Introdução a itensor, Definições para itensor, itensor, itensor
+@section Introdução a itensor
+
+Maxima implementa a manipulação de tensores simbólicos d dois tipos distintos:
+manipulação de componentes de tensores (pacote @code{ctensor}) e manipulação de tensores indiciais (pacote @code{itensor}).
+
+Note bem: Por favor veja a nota sobre 'nova notação de tensor' abaixo.
+
+Manipulação de componentes de tensores significa que objectos do tipo
+tensor geométrico são representados como arrays ou matrizes. Operações com tensores tais com
+contração ou diferenciação covariante são realizadas
+sobre índices (que ocorrem exactamente duas vezes) repetidos com declarações @code{do}.
+Isto é, se executa explicitamente operações sobre as componentes apropriadas do
+tensor armazenadas em um array ou uma matriz.
+
+Manipulação tensorial de índice é implementada através da representação
+de tensores como funções e suas covariantes, contravariantes e índices de
+derivação. Operações com tensores como contração ou diferenciação
+covariante são executadas através de manipulação dos índices em si mesmos
+em lugar das componentes para as quais eles correspondem.
+
+Esses dois métodos aproximam-se do tratamento de processos diferenciais, algébricos e
+analíticos no contexto da geometria de Riemannian possuem várias
+vantagens e desvantagens as quais se revelam por si mesmas somente apesar da
+natureza particular e dificuldade dos problemas de utilizador.  Todavia, se
+pode ter em mente as seguintes características das duas
+implementações:
+
+As representações de tensores e de operações com tensores explicitamente em
+termos de seus componntes tornam o pacote @code{ctensor} fácil de usar. Especificação da
+métrica e o cálculo de tensores induzidos e invariantes
+é directo. Embora todas a capacidade de simplificação poderosa do
+Maxima está em manusear, uma métrica complexa com intrincada dependência funcional
+e de coordenadas pode facilmente conduzir a expressões cujo tamanho é
+excessivo e cuja estrutura está escondida. Adicionalmente, muitos cálculos
+envolvem expressões intermédias cujo crescimento fazem com que os programas
+terminem antes de serem completados. Através da experiência, um utilizador pode evitar
+muitas dessas dificuldade.
+
+O motivo de caminhos especiais através dos quais tensores e operações de tensores
+são representados em termos de operações simbólicas sobre seus índices,
+expressões cujas representação de componentes podem ser
+não gerenciaveis da forma comum podem algumas vezes serem grandemente simplificadas através do uso das rotinas
+especiais para objectos simétricos em @code{itensor}. Nesse caminho a estrutura
+de uma expressão grande pode ser mais transparente. Por outro lado, o motivo
+da representação indicial especial em @code{itensor}, faz com que em alguns casos o
+utilizador possa encontrar dificuldade com a especificação da métrica, definição
+de função, e a avaliação de objectos "indexados" diferenciados.
+
+@subsection Nova notação d tensores
+
+Até agora, o pacote @code{itensor} no Maxima tinha usado uma notação que algumas vezes
+conduzia a ordenação incorrecta de índices. Considere o seguinte, por exemplo:
+
+@example
+(%i2) imetric(g);
+(%o2)                                done
+(%i3) ishow(g([],[j,k])*g([],[i,l])*a([i,j],[]))$
+                                 i l  j k
+(%t3)                           g    g    a
+                                           i j
+(%i4) ishow(contract(%))$
+                                      k l
+(%t4)                                a
+@end example
+
+O resultado está incorrecto a menos que ocorra ser @code{a} um tensor simétrico.
+A razão para isso é que embora @code{itensor} mantenha correctamente
+a ordem dentro do conjunto de índices covariantes e contravariantes, assim que um
+índice é incrementado ou decrementado, sua posição relativa para o outro conjunto de
+índices é perdida.
+
+Para evitar esse problema, uma nova notação tem sido desenvolvida que mantém total
+compatibilidade com a notação existente e pode ser usada intercambiavelmente. Nessa
+notação, índices contravariantes são inseridos na posição
+apropriada na lista de índices covariantes, mas com um sinal de menos colocado antes.
+Funções como @code{contract} e @code{ishow} estão agora consciente dessa
+nova notação de índice e podem processar tensores apropriadamente.
+
+Nessa nova notação, o exemplo anterior retorna um resultado correcto:
+
+@example
+(%i5) ishow(g([-j,-k],[])*g([-i,-l],[])*a([i,j],[]))$
+                                 i l       j k
+(%t5)                           g    a    g
+                                      i j
+(%i6) ishow(contract(%))$
+                                      l k
+(%t6)                                a
+@end example
+
+Presentemente, o único código que faz uso dessa notação é a função
+@code{lc2kdt}. Através dessa notação, a função @code{lc2kdt} encontra com êxito resultados consistentes como
+a aplicação do tensor métrico para resolver os símbolos de Levi-Civita sem reordenar
+para índices numéricos.
+
+Uma vez que esse código é um tipo novo, provavelmente contém erros. Enquanto esse tipo novo não tiver sido
+testado para garantir que ele não interrompe nada usando a "antiga" notação de
+tensor, existe uma considerável chance que "novos" tensores irão falhar em
+interoperar com certas funções ou recursos. Essas falhas serão corrigidas
+à medida que forem encontradas... até então, seja cuidadoso!
+
+
+@subsection Manipulação de tensores indiciais
+
+o pacote de manipulação de tensores indiciais pode ser chamado através de
+@code{load(itensor)}. Demonstações estão também disponíveis: tente @code{demo(tensor)}.
+Em @code{itensor} um tensor é representado como um "objecto indexado" .  Um "objecto indexado" é uma
+função de 3 grupos de índices os quais representam o covariante,
+o contravariante e o índice de derivação.  Os índices covariantes são
+especificados através de uma lista com o primeiro argumento para o objecto indexado, e
+os índices contravariantes através de uma lista como segundo argumento. Se o
+objecto indexado carece de algum desses grupos de índices então a lista
+vazia @code{[]} é fornecida como o argumento correspondente.  Dessa forma, @code{g([a,b],[c])}
+representa um objecto indexado chamado @code{g} o qual tem dois índices covariantes
+@code{(a,b)}, um índice contravariante (@code{c}) e não possui índices de derivação.
+
+Os índices de derivação, se estiverem presente, são anexados ao final como
+argumentos adicionais para a função numérica representando o tensor.
+Eles podem ser explicitamente especificado pelo utilizador ou serem criados no
+processo de diferenciação com relação a alguma variável coordenada.
+Uma vez que diferenciação ordinária é comutativa, os índices de derivação
+são ordenados alfanumericamente, a menos que @code{iframe_flag} seja escolhida para @code{true},
+indicando que um referencial métrico está a ser usado. Essa ordenação canónica torna
+possível para Maxima reconhecer que, por exemplo, @code{t([a],[b],i,j)} é
+o mesmo que @code{t([a],[b],j,i)}.  Diferenciação de um objecto indexado com
+relação a alguma coordenada cujos índices não aparecem como um argumento
+para o objecto indexado podem normalmente retornar zero. Isso é porque
+Maxima pode não saber que o tensor representado através do objecto
+indexado possívelmente depende implicitamente da respectiva coordenada.  Pela
+modificação da função existente no Maxima, @code{diff},  em @code{itensor}, Maxima sabe
+assumir que todos os objectos indexados dependem de qualquer variável de
+diferenciação a menos que seja declarado de outra forma.  Isso torna possível para
+a convençào de somatório ser extendida para índices derivativos. Pode
+ser verificado que @code{itensor} não possui a compatibilidade de
+incrementar índices derivativos, e então eles são sempre tratados como
+covariantes.
+
+As seguintes funções estão disponíveis no pacote tensor para
+manipulação de objectos.  Actualmente, com relação às
+rotinas de simplificação, é assumido que objectos indexados não
+possuem por padrão propriedades simétricas. Isso pode ser modificado através
+da escolha da variável @code{allsym[false]} para @code{true}, o que irá
+resultar no tratamento de todos os objectos indexados completamente simétricos em suas
+listas de índices covariantes e simétricos em suas listas de
+índices contravariantes.
+
+O pacote @code{itensor} geralmente trata tensores como objectos opacos. Equações
+tensoriais são manipuladas baseadas em regras algébricas, especificamente simetria
+e regras de contração. Adicionalmente, o pacote @code{itensor} não entende
+diferenciação covariante, curvatura, e torsão. Cálculos podem ser
+executados relativamente a um métrica de referenciais de movimento, dependendo da escolha para
+a variável @code{iframe_flag}.
+
+Uma sessão demonstrativa abaixo mostra como chamar o pacote @code{itensor},
+especificando o nome da métrica, e executando alguns cálculos simples.
+
+@example
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) imetric(g);
+(%o2)                                done
+(%i3) components(g([i,j],[]),p([i,j],[])*e([],[]))$
+(%i4) ishow(g([k,l],[]))$
+(%t4)                               e p
+                                       k l
+(%i5) ishow(diff(v([i],[]),t))$
+(%t5)                                  0
+(%i6) depends(v,t);
+(%o6)                               [v(t)]
+(%i7) ishow(diff(v([i],[]),t))$
+                                    d
+(%t7)                               -- (v )
+                                    dt   i
+(%i8) ishow(idiff(v([i],[]),j))$
+(%t8)                                v
+                                      i,j
+(%i9) ishow(extdiff(v([i],[]),j))$
+(%t9)                             v    - v
+                                   j,i    i,j
+                                  -----------
+                                       2
+(%i10) ishow(liediff(v,w([i],[])))$
+                               %3          %3
+(%t10)                        v   w     + v   w
+                                   i,%3    ,i  %3
+(%i11) ishow(covdiff(v([i],[]),j))$
+                                              %4
+(%t11)                        v    - v   ichr2
+                               i,j    %4      i j
+(%i12) ishow(ev(%,ichr2))$
+               %4 %5
+(%t12) v    - g      v   (e p       + e   p     - e p       - e    p
+        i,j           %4     j %5,i    ,i  j %5      i j,%5    ,%5  i j
+
+                                                + e p       + e   p    )/2
+                                                     i %5,j    ,j  i %5
+(%i13) iframe_flag:true;
+(%o13)                               true
+(%i14) ishow(covdiff(v([i],[]),j))$
+                                             %6
+(%t14)                        v    - v   icc2
+                               i,j    %6     i j
+(%i15) ishow(ev(%,icc2))$
+                                             %6
+(%t15)                        v    - v   ifc2
+                               i,j    %6     i j
+(%i16) ishow(radcan(ev(%,ifc2,ifc1)))$
+             %6 %8                    %6 %8
+(%t16) - (ifg      v   ifb       + ifg      v   ifb       - 2 v
+                    %6    j %8 i             %6    i j %8      i,j
+
+                                                    %6 %8
+                                               - ifg      v   ifb      )/2
+                                                           %6    %8 i j
+(%i17) ishow(canform(s([i,j],[])-s([j,i])))$
+(%t17)                            s    - s
+                                   i j    j i
+(%i18) decsym(s,2,0,[sym(all)],[]);
+(%o18)                               done
+(%i19) ishow(canform(s([i,j],[])-s([j,i])))$
+(%t19)                                 0
+(%i20) ishow(canform(a([i,j],[])+a([j,i])))$
+(%t20)                            a    + a
+                                   j i    i j
+(%i21) decsym(a,2,0,[anti(all)],[]);
+(%o21)                               done
+(%i22) ishow(canform(a([i,j],[])+a([j,i])))$
+(%t22)                                 0
+@end example
+
+
+
+@c end concepts itensor
+
+@node Definições para itensor,  , Introdução a itensor, itensor
+
+@section Definições para itensor
+@subsection Gerenciando objectos indexados
+
+@deffn {Função} entertensor (@var{nome})
+
+É uma função que, através da linha de comando, permite criar um objecto
+indexado chamado @var{nome} com qualquer número de índices de tensores e
+derivativos. Ou um índice simples ou uma lista de índices (às quais podem ser
+nulas) são entradas aceitáveis (veja o exemplo sob @code{covdiff}).
+
+@end deffn
+
+@deffn {Função} changename (@var{antigo}, @var{novo}, @var{expr})
+
+Irá mudar o nome de todos os objectos indexados chamados @var{antigo} para @var{novo}
+em @var{expr}. @var{antigo} pode ser ou um símbolo ou uma lista da forma
+@code{[@var{nome}, @var{m}, @var{n}]} nesse caso somente esses objectos indexados chamados
+@var{nome} com índice covariante @var{m} e índice contravariante @var{n} serão
+renomeados para @var{novo}.
+
+@end deffn
+
+@deffn {Função} listoftens
+
+Lista todos os tensores em uma expressão tensorial, incluindo seus índices. E.g.,
+
+@example
+
+(%i6) ishow(a([i,j],[k])*b([u],[],v)+c([x,y],[])*d([],[])*e)$
+                                         k
+(%t6)                        d e c    + a    b
+                                  x y    i j  u,v
+(%i7) ishow(listoftens(%))$
+                               k
+(%t7)                        [a   , b   , c   , d]
+                               i j   u,v   x y
+
+@end example
+
+@end deffn
+
+@deffn {Função} ishow (@var{expr})
+
+Mostra @var{expr} com os objectos indexados tendo seus
+índices covariantes como subscritos e índices contravariantes como
+sobrescritos.  Os índices derivativos são mostrados como subscritos,
+separados dos índices covariantes por uma vírgula (veja os exemplos
+através desse documento).
+
+@end deffn
+
+@deffn {Função} indices (@var{expr})
+
+Retorna uma lista de dois elementos.  O primeiro é uma lista de índices
+livres em @var{expr} (aqueles que ocorrem somente uma vez). O segundo é uma
+lista de indices que ocorrem exactamente duas vezes em @var{expr} (dummy)
+como demonstra o seguinte exemplo.
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) ishow(a([i,j],[k,l],m,n)*b([k,o],[j,m,p],q,r))$
+                                k l      j m p
+(%t2)                          a        b
+                                i j,m n  k o,q r
+(%i3) indices(%);
+(%o3)                 [[l, p, i, n, o, q, r], [k, j, m]]
+
+@end example
+
+Um produto de tensores contendo o mesmo índice mais que duas vezes é sintaticamente
+ilegal. @code{indices} tenta lidar com essas expressões de uma
+forma razoável; todavia, quando @code{indices} é chamada para operar sobre tal uma
+expressão ilegal, seu comportamento pode ser considerado indefinido.
+
+
+@end deffn
+
+@deffn {Função} rename (@var{expr})
+@deffnx {Função} rename (@var{expr}, @var{contador})
+
+Retorna uma expressão equivalente para @var{expr} mas com índices que ocorrem exactamente duas vezes
+em cada termo alterado do conjunto @code{[%1, %2,...]}, se o segundo argumento
+opcional for omitido. De outra forma, os índices que ocorrem exactamente duas vezes são indexados
+começando no valor de @var{contador}.  Cada índice que ocorre exactamente duas vezes em um produto
+será diferente. Para uma adição, @code{rename} irá operar sobre cada termo na
+a adição zerando o contador com cada termo. Nesse caminho @code{rename} pode
+servir como um simplificador tensorial. Adicionalmente, os índices serão
+ordenados alfanumericamente (se @code{allsym} for @code{true}) com relação a
+índices covariantes ou contravariantes dependendo do valor de @code{flipflag}.
+Se @code{flipflag} for @code{false} então os índices serão renomeados conforme
+a ordem dos índices contravariantes. Se @code{flipflag} for @code{true}
+a renomeação ocorrerá conforme a ordem dos índices
+covariantes. Isso muitas vezes ajuda que o efeito combinado dos dois restantes sejam
+reduzidos a uma expressão de valor um ou mais que um por si mesma.
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) allsym:true;
+(%o2)                                true
+(%i3) g([],[%4,%5])*g([],[%6,%7])*ichr2([%1,%4],[%3])*
+ichr2([%2,%3],[u])*ichr2([%5,%6],[%1])*ichr2([%7,r],[%2])-
+g([],[%4,%5])*g([],[%6,%7])*ichr2([%1,%2],[u])*
+ichr2([%3,%5],[%1])*ichr2([%4,%6],[%3])*ichr2([%7,r],[%2]),noeval$
+(%i4) expr:ishow(%)$
+
+       %4 %5  %6 %7      %3         u          %1         %2
+(%t4) g      g      ichr2      ichr2      ichr2      ichr2
+                         %1 %4      %2 %3      %5 %6      %7 r
+
+              %4 %5  %6 %7      u          %1         %3         %2
+           - g      g      ichr2      ichr2      ichr2      ichr2
+                                %1 %2      %3 %5      %4 %6      %7 r
+(%i5) flipflag:true;
+(%o5)                                true
+(%i6) ishow(rename(expr))$
+       %2 %5  %6 %7      %4         u          %1         %3
+(%t6) g      g      ichr2      ichr2      ichr2      ichr2
+                         %1 %2      %3 %4      %5 %6      %7 r
+
+              %4 %5  %6 %7      u          %1         %3         %2
+           - g      g      ichr2      ichr2      ichr2      ichr2
+                                %1 %2      %3 %4      %5 %6      %7 r
+(%i7) flipflag:false;
+(%o7)                                false
+(%i8) rename(%th(2));
+(%o8)                                  0
+(%i9) ishow(rename(expr))$
+       %1 %2  %3 %4      %5         %6         %7        u
+(%t9) g      g      ichr2      ichr2      ichr2     ichr2
+                         %1 %6      %2 %3      %4 r      %5 %7
+
+              %1 %2  %3 %4      %6         %5         %7        u
+           - g      g      ichr2      ichr2      ichr2     ichr2
+                                %1 %3      %2 %6      %4 r      %5 %7
+@end example
+
+@end deffn
+
+@defvr {Variável de Opção} flipflag
+
+Valor por omissão: @code{false}. Se @code{false} então os índices irão ser
+renomeados conforme a ordem dos índices contravariantes,
+de outra forma serão ordenados conforme a ordem dos índices covariantes.
+
+Se @code{flipflag} for @code{false} então @code{rename} forma uma lista
+de índices contravariantes na ordem em que forem encontrados da esquerda para a direita
+(se @code{true} então de índices contravariantes). O primeiro índice
+que ocorre exactamente duas vezes na lista é renomeado para @code{%1}, o seguinte para @code{%2}, etc.
+Então a ordenação ocorre após a ocorrência do @code{rename} (veja o exemplo
+sob @code{rename}).
+
+@end defvr
+
+@deffn {Função} defcon (@var{tensor_1})
+@deffnx {Função} defcon (@var{tensor_1}, @var{tensor_2}, @var{tensor_3})
+Dado @var{tensor_1} a propriedade que a
+contração de um produto do @var{tensor_1} e do @var{tensor_2} resulta em @var{tensor_3}
+com os índices apropriados.  Se somente um argumento, @var{tensor_1}, for
+dado, então a contração do produto de @var{tensor_1} com qualquer objecto
+indexado tendo os índices apropriados (digamos @code{my_tensor}) irá retornar como resultado um
+objecto indexado com aquele nome, i.e. @code{my_tensor}, e com uma nova escolha de
+índices refletindo as contrações executadas.
+Por exemplo, se @code{imetric:g}, então @code{defcon(g)} irá implementar o
+incremento e decremento de índices através da contração com o tensor
+métrico.
+Mais de uma @code{defcon} pode ser dada para o mesmo objecto indexado; o
+último  fornecido que for aplicado a uma contração particular será
+usado.
+@code{contractions} é uma lista de objectos indexados que tenham fornecido
+propriedades de contrações com @code{defcon}.
+
+@end deffn
+
+@deffn {Função} remcon (@var{tensor_1}, ..., @var{tensor_n})
+@deffnx {Função} remcon (all)
+Remove todas as propriedades de contração
+de @var{tensor_1}, ..., @var{tensor_n}). @code{remcon(all)} remove todas as propriedades de
+contração de todos os objectos indexados.
+
+@end deffn
+
+@deffn {Função} contract (@var{expr})
+
+Realiza contrações tensoriais em @var{expr} a qual pode ser qualquer
+combinação de adições e produtos. Essa função usa a informação
+dada para a função @code{defcon}. Para melhores resultados, @code{expr}
+pode ser completamente expandida. @code{ratexpand} é o meio mais rápido para expandir
+produtos e expoentes de adições se não existirem variáveis nos denominadores
+dos termos. O comutador @code{gcd} pode ser @code{false} se cancelamentos de
+máximo divisor comum forem desnecessários.
+
+@end deffn
+
+@deffn {Função} indexed_tensor (@var{tensor})
+
+Deve ser executada antes de atribuir componentes para um @var{tensor} para o qual
+um valor interno já existe como com @code{ichr1}, @code{ichr2},
+@code{icurvature}. Veja o exemplo sob @code{icurvature}.
+
+@end deffn
+
+@deffn {Função} components (@var{tensor}, @var{expr})
+
+Permite que se atribua um valor indicial a uma expressão
+@var{expr} dando os valores das componentes do @var{tensor}. Esses
+são automaticamente substituídos para o tensor mesmo que isso ocorra com
+todos os seus índices. O tensor deve ser da forma @code{t([...],[...])}
+onde qualquer lista pode ser vazia. @var{expr} pode ser qualquer expressão indexada
+envolvendo outros objectos com os mesmos índices livres que @var{tensor}. Quando
+usada para atribuir valores a um tensor métrico no qual as componentes
+possuem índices que ocorrem exactamente duas vezes se deve ser cuidadoso para definir esses índices de forma a
+evitar a geração de índices que ocorrem exactamente duas vezes e que são múltiplos. a remoção dessas
+atribuições é dada para a função @code{remcomps}.
+
+É importante ter em mente que @code{components} cuida somente da
+valência de um tensor, e que ignora completamente qualquer ordenação particular de índices. Dessa forma
+atribuindo componentes a, digamos, @code{x([i,-j],[])}, @code{x([-j,i],[])}, ou
+@code{x([i],[j])} todas essas atribuições produzem o mesmo resultado, a saber componentes sendo
+atribuidas a um tensor chamado @code{x} com valência @code{(1,1)}.
+
+Componentes podem ser atribuidas a uma expressão indexada por quatro caminhos, dois
+dos quais envolvem o uso do comando @code{components}:
+
+1) Como uma expressão indexada. Por exemplo:
+
+@example
+
+(%i2) components(g([],[i,j]),e([],[i])*p([],[j]))$
+(%i3) ishow(g([],[i,j]))$
+                                      i  j
+(%t3)                                e  p
+
+@end example
+
+2) Como uma matriz:
+
+@example
+
+(%i6) components(g([i,j],[]),lg);
+(%o6)                                done
+(%i7) ishow(g([i,j],[]))$
+(%t7)                                g
+                                      i j
+(%i8) g([3,3],[]);
+(%o8)                                  1
+(%i9) g([4,4],[]);
+(%o9)                                 - 1
+
+@end example
+
+3) Como uma função. Pode usar uma função Maxima para especificar as
+componentes de um tensor baseado nesses índices. Por exemplo, os seguintes
+códigos atribuem @code{kdelta} a @code{h} se @code{h} tiver o mesmo número de
+índices covariantes e índices contravariantes e nenhum índice derivativo, e
+atribui @code{kdelta} a @code{g} caso as condições anteriores não sejam atendidas:
+
+@example
+
+(%i4) h(l1,l2,[l3]):=if length(l1)=length(l2) and length(l3)=0
+  then kdelta(l1,l2) else apply(g,append([l1,l2], l3))$
+(%i5) ishow(h([i],[j]))$
+                                          j
+(%t5)                               kdelta
+                                          i
+(%i6) ishow(h([i,j],[k],l))$
+                                     k
+(%t6)                               g
+                                     i j,l
+
+@end example
+
+4) Usando a compatibilidade dos modelos de coincidência do Maxima, especificamente os
+comandos @code{defrule} e @code{applyb1}:
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) matchdeclare(l1,listp);
+(%o2)                                done
+(%i3) defrule(r1,m(l1,[]),(i1:idummy(),
+      g([l1[1],l1[2]],[])*q([i1],[])*e([],[i1])))$
+
+(%i4) defrule(r2,m([],l1),(i1:idummy(),
+      w([],[l1[1],l1[2]])*e([i1],[])*q([],[i1])))$
+
+(%i5) ishow(m([i,n],[])*m([],[i,m]))$
+                                    i m
+(%t5)                              m    m
+                                         i n
+(%i6) ishow(rename(applyb1(%,r1,r2)))$
+                           %1  %2  %3 m
+(%t6)                     e   q   w     q   e   g
+                                         %1  %2  %3 n
+
+
+@end example
+
+@end deffn
+
+@deffn {Função} remcomps (@var{tensor})
+
+Desassocia todos os valores de @var{tensor} que foram atribuídos com a
+função @code{components}.
+
+@end deffn
+
+@c NEED LIST OF ARGUMENTS HERE
+@deffn {Função} showcomps (@var{tensor})
+
+Mostra atribuições de componentes de um tensor, feitas usando o comando
+@code{components}. Essa função pode ser particularmente útil quando uma matriz é atribuída
+a um tensor indicial usando @code{components}, como demonstrado através do
+seguinte exemplo:
+
+@example
+
+(%i1) load(ctensor);
+(%o1)       /share/tensor/ctensor.mac
+(%i2) load(itensor);
+(%o2)      /share/tensor/itensor.lisp
+(%i3) lg:matrix([sqrt(r/(r-2*m)),0,0,0],[0,r,0,0],
+                [0,0,sin(theta)*r,0],[0,0,0,sqrt((r-2*m)/r)]);
+               [         r                                     ]
+               [ sqrt(-------)  0       0              0       ]
+               [      r - 2 m                                  ]
+               [                                               ]
+               [       0        r       0              0       ]
+(%o3)          [                                               ]
+               [       0        0  r sin(theta)        0       ]
+               [                                               ]
+               [                                      r - 2 m  ]
+               [       0        0       0        sqrt(-------) ]
+               [                                         r     ]
+(%i4) components(g([i,j],[]),lg);
+(%o4)                                done
+(%i5) showcomps(g([i,j],[]));
+                  [         r                                     ]
+                  [ sqrt(-------)  0       0              0       ]
+                  [      r - 2 m                                  ]
+                  [                                               ]
+                  [       0        r       0              0       ]
+(%t5)      g    = [                                               ]
+            i j   [       0        0  r sin(theta)        0       ]
+                  [                                               ]
+                  [                                      r - 2 m  ]
+                  [       0        0       0        sqrt(-------) ]
+                  [                                         r     ]
+(%o5)                                false
+
+@end example
+
+O comando @code{showcomps} pode também mostrar componentes de um tensor de
+categoria maior que 2.
+
+@end deffn
+
+@deffn {Função} idummy ()
+
+Incrementos @code{icounter} e retorno como seu valor um índice da forma
+@code{%n} onde n é um inteiro positivo.  Isso garante que índices que ocorrem exactamente duas vezes
+e que são necessários na formação de expressões não irão conflitar com índices
+que já estiverem sendo usados (veja o exemplo sob @code{indices}).
+
+@end deffn
+
+@defvr {Variável de opção} idummyx
+Valor por omissão: @code{%}
+
+É o prefixo para índices que ocorrem exactamente duas vezes (veja o exemplo sob índices @code{indices}).
+
+@end defvr
+
+@defvr {Variável de Opção} icounter
+Valor por omissão: @code{1}
+
+Determina o sufixo numérico a ser usado na
+geração do próximo índice que ocorre exactamente duas vezes no pacote tensor.  O prefixo é
+determinado através da opção @code{idummy} (padrão: @code{%}).
+@end defvr
+
+@deffn {Função} kdelta (@var{L1}, @var{L2})
+é a função delta generalizada de Kronecker definida no
+pacote @code{itensor} com @var{L1} a lista de índices covariantes e @var{L2}
+a lista de índices contravariantes.  @code{kdelta([i],[j])} retorna o delta de
+Kronecker comum.  O comando @code{ev(@var{expr},kdelta)} faz com que a avaliação de
+uma expressão contendo @code{kdelta([],[])} se dê para a dimensão de
+multiplicação.
+
+No que conduzir a um abuso dessa notação, @code{itensor} também permite
+@code{kdelta} ter 2 covariantes e nenhum contravariante, ou 2 contravariantes
+e nenhum índice covariante, com efeito fornecendo uma compatibilidade para "matriz unitária" covariante ou
+contravariante. Isso é estritamente considerado um recurso de programação e não significa
+implicar que @code{kdelta([i,j],[])} seja um objecto tensorial válido.
+
+@end deffn
+
+@deffn {Função} kdels (@var{L1}, @var{L2})
+
+Delta de Kronecker simetrizado, usado em alguns cálculos. Por exemplo:
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) kdelta([1,2],[2,1]);
+(%o2)                                 - 1
+(%i3) kdels([1,2],[2,1]);
+(%o3)                                  1
+(%i4) ishow(kdelta([a,b],[c,d]))$
+                             c       d         d       c
+(%t4)                  kdelta  kdelta  - kdelta  kdelta
+                             a       b         a       b
+(%i4) ishow(kdels([a,b],[c,d]))$
+                             c       d         d       c
+(%t4)                  kdelta  kdelta  + kdelta  kdelta
+                             a       b         a       b
+
+@end example
+
+@end deffn
+
+@deffn {Função} levi_civita (@var{L})
+é o tensor de permutação (ou de Levi-Civita) que retorna 1 se
+a lista @var{L} consistir de uma permutação par de inteiros, -1 se isso
+consistir de uma permutação ímpar, e 0 se alguns índices em @var{L} forem
+repetidos.
+
+@end deffn
+
+@deffn {Função} lc2kdt (@var{expr})
+Simplifica expressões contendo os símbolos de Levi-Civita, convertendo esses
+para expressões delta de Kronecker quando possível. A principal diferença entre
+essa função e simplesmente avaliar os simbolos de Levi-Civita é que a avaliação
+directa muitas vezes resulta em expressões Kronecker contendo índices
+numéricos. Isso é muitas vezes indesejável como na prevenção de simplificação adicional.
+A função @code{lc2kdt} evita esse problema, retornando expressões que
+são mais facilmente simplificadas com @code{rename} ou @code{contract}.
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) expr:ishow('levi_civita([],[i,j])*'levi_civita([k,l],[])*a([j],[k]))$
+                                  i j  k
+(%t2)                  levi_civita    a  levi_civita
+                                       j            k l
+(%i3) ishow(ev(expr,levi_civita))$
+                                  i j  k       1 2
+(%t3)                       kdelta    a  kdelta
+                                  1 2  j       k l
+(%i4) ishow(ev(%,kdelta))$
+             i       j         j       i   k
+(%t4) (kdelta  kdelta  - kdelta  kdelta ) a
+             1       2         1       2   j
+
+                               1       2         2       1
+                        (kdelta  kdelta  - kdelta  kdelta )
+                               k       l         k       l
+(%i5) ishow(lc2kdt(expr))$
+                     k       i       j    k       j       i
+(%t5)               a  kdelta  kdelta  - a  kdelta  kdelta
+                     j       k       l    j       k       l
+(%i6) ishow(contract(expand(%)))$
+                                 i           i
+(%t6)                           a  - a kdelta
+                                 l           l
+
+@end example
+
+A função @code{lc2kdt} algumas vezes faz uso de tensores métricos.
+Se o tensor métrico não tiver sido definido previamente com @code{imetric},
+isso resulta em um erro.
+
+@example
+
+(%i7) expr:ishow('levi_civita([],[i,j])*'levi_civita([],[k,l])*a([j,k],[]))$
+                                 i j            k l
+(%t7)                 levi_civita    levi_civita    a
+                                                     j k
+(%i8) ishow(lc2kdt(expr))$
+Maxima encountered a Lisp error:
+
+ Error in $IMETRIC [or a callee]:
+ $IMETRIC [or a callee] requires less than two arguments.
+
+Automatically continuing.
+To reenable the Lisp debugger set *debugger-hook* to nil.
+(%i9) imetric(g);
+(%o9)                                done
+(%i10) ishow(lc2kdt(expr))$
+         %3 i       k   %4 j       l     %3 i       l   %4 j       k
+(%t10) (g     kdelta   g     kdelta   - g     kdelta   g     kdelta  ) a
+                    %3             %4               %3             %4   j k
+(%i11) ishow(contract(expand(%)))$
+                                  l i      l i
+(%t11)                           a    - a g
+
+@end example
+
+
+@end deffn
+
+@c HMM, WHICH CATEGORY DOES THIS FALL INTO -- FUNCTION, VARIABLE, OTHER ??
+@deffn {Função} lc_l
+
+Regra de simplificação usada para expressões contendo símbolos não avaliados de
+Levi-Civita (@code{levi_civita}). Juntamente com @code{lc_u}, pode ser usada para simplificar
+muitas expressões mais eficientemente que a avaliação de @code{levi_civita}.
+Por exemplo:
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2)  el1:ishow('levi_civita([i,j,k],[])*a([],[i])*a([],[j]))$
+                             i  j
+(%t2)                       a  a  levi_civita
+                                             i j k
+(%i3) el2:ishow('levi_civita([],[i,j,k])*a([i])*a([j]))$
+                                       i j k
+(%t3)                       levi_civita      a  a
+                                              i  j
+(%i4) ishow(canform(contract(expand(applyb1(el1,lc_l,lc_u)))))$
+(%t4)                                  0
+(%i5) ishow(canform(contract(expand(applyb1(el2,lc_l,lc_u)))))$
+(%t5)                                  0
+
+@end example
+
+@end deffn
+
+@c HMM, WHICH CATEGORY DOES THIS FALL INTO -- FUNCTION, VARIABLE, OTHER ??
+@deffn {Função} lc_u
+
+Regra de simplificação usada para expressões contendo símbolos não avaliados de
+Levi-Civita (@code{levi_civita}). Juntamente com @code{lc_u}, pode ser usada para simplificar
+muitas expressões mais eficientemente que a avaliação de @code{levi_civita}.
+Para detalhes, veja @code{lc_l}.
+
+@end deffn
+
+@deffn {Função} canten (@var{expr})
+Simplifica @var{expr} por renomeação (veja @code{rename})
+e permutando índices que ocorrem exactamente duas vezes. @code{rename} é restrito a adições de produto
+de tensores nos quais nenhum índice derivativo estiver presente. Como tal isso é limitado
+e pode somente ser usado se @code{canform} não for capaz de realizar a
+simplificação requerida.
+
+A função @code{canten} retorna um resultado matematicamente correcto somente
+se seu argumento for uma expressão que é completamente simétrica em seus índices.
+Por essa razão, @code{canten} retorna um erro se @code{allsym} não for
+posicionada em @code{true}.
+
+@end deffn
+
+@deffn {Função} concan (@var{expr})
+Similar a @code{canten} mas também executa contração de índices.
+
+@end deffn
+
+@subsection Simetrias de tensores
+
+@defvr {Variável de Opção} allsym
+
+Valor por omissão: @code{false}. Se @code{true} então todos os objectos indexados
+são assumidos simétricos em todos os seus índices covariantes e
+contravariantes. Se @code{false} então nenhum simétrico de qualquer tipo é assumidos
+nesses índices. Índices derivativos são sempre tomados para serem simétricos
+a menos que @code{iframe_flag} seja escolhida para @code{true}.
+
+@end defvr
+
+@deffn {Função} decsym (@var{tensor}, @var{m}, @var{n}, [@var{cov_1}, @var{cov_2}, ...], [@var{contr_1}, @var{contr_2}, ...])
+
+Declara propriedades de simetria para @var{tensor} de covariante @var{m} e
+@var{n} índices contravariantes. As @var{cov_i} e @var{contr_i} são
+pseudofunções expressando relações de simetrias em meio a índices covariante e
+índices contravariantes respectivamente.  Esses são da forma
+@code{symoper(@var{index_1}, @var{index_2},...)} onde @code{symoper} é um entre
+@code{sym}, @code{anti} ou @code{cyc} e os @var{index_i} são inteiros
+indicando a posição do índice no @var{tensor}.  Isso irá
+declarar @var{tensor} para ser simétrico, antisimétrico ou cíclico respectivamente
+nos @var{index_i}. @code{symoper(all)} é também forma permitida que
+indica todos os índices obedecem à condição de simetria. Por exemplo, dado um
+objecto @code{b} com 5 índices covariantes,
+@code{decsym(b,5,3,[sym(1,2),anti(3,4)],[cyc(all)])} declara @code{b}
+simétrico no seu primeiro e no seu segundo índices e antisimétrico no seu terceiro e
+quarto índices covariantes, e cíclico em todos de seus índices contravariantes.
+Qualquer lista de declarações de simetria pode ser nula.  A função que
+executa as simplificações é @code{canform} como o exemplo abaixo
+ilustra.
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) expr:contract(expand(a([i1,j1,k1],[])*kdels([i,j,k],[i1,j1,k1])))$
+(%i3) ishow(expr)$
+(%t3)         a      + a      + a      + a      + a      + a
+               k j i    k i j    j k i    j i k    i k j    i j k
+(%i4) decsym(a,3,0,[sym(all)],[]);
+(%o4)                                done
+(%i5) ishow(canform(expr))$
+(%t5)                              6 a
+                                      i j k
+(%i6) remsym(a,3,0);
+(%o6)                                done
+(%i7) decsym(a,3,0,[anti(all)],[]);
+(%o7)                                done
+(%i8) ishow(canform(expr))$
+(%t8)                                  0
+(%i9) remsym(a,3,0);
+(%o9)                                done
+(%i10) decsym(a,3,0,[cyc(all)],[]);
+(%o10)                               done
+(%i11) ishow(canform(expr))$
+(%t11)                        3 a      + 3 a
+                                 i k j      i j k
+(%i12) dispsym(a,3,0);
+(%o12)                     [[cyc, [[1, 2, 3]], []]]
+
+@end example
+
+
+@end deffn
+
+@deffn {Função} remsym (@var{tensor}, @var{m}, @var{n})
+Remove todas as propriedades de simetria de @var{tensor} que tem @var{m}
+índices covariantes e @var{n} índices contravariantes.
+@end deffn
+
+@deffn {Função} canform (@var{expr})
+Simplifica @var{expr} através de mudança de nome de índices
+que ocorrem exactamente duas vezes e reordenação de todos os índices como ditados pelas condições de simetria
+impostas sobre eles. Se @code{allsym} for @code{true} então todos os índices são assumidos
+simétricos, de outra forma a informação de simetria fornecida pelas declarações
+@code{decsym} irão ser usadas. Os índices que ocorrem exactamente duas vezes são renomeados da mesma
+maneira que na função @code{rename}. Quando @code{canform} é aplicada a uma expressão
+larga o cálculo pode tomar um considerável montante de tempo.
+Esse tempo pode ser diminuído através do uso de @code{rename} sobre a expressão em primeiro lugar.
+Também veja o exemplo sob @code{decsym}. Nota: @code{canform} pode não estar apta a
+reduzir um expressão completamente para sua forma mais simples embora
+retorne sempre um resultado matemáticamente correcto.
+@end deffn
+
+@subsection Cálculo de tensores indiciais
+
+@deffn {Função} diff (@var{expr}, @var{v_1}, [@var{n_1}, [@var{v_2}, @var{n_2}] ...])
+
+É a função usual de diferenciação do Maxima que tem sido expandida
+nessas habilidades para @code{itensor}. @code{diff} toma a derivada de @var{expr}
+ @var{n_1} vezes com relação a @var{v_1}, @var{n_2} vezes com relação a @var{v_2}
+, etc. Para o pacote @code{tensor}, a função tem sido modificada de
+forma que os @var{v_i} possam ser inteiros de 1 até o valor da variável
+@code{dim}.  Isso causará a conclusão da diferenciação com
+relação ao @var{v_i}ésimo membro da lista @code{vect_coords}.  Se
+@code{vect_coords} for associado a uma variável at@^omica, então aquela variável
+subscrita através de @var{v_i} será usada para a variável de
+diferenciação.  Isso permite que um array de nomes de coordenadas ou
+nomes subscritos como @code{x[1]}, @code{x[2]}, ...  sejam usados.
+@end deffn
+
+@deffn {Função} idiff (@var{expr}, @var{v_1}, [@var{n_1}, [@var{v_2}, @var{n_2}] ...])
+Diferenciação indicial. A menos que @code{diff}, que diferencia
+com relação a uma variável independente, @code{idiff} possa ser usada
+para diferenciar com relação a uma coordenada. Para um objecto indexado,
+isso equivale a anexar ao final os @var{v_i} como índices derivativos.
+Subsequêntemente, índices derivativos irão ser ordenados, a menos que @code{iframe_flag}
+seja escolhida para @code{true}.
+
+@code{idiff} pode também ser o determinante de um tensor
+métrico. Dessa forma, se @code{imetric} tiver sido associada a @code{G} então
+@code{idiff(determinant(g),k)} irá retornar
+@code{2*determinant(g)*ichr2([%i,k],[%i])} onde o índice que ocorre exactamente duas vezes @code{%i}
+é escolhido apropriadamente.
+
+
+@end deffn
+
+@deffn {Função} liediff (@var{v}, @var{ten})
+
+Calcula a derivada de Lie da expressão tensorial @var{ten} com
+relação ao campo vectorial @var{v}. @var{ten} pode ser qualquer expressão tensorial
+indexada; @var{v} pode ser o nome (sem índices) de um campo
+vectorial. Por exemplo:
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) ishow(liediff(v,a([i,j],[])*b([],[k],l)))$
+       k    %2            %2          %2
+(%t2) b   (v   a       + v   a     + v   a    )
+       ,l       i j,%2    ,j  i %2    ,i  %2 j
+
+                                %1  k        %1  k      %1  k
+                            + (v   b      - b   v    + v   b   ) a
+                                    ,%1 l    ,l  ,%1    ,l  ,%1   i j
+
+@end example
+
+
+@end deffn
+
+@deffn {Função} rediff (@var{ten})
+
+Avalia todas as ocorrências do comando @code{idiff} na expressão
+tensorial @var{ten}.
+
+@end deffn
+
+@deffn {Função} undiff (@var{expr})
+
+Retorna uma expressão equivalente a @var{expr} mas com todas as derivadas
+de objectos indexados substituídas pela forma substantiva da função @code{idiff}. Seu
+argumento pode retornar aquele objecto indexado se a diferenciação for
+concluída.  Isso é útil quando for desejado substituir um
+objecto indexado que sofreu diferenciação com alguma definição de função resultando
+em @var{expr} e então concluir a diferenciação através de digamos
+@code{ev(@var{expr}, idiff)}.
+
+@end deffn
+
+@deffn {Função} evundiff (@var{expr})
+
+Equivalente à execução de @code{undiff}, seguida por @code{ev} e
+@code{rediff}.
+
+O ponto dessa operação é facilmente avaliar expressões que não possam
+ser directamente avaliadas na forma derivada. Por exemplo, o seguinte
+causa um erro:
+
+@example
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) icurvature([i,j,k],[l],m);
+Maxima encountered a Lisp error:
+
+ Error in $ICURVATURE [or a callee]:
+ $ICURVATURE [or a callee] requires less than three arguments.
+
+Automatically continuing.
+To reenable the Lisp debugger set *debugger-hook* to nil.
+@end example
+
+Todavia, se @code{icurvature} é informado em sua forma substantiva, pode ser avaliado
+usando @code{evundiff}:
+
+@example
+(%i3) ishow('icurvature([i,j,k],[l],m))$
+                                         l
+(%t3)                          icurvature
+                                         i j k,m
+(%i4) ishow(evundiff(%))$
+             l              l         %1           l           %1
+(%t4) - ichr2        - ichr2     ichr2      - ichr2       ichr2
+             i k,j m        %1 j      i k,m        %1 j,m      i k
+
+                l              l         %1           l           %1
+         + ichr2        + ichr2     ichr2      + ichr2       ichr2
+                i j,k m        %1 k      i j,m        %1 k,m      i j
+@end example
+
+Nota: Em versões anteriores do Maxima, formas derivadas dos
+símbolos de Christoffel também não podiam ser avaliadas. Isso foi corrigido actualmente,
+de forma que @code{evundiff} não mais é necessária para expressões como essa:
+
+@example
+(%i5) imetric(g);
+(%o5)                                done
+(%i6) ishow(ichr2([i,j],[k],l))$
+       k %3
+      g     (g         - g         + g        )
+              j %3,i l    i j,%3 l    i %3,j l
+(%t6) -----------------------------------------
+                          2
+
+                         k %3
+                        g     (g       - g       + g      )
+                         ,l     j %3,i    i j,%3    i %3,j
+                      + -----------------------------------
+                                         2
+@end example
+
+
+@end deffn
+
+@deffn {Função} flush (@var{expr}, @var{tensor_1}, @var{tensor_2}, ...)
+Escolhe para zero, em
+@var{expr}, todas as ocorrências de @var{tensor_i} que não tiverem índices derivativos.
+
+@end deffn
+
+@deffn {Função} flushd (@var{expr}, @var{tensor_1}, @var{tensor_2}, ...)
+Escolhe para zero, em
+@var{expr}, todas as ocorrências de @var{tensor_i} que tiverem índices derivativos.
+
+@end deffn
+
+@deffn {Função} flushnd (@var{expr}, @var{tensor}, @var{n})
+Escolhe para zero, em @var{expr}, todas as
+ocorrências do objecto diferenciado @var{tensor} que tem @var{n} ou mais
+índices derivativos como demonstra o seguinte exemplo.
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) ishow(a([i],[J,r],k,r)+a([i],[j,r,s],k,r,s))$
+                                J r      j r s
+(%t2)                          a      + a
+                                i,k r    i,k r s
+(%i3) ishow(flushnd(%,a,3))$
+                                     J r
+(%t3)                               a
+                                     i,k r
+@end example
+@end deffn
+
+@deffn {Função} coord (@var{tensor_1}, @var{tensor_2}, ...)
+
+Dados os @var{tensor_i} a propriedade de diferenciação da coordenada que a
+derivada do vector contravariante cujo nome é um dos
+@var{tensor_i} retorna um delta de Kronecker. Por exemplo, se @code{coord(x)} tiver
+sido concluída então @code{idiff(x([],[i]),j)} fornece @code{kdelta([i],[j])}.
+@code{coord} que é uma lista de todos os objectos indexados tendo essa propriedade.
+
+@end deffn
+
+@deffn {Função} remcoord (@var{tensor_1}, @var{tensor_2}, ...)
+@deffnx {Função} remcoord (all)
+
+Remove a propriedade de coordenada de diferenciação dos @code{tensor_i}
+que foram estabelecidos através da função @code{coord}.  @code{remcoord(all)}
+remove essa propriedade de todos os objectos indexados.
+
+@end deffn
+
+@deffn {Função} makebox (@var{expr})
+Mostra @var{expr} da mesma maneira que @code{show}; todavia,
+qualquer tensor d'Alembertiano ocorrendo em @var{expr} será indicado usando o
+símbolo @code{[]}.  Por exemplo, @code{[]p([m],[n])} representa
+@code{g([],[i,j])*p([m],[n],i,j)}.
+
+@end deffn
+
+@deffn {Função} conmetderiv (@var{expr}, @var{tensor})
+
+Simplifica expressões contendo derivadas comuns de
+ambas as formas covariantes e contravariantes do tensor métrico (a
+restrição corrente).  Por exemplo, @code{conmetderiv} pode relatar a
+derivada do tensor contravariante métrico com símbolos de
+Christoffel como visto adiante:
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) ishow(g([],[a,b],c))$
+                                      a b
+(%t2)                                g
+                                      ,c
+(%i3) ishow(conmetderiv(%,g))$
+                         %1 b      a       %1 a      b
+(%t3)                 - g     ichr2     - g     ichr2
+                                   %1 c              %1 c
+@end example
+@end deffn
+
+@deffn {Função} simpmetderiv (@var{expr})
+@deffnx {Função} simpmetderiv (@var{expr}[, @var{stop}])
+
+Simplifica expressões contendo produtos de derivadas de
+tensores métricos. Especificamente, @code{simpmetderiv} reconhece duas identidades:
+
+@example
+
+   ab        ab           ab                 a
+  g   g   + g   g     = (g   g  )   = (kdelta )   = 0
+   ,d  bc        bc,d         bc ,d          c ,d
+
+@end example
+
+consequêntemente
+
+@example
+
+   ab          ab
+  g   g   = - g   g
+   ,d  bc          bc,d
+@end example
+
+e
+
+@example
+
+  ab          ab
+ g   g     = g   g
+  ,j  ab,i    ,i  ab,j
+
+@end example
+
+que seguem de simetrias de símbolos de Christoffel.
+
+A função @code{simpmetderiv} toma um parâmetro opcional que, quando
+presente, faz com que a função pare após a primeira substituição feita com
+sucesso em uma expressão produto. A função @code{simpmetderiv}
+também faz uso da variável global @var{flipflag} que determina
+como aplicar uma ordenação ``canonica'' para os índices de produto.
+
+Colocados juntos, essas compatibilidades podem ser usadas poderosamente para encontrar
+simplificações que são difíceis ou impossíveis de realizar de outra forma.
+Isso é demonstrado através do seguinte exemplo que explicitamente usa o 
+recurso de simplificação parcial de @code{simpmetderiv} para obter uma
+expressão contractível:
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) imetric(g);
+(%o2)                                done
+(%i3) ishow(g([],[a,b])*g([],[b,c])*g([a,b],[],d)*g([b,c],[],e))$
+                             a b  b c
+(%t3)                       g    g    g      g
+                                       a b,d  b c,e
+(%i4) ishow(canform(%))$
+
+errexp1 has improper indices
+ -- an error.  Quitting.  To debug this try debugmode(true);
+(%i5) ishow(simpmetderiv(%))$
+                             a b  b c
+(%t5)                       g    g    g      g
+                                       a b,d  b c,e
+(%i6) flipflag:not flipflag;
+(%o6)                                true
+(%i7) ishow(simpmetderiv(%th(2)))$
+                               a b  b c
+(%t7)                         g    g    g    g
+                               ,d   ,e   a b  b c
+(%i8) flipflag:not flipflag;
+(%o8)                                false
+(%i9) ishow(simpmetderiv(%th(2),stop))$
+                               a b  b c
+(%t9)                       - g    g    g      g
+                                    ,e   a b,d  b c
+(%i10) ishow(contract(%))$
+                                    b c
+(%t10)                           - g    g
+                                    ,e   c b,d
+
+@end example
+
+Veja também @code{weyl.dem} para um exemplo que usa @code{simpmetderiv}
+e @code{conmetderiv} juntos para simplificar contrações do tensor de Weyl.
+
+@end deffn
+
+@deffn {Função} flush1deriv (@var{expr}, @var{tensor})
+
+Escolhe para zero, em @code{expr}, todas as ocorrências de @code{tensor} que possuem
+exactamente um índice derivativo.
+
+@end deffn
+
+@subsection Tensores em espaços curvos
+
+@deffn {Função} imetric (@var{g})
+@deffnx {Variável de sistema} imetric
+
+Especifica a métrica através de atribuição à variável @code{imetric:@var{g}}
+adicionalmente, as propriedades de contração da métrica @var{g} são escolhidas através da
+execução dos comandos @code{defcon(@var{g}),defcon(@var{g},@var{g},kdelta)}.
+A variável @code{imetric} (desassociada por padrão), é associada à métrica, atribuida pelo
+comando @code{imetric(@var{g})}.
+
+@end deffn
+
+@deffn {Função} idim (@var{n})
+Escolhe as dimensões da métrica. Também inicializa as propriedades de
+antisimetria dos símbolos de Levi-Civita para as dimensões dadas.
+
+@end deffn
+
+@deffn {Função} ichr1 ([@var{i}, @var{j}, @var{k}])
+Retorna o símbolo de Christoffel de primeiro tipo via
+definição
+@example
+       (g      + g      - g     )/2 .
+         ik,j     jk,i     ij,k
+@end example
+@noindent
+Para avaliar os símbolos de Christoffel para uma métrica particular, à
+variável @code{imetric} deve ser atribuída um nome como no exemplo sob @code{chr2}.
+
+@end deffn
+
+@deffn {Função} ichr2 ([@var{i}, @var{j}], [@var{k}])
+Retorna o símbolo de Christoffel de segundo tipo
+definido pela relação
+@example
+                       ks
+   ichr2([i,j],[k]) = g    (g      + g      - g     )/2
+                             is,j     js,i     ij,s
+@end example
+@end deffn
+
+@deffn {Função} icurvature ([@var{i}, @var{j}, @var{k}], [@var{h}])
+Retorna o tensor da curvatura de
+Riemann em termos de símbolos de Christoffel de segundo
+tipo (@code{ichr2}).  A seguinte notação é usada:
+@example
+               h             h            h         %1         h
+     icurvature     = - ichr2      - ichr2     ichr2    + ichr2
+               i j k         i k,j        %1 j      i k        i j,k
+                               h          %1
+                        + ichr2      ichr2
+                               %1 k       i j
+@end example
+@end deffn
+
+@deffn {Função} covdiff (@var{expr}, @var{v_1}, @var{v_2}, ...)
+Retorna a derivada da covariante de @var{expr} com
+relação às variáveis @var{v_i} em termos de símbolos de Christoffel de
+segundo tipo (@code{ichr2}).  Com o objectivo de avaliar esses, se pode usar
+@code{ev(@var{expr},ichr2)}.
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) entertensor()$
+Enter tensor name: a;
+Enter a list of the índices covariantes: [i,j];
+Enter a list of the índices contravariantes: [k];
+Enter a list of the derivative indices: [];
+                                      k
+(%t2)                                a
+                                      i j
+(%i3) ishow(covdiff(%,s))$
+             k         %1     k         %1     k            k     %1
+(%t3)     - a     ichr2    - a     ichr2    + a      + ichr2     a
+             i %1      j s    %1 j      i s    i j,s        %1 s  i j
+(%i4) imetric:g;
+(%o4)            g
+(%i5) ishow(ev(%th(2),ichr2))$
+  %1 %4  k
+ g      a     (g       - g       + g  )
+  i %1   s %4,j  j s,%4    j %4,s
+(%t5) - ------------------------------------------
+       2
+    %1 %3  k
+   g   a     (g       - g    + g     )
+    %1 j   s %3,i    i s,%3    i %3,s
+ - ------------------------------------------
+         2
+    k %2  %1
+   g     a    (g        - g    + g      )
+   i j   s %2,%1    %1 s,%2    %1 %2,s   k
+ + ------------------------------------------- + a
+   2     i j,s
+(%i6) 
+@end example
+
+@end deffn
+
+@deffn {Função} lorentz_gauge (@var{expr})
+Impõe a condição de Lorentz através da substituição de 0 para todos os
+objectos indexados em @var{expr} que possui um índice de derivada idêntico ao
+índice contravariante.
+
+@end deffn
+
+@deffn {Função} igeodesic_coords (@var{expr}, @var{nome})
+
+Faz com que símbolos de Christoffel não diferenciados e
+a primeira derivada do tensor métrico tendam para zero em @var{expr}. O @var{nome}
+na função @code{igeodesic_coords} refere-se à métrica @var{nome}
+(se isso aparecer em @var{expr}) enquando os coeficientes de conecção devem ser
+chamados com os nomes @code{ichr1} e/ou @code{ichr2}. O seguinte exemplo
+demonstra a verificação da identidade cíclica satisfeita através do tensor da
+curvatura de Riemann usando a função @code{igeodesic_coords}.
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) ishow(icurvature([r,s,t],[u]))$
+             u            u         %1         u            u         %1
+(%t2) - ichr2      - ichr2     ichr2    + ichr2      + ichr2     ichr2
+             r t,s        %1 s      r t        r s,t        %1 t      r s
+(%i3) ishow(igeodesic_coords(%,ichr2))$
+                                 u            u
+(%t3)                       ichr2      - ichr2
+                                 r s,t        r t,s
+(%i4) ishow(igeodesic_coords(icurvature([r,s,t],[u]),ichr2)+
+            igeodesic_coords(icurvature([s,t,r],[u]),ichr2)+
+            igeodesic_coords(icurvature([t,r,s],[u]),ichr2))$
+             u            u            u            u            u
+(%t4) - ichr2      + ichr2      + ichr2      - ichr2      - ichr2
+             t s,r        t r,s        s t,r        s r,t        r t,s
+
+                                                                  u
+                                                           + ichr2
+                                                                  r s,t
+(%i5) canform(%);
+(%o5)                                  0
+
+@end example
+
+@end deffn
+
+@subsection Referenciais móveis
+
+Maxima actualmente tem a habilidade de executar cálculos usando referenciais móveis.
+Essas podem ser referenciais ortonormais (tetrads, vielbeins) ou um referencial arbitrária.
+
+Para usar referenciais,  primeiro escolha @code{iframe_flag} para @code{true}. Isso
+faz com que os símbolos de Christoffel, @code{ichr1} e @code{ichr2}, sejam substituídos
+pelos referenciais mais gerais de coeficientes de conecção @code{icc1} e @code{icc2}
+em cálculos. Especialmente, o comportamento de @code{covdiff} e
+@code{icurvature} são alterados.
+
+O referencial é definido através de dois tensores: o campo de referencial inversa (@code{ifri}),
+a base tetrad dual),
+e a métrica do referencial @code{ifg}. A métrica do referencial é a matriz identidade para
+referenciais ortonormais, ou a métrica de Lorentz para referenciais ortonormais no espaço-tempo de
+Minkowski. O campo de referencial inverso define a base do referencial (vectores unitários).
+Propriedades de contração são definidas para o campo de referencial e para a métrica do referencial.
+
+Quando @code{iframe_flag} for @code{true}, muitas expressões @code{itensor} usam a métrica do
+referencial @code{ifg} em lugar da métrica definida através de @code{imetric} para
+o decremento e para o incremento de índices.
+
+IMPORTANTE: Escolhendo a variável @code{iframe_flag} para @code{true} N@~{A}O
+remove a definição das propriedades de contração de uma métrica definida através de uma chamada a
+@code{defcon} ou @code{imetric}. Se um campo de referencial for usado, ele é melhor para
+definir a métrica através de atribuição desse nome para a variável @code{imetric}
+e N@~{A}O invoque a função @code{imetric}.
+
+Maxima usa esses dois tensores para definir os coeficientes de referencial (@code{ifc1}
+e @code{ifc2}) cuja forma parte dos coeficientes de conecção (@code{icc1}
+e @code{icc2}), como demonstra o seguinte exemplo:
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) iframe_flag:true;
+(%o2)                                true
+(%i3) ishow(covdiff(v([],[i]),j))$
+                               i        i     %1
+(%t3)                         v   + icc2     v
+                               ,j       %1 j
+(%i4) ishow(ev(%,icc2))$
+                        %1      i           i        i
+(%t4)                  v   (ifc2     + ichr2    ) + v
+                                %1 j        %1 j     ,j
+(%i5) ishow(ev(%,ifc2))$
+            %1    i %2
+           v   ifg     (ifb        - ifb        + ifb       )
+                           j %2 %1      %2 %1 j      %1 j %2     i
+(%t5)      -------------------------------------------------- + v
+                                   2                             ,j
+(%i6) ishow(ifb([a,b,c]))$
+                       %5    %4
+(%t6)               ifr   ifr   (ifri        - ifri       )
+                       a     b       c %4,%5       c %5,%4
+
+@end example
+
+Um método alternativo é usado para calcular o suporte do referencial (@code{ifb}) se
+o sinalizador @code{iframe_bracket_form} é escolhido para @code{false}:
+
+@example
+
+(%i8) block([iframe_bracket_form:false],ishow(ifb([a,b,c])))$
+                       %7    %6        %6      %7
+(%t8)              (ifr   ifr     - ifr     ifr  ) ifri
+                       a     b,%7      a,%7    b       c %6
+
+@end example
+
+
+@deffn {Função} iframes ()
+
+Uma vez que nessa versão do Maxima, identidades de contração para @code{ifr} e
+@code{ifri} são sempre definidas, como é o suporte do referencial (@code{ifb}), essa
+função não faz nada.
+
+@end deffn
+
+@defvr {Variável} ifb
+
+O suporte do referencial. A contribuição da métrica do referencial para os coeficientes
+de conecção é expressa usando o suporte do referencial:
+
+@example
+
+          - ifb      + ifb      + ifb
+               c a b      b c a      a b c
+ifc1    = --------------------------------
+    abc                  2
+
+@end example
+
+O suporte do referencial por si mesmo é definido em termos de campo de
+referencial e métrica do referencial. Dois métodos alternativos de
+cálculo são usados dependendo do valor de
+@code{frame_bracket_form}. Se @code{true} (o padrão) ou se o
+sinalizador @code{itorsion_flag} for @code{true}:
+
+@example
+
+          d      e                                      f
+ifb =  ifr    ifr   (ifri      - ifri      - ifri    itr   )
+   abc    b      c       a d,e       a e,d       a f    d e
+
+
+@end example
+
+Otherwise:
+
+@example
+
+             e      d        d      e
+ifb    = (ifr    ifr    - ifr    ifr   ) ifri
+   abc       b      c,e      b,e    c        a d
+
+@end example
+
+
+@end defvr
+
+
+@defvr {Variável} icc1
+
+Coeficientes de conecção de primeiro tipo. Em @code{itensor}, definido como
+
+@example
+
+icc1    = ichr1    - ikt1    - inmc1
+    abc        abc       abc        abc
+
+@end example
+
+Nessa expressão, se @code{iframe_flag} for @code{true}, o símbolo de Christoffel
+@code{ichr1} é substituído com o coeficiente de conecção do referencial @code{ifc1}.
+Se @code{itorsion_flag} for @code{false}, @code{ikt1}
+será omitido. @code{ikt1} é também omitido se uma base de referencial for usada, como a
+torsão está já calculada como parte do suporte do referencial.
+Ultimamente, como @code{inonmet_flag} é @code{false},
+@code{inmc1} não estará presente.
+
+
+@end defvr
+
+@defvr {Variável} icc2
+
+Coeficientes de conecção de segundo tipo. Em @code{itensor}, definido como
+
+@example
+
+    c         c        c         c
+icc2   = ichr2   - ikt2   - inmc2
+    ab        ab       ab        ab
+
+@end example
+
+Nessa expressão, se @code{iframe_flag} for @code{true}, o símbolo de Christoffel
+@code{ichr2} é substituído com o coeficiente de conecção @code{ifc2}.
+Se @code{itorsion_flag} for @code{false}, @code{ikt2}
+será omitido. @code{ikt2} também será omitido se uma base de referencial for usada, uma vez que a
+torsão já está calculada como parte do suporte do referencial.
+Ultimamente, como @code{inonmet_flag} é @code{false},
+@code{inmc2} não estará presente.
+
+@end defvr
+
+@defvr {Variável} ifc1
+
+Coeficiente de referencial de primeiro tipo (também conhecido como coeficientes de
+rotação de Ricci).  Esse tensor representa a contribuição
+da métrica do referencial para o coeficiente de conecção de primeiro tipo. Definido
+como:
+
+@example
+
+          - ifb      + ifb      + ifb
+               c a b      b c a      a b c
+ifc1    = --------------------------------
+    abc                   2
+
+
+@end example
+
+@end defvr
+
+@defvr {Variável} ifc2
+
+Coeficiente de referencial de primeiro tipo. Esse tensor representa a contribuição
+da métrica do referencial para o coeficiente de conecção de primeiro tipo. Definido
+como uma permutação de suporte de referencial (@code{ifb}) com os índices
+apropriados incrementados e decrementados como necessário:
+
+@example
+
+    c       cd
+ifc2   = ifg   ifc1
+    ab             abd
+
+@end example
+
+@end defvr
+
+@defvr {Variável} ifr
+
+O campo do referencial. Contrai (@code{ifri}) para e com a forma do
+campo inverso do referencial para formar a métrica do referencial
+(@code{ifg}).
+
+@end defvr
+
+@defvr {Variável} ifri
+
+O campo inverso do referencial. Especifica a base do referencial (vectores base duais). Juntamente
+com a métrica do referencial, forma a base de todos os cálculos baseados em
+referenciais.
+
+@end defvr
+
+@defvr {Variável} ifg
+
+A métrica do referencial. O valor padrão é @code{kdelta}, mas pode ser mudada usando
+@code{components}.
+
+@end defvr
+
+@defvr {Variável} ifgi
+
+O inverso da métrica do referencial. Contrai com a métrica do referencial (@code{ifg})
+para @code{kdelta}.
+
+@end defvr
+
+@defvr {Variável de Opção} iframe_bracket_form
+Valor por omissão: @code{true}
+
+Especifica como o suporte do referencial (@code{ifb}) é calculado.
+
+@end defvr
+
+@subsection Torsão e não metricidade
+
+Maxima pode trabalhar com torsão e não metricidade. Quando o sinalizador
+@code{itorsion_flag} for escolhido para @code{true}, a contribuição de torsão
+é adicionada aos coeficientes de conecção. Similarmente, quando o sinalizador
+@code{inonmet_flag} for @code{true}, componentes de não metricidades são incluídos.
+
+@defvr {Variável} inm
+
+O vector de não metricidade. Conforme a não metricidade está definida através da
+derivada covariante do tensor métrico. Normalmente zero, o tensor da
+métrica derivada covariante irá avaliar para o seguinte quando
+@code{inonmet_flag} for escolhido para @code{true}:
+
+@example
+
+g     =- g  inm
+ ij;k     ij  k
+
+@end example
+
+@end defvr
+
+
+@defvr {Variável} inmc1
+
+Permutação covariante de componentes do vector de não metricidade. Definida como
+
+@example
+
+           g   inm  - inm  g   - g   inm
+            ab    c      a  bc    ac    b
+inmc1    = ------------------------------
+     abc                 2
+
+@end example
+
+(Substitue @code{ifg} em lugar de @code{g} se um referencial métrico for usada.)
+
+@end defvr
+
+@defvr {Variável} inmc2
+
+Permutação covariante de componentes do vector de não metricidade. Usada
+nos coeficicientes de conecção se @code{inonmet_flag} for @code{true}. Definida
+como:
+
+@example
+
+                      c         c         cd
+          -inm  kdelta  - kdelta  inm  + g   inm  g
+     c        a       b         a    b          d  ab
+inmc2   = -------------------------------------------
+     ab                        2
+
+@end example
+
+(Substitue @code{ifg} em lugar de @code{g} se um referencial métrico for usada.)
+
+@end defvr
+
+@defvr {Variável} ikt1
+
+Permutação covariante do tensor de torsão (também conhecido como contorsão).
+Definido como:
+
+@example
+
+                  d           d       d
+          -g   itr  - g    itr   - itr   g
+            ad    cb    bd    ca      ab  cd
+ikt1    = ----------------------------------
+    abc                   2
+
+@end example
+
+(Substitue @code{ifg} em lugar de @code{g} se um referencial métrico for usada.)
+
+@end defvr
+
+@defvr {Variável} ikt2
+
+Permutação contravariante do tensor de torsão (também conhecida como contorsão).
+Definida como:
+
+@example
+
+    c     cd
+ikt2   = g   ikt1
+    ab           abd
+
+@end example
+
+(Substitue @code{ifg} em lugar de @code{g} se um referencial métrico for usada.)
+
+@end defvr
+
+@defvr {Variável} itr
+
+O tensor de torsão. Para uma métrica com torsão, diferenciação covariante
+repetida sobre uma funçào escalar não irá comutar,como demonstrado
+através do seguinte exemplo:
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) imetric:g;
+(%o2)                                  g
+(%i3) covdiff(covdiff(f([],[]),i),j)-covdiff(covdiff(f([],[]),j),i)$
+(%i4) ishow(%)$
+                                   %4              %2
+(%t4)                    f    ichr2    - f    ichr2
+                          ,%4      j i    ,%2      i j
+(%i5) canform(%);
+(%o5)                                  0
+(%i6) itorsion_flag:true;
+(%o6)                                true
+(%i7) covdiff(covdiff(f([],[]),i),j)-covdiff(covdiff(f([],[]),j),i)$
+(%i8) ishow(%)$
+                           %8             %6
+(%t8)             f    icc2    - f    icc2    - f     + f
+                   ,%8     j i    ,%6     i j    ,j i    ,i j
+(%i9) ishow(canform(%))$
+                                   %1             %1
+(%t9)                     f    icc2    - f    icc2
+                           ,%1     j i    ,%1     i j
+(%i10) ishow(canform(ev(%,icc2)))$
+                                   %1             %1
+(%t10)                    f    ikt2    - f    ikt2
+                           ,%1     i j    ,%1     j i
+(%i11) ishow(canform(ev(%,ikt2)))$
+                      %2 %1                    %2 %1
+(%t11)          f    g      ikt1       - f    g      ikt1
+                 ,%2            i j %1    ,%2            j i %1
+(%i12) ishow(factor(canform(rename(expand(ev(%,ikt1))))))$
+                           %3 %2            %1       %1
+                     f    g      g      (itr    - itr   )
+                      ,%3         %2 %1     j i      i j
+(%t12)               ------------------------------------
+                                      2
+(%i13) decsym(itr,2,1,[anti(all)],[]);
+(%o13)                               done
+(%i14) defcon(g,g,kdelta);
+(%o14)                               done
+(%i15) subst(g,nounify(g),%th(3))$
+(%i16) ishow(canform(contract(%)))$
+                                           %1
+(%t16)                           - f    itr
+                                    ,%1    i j
+
+@end example
+
+@end defvr
+
+@subsection Álgebra externa (como em produto externo)
+
+O pacote @code{itensor} pode executar operações sobre campos tensores
+covariantes totalmente antisimétricos. Um campo tensor totalmente antisimétrico de classe
+(0,L) corresponde a uma forma diferencial L. Sobre esses objectos, uma
+operação de multiplicação funciona como um produto externo, ou produto cunha,
+é definido.
+
+Desafortunadamente, nem todos os autores concordam sobre a definição de produto
+cunha. Alguns autores preferem uma definição que corresponde à
+noção de antisimetrização: nessas palavras, o produto cunha de
+dois campos vectoriais, por exemplo, pode ser definido como
+
+@example
+            a a  - a a
+             i j    j i
+ a  /\ a  = -----------
+  i     j        2
+@end example
+
+Mais geralmente, o produto de uma forma p e uma forma q pode ser definido como
+
+@example
+                       1     k1..kp l1..lq
+A       /\ B       = ------ D              A       B
+ i1..ip     j1..jq   (p+q)!  i1..ip j1..jq  k1..kp  l1..lq
+@end example
+
+onde @code{D} simboliza o delta de Kronecker.
+
+Outros autores, todavia, preferem uma definição ``geométrica'' que corresponde à
+notação de elemento volume:
+
+@example
+a  /\ a  = a a  - a a
+ i     j    i j    j i
+@end example
+
+e, no caso geral
+
+@example
+                       1    k1..kp l1..lq
+A       /\ B       = ----- D              A       B
+ i1..ip     j1..jq   p! q!  i1..ip j1..jq  k1..kp  l1..lq
+@end example
+
+Uma vez que @code{itensor} é um pacote de algebra de tensores, a primeira dessas duas
+definições aparenta ser a mais natural por si mesma. Muitas aplicações, todavia,
+usam a segunda definição. Para resolver esse dilema, um sinalizador tem sido
+implementado que controla o comportamento do produto cunha: se
+@code{igeowedge_flag} for @code{false} (o padrão), a primeira, definição
+"tensorial" é usada, de outra forma a segunda, definição "geométrica" irá
+ser aplicada.
+
+@defvr {Operador} ~
+@ifinfo
+@fnindex Produto Externo
+@end ifinfo
+O operador do produto cunha é definido como sendo o acento til @code{~}. O til é
+um operador binário. Seus argumentos podem ser expressões envolvendo escalares,
+tensores covariantes de categoria 1, ou tensores covariantes de categoria @code{l} que
+tiverem sido declarados antisimétricos em todos os índices covariantes.
+
+O comportamento do operador do produto cunha é controlado através do
+sinalizador @code{igeowedge_flag}, como no seguinte exemplo:
+
+@example
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) ishow(a([i])~b([j]))$
+                                 a  b  - b  a
+                                  i  j    i  j
+(%t2)                            -------------
+                                       2
+(%i3) decsym(a,2,0,[anti(all)],[]);
+(%o3)                                done
+(%i4) ishow(a([i,j])~b([k]))$
+                          a    b  + b  a    - a    b
+                           i j  k    i  j k    i k  j
+(%t4)                     ---------------------------
+                                       3
+(%i5) igeowedge_flag:true;
+(%o5)                                true
+(%i6) ishow(a([i])~b([j]))$
+(%t6)                            a  b  - b  a
+                                  i  j    i  j
+(%i7) ishow(a([i,j])~b([k]))$
+(%t7)                     a    b  + b  a    - a    b
+                           i j  k    i  j k    i k  j
+@end example
+
+@end defvr
+
+@defvr {Operador} |
+@ifinfo
+@fnindex Contração com um vector
+@end ifinfo
+A barra vertical @code{|} denota a operação binária
+"contração com um vector". Quando um tensor covariante totalmente antisimétrico é contraído
+com um vector contravariante, o resultado é o mesmo independente de qual índice
+foi usado para a contração. Dessa forma, é possível definir a
+operação de contração de uma forma livre de índices.
+
+No pacote @code{itensor}, contração com um vector é sempre realizada
+com relação ao primeiro índice na ordem literal de ordenação. Isso garante
+uma melhor simplificação de expressões envolvendo o operador @code{|}. Por exemplo:
+
+@example
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) decsym(a,2,0,[anti(all)],[]);
+(%o2)                                done
+(%i3) ishow(a([i,j],[])|v)$
+                                    %1
+(%t3)                              v   a
+                                        %1 j
+(%i4) ishow(a([j,i],[])|v)$
+                                     %1
+(%t4)                             - v   a
+                                         %1 j
+@end example
+
+Note que isso é essencial que os tensores usado como o operador @code{|} seja
+declarado totalmente antisimétrico em seus índices covariantes. De outra forma,
+os resultados serão incorrectos.
+
+@end defvr
+
+@deffn {Função} extdiff (@var{expr}, @var{i})
+
+Calcula a derivada externa de @var{expr} com relação ao índice
+@var{i}. A derivada externa é formalmente definida como o produto
+cunha do operador de derivada parcial e uma forma diferencial. Como
+tal, essa operação é também controlada através da escolha de @code{igeowedge_flag}.
+Por exemplo:
+
+@example
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) ishow(extdiff(v([i]),j))$
+                                  v    - v
+                                   j,i    i,j
+(%t2)                             -----------
+                                       2
+(%i3) decsym(a,2,0,[anti(all)],[]);
+(%o3)                                done
+(%i4) ishow(extdiff(a([i,j]),k))$
+                           a      - a      + a
+                            j k,i    i k,j    i j,k
+(%t4)                      ------------------------
+                                      3
+(%i5) igeowedge_flag:true;
+(%o5)                                true
+(%i6) ishow(extdiff(v([i]),j))$
+(%t6)                             v    - v
+                                   j,i    i,j
+(%i7) ishow(extdiff(a([i,j]),k))$
+(%t7)                      a      - a      + a
+                            j k,i    i k,j    i j,k
+@end example
+
+@end deffn
+
+@deffn {Função} hodge (@var{expr})
+
+Calcula o Hodge dual de @var{expr}. Por exemplo:
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) imetric(g);
+(%o2)                            done
+(%i3) idim(4);
+(%o3)                            done
+(%i4) icounter:100;
+(%o4)                             100
+(%i5) decsym(A,3,0,[anti(all)],[])$
+
+(%i6) ishow(A([i,j,k],[]))$
+(%t6)                           A
+                                 i j k
+(%i7) ishow(canform(hodge(%)))$
+                          %1 %2 %3 %4
+               levi_civita            g        A
+                                       %1 %102  %2 %3 %4
+(%t7)          -----------------------------------------
+                                   6
+(%i8) ishow(canform(hodge(%)))$
+                 %1 %2 %3 %8            %4 %5 %6 %7
+(%t8) levi_civita            levi_civita            g        g
+                                                     %1 %106  %2 %107
+                                            g        g      A        /6
+                                             %3 %108  %4 %8  %5 %6 %7
+(%i9) lc2kdt(%)$
+
+(%i10) %,kdelta$
+
+(%i11) ishow(canform(contract(expand(%))))$
+(%t11)                     - A
+                              %106 %107 %108
+
+@end example
+
+@end deffn
+
+@defvr {Variável de Opção} igeowedge_flag
+Valor por omissão: @code{false}
+
+Controla o comportamento de produto cunha e derivada externa. Quando
+for esconhida para @code{false} (o padrão), a noção de formas diferenciais irá
+corresponder àquela de um campo tensor covariante totalmente antisimétrico.
+Quando escolhida para @code{true}, formas diferenciais irão concordar com a noção do
+elemento volume.
+
+@end defvr
+
+
+@subsection Exportando expressões TeX
+
+O pacote @code{itensor} fornece suporte limitado à exportação de expressões
+de tensores para o TeX.  Uma vez que expressões @code{itensor} aparecem como chamada a funções,
+o comando regular @code{tex} do Maxima não produzirá a saída
+esperada. Pode tentar no seu lugar o comando @code{tentex}, o qual tenta
+traduzir expressões de tensores dentro de objectos TeX indexados apropriadamente.
+
+@deffn {Função} tentex (@var{expr})
+
+Para usar a função @code{tentex}, deve primeiro chamar @code{tentex},
+como no seguinte exemplo:
+
+@example
+
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) load(tentex);
+(%o2)       /share/tensor/tentex.lisp
+(%i3) idummyx:m;
+(%o3)                                  m
+(%i4) ishow(icurvature([j,k,l],[i]))$
+            m1       i           m1       i           i            i
+(%t4)  ichr2    ichr2     - ichr2    ichr2     - ichr2      + ichr2
+            j k      m1 l        j l      m1 k        j l,k        j k,l
+(%i5) tentex(%)$
+$$\Gamma_@{j\,k@}^@{m_1@}\,\Gamma_@{l\,m_1@}^@{i@}-\Gamma_@{j\,l@}^@{m_1@}\,
+ \Gamma_@{k\,m_1@}^@{i@}-\Gamma_@{j\,l,k@}^@{i@}+\Gamma_@{j\,k,l@}^@{i@}$$
+
+@end example
+
+Note o uso da declaração @code{idummyx}, para evitar o aparecimento
+do sinal de porcentagem na expressão TeX, o qual pode induzir a erros de compilação.
+
+Note Bem: Essa vesão da função @code{tentex} é um tanto quanto experimental.
+
+@end deffn
+
+@subsection Interagindo com o pacote @code{ctensor}
+
+O pacote @code{itensor} possui a habilidade de gerar código Maxima que pode
+então ser executado no contexto do pacote @code{ctensor}. A função que executa
+essa tarefa é @code{ic_convert}.
+
+@deffn {Função} ic_convert (@var{eqn})
+
+Converte a equação @var{eqn} na sintaxe @code{itensor} para uma declaração de atribuição @code{ctensor}.
+Adições implícitas sobre índices que ocorrem exactamente duas vezes são tornadas explícitas enquanto objectos
+indexados são transformados em arrays (os arrays subscritos estão na
+ordem de covariância seguidos de índices contravariantes dos objectos
+indexados). A derivada de um objecto indexado será substituída pela
+forma substantiva de @code{diff} tomada com relação a @code{ct_coords} subscrita
+pelo índice de derivação. Os símbolos de Christoffel @code{ichr1} e @code{ichr2}
+irão ser traduzidos para @code{lcs} e @code{mcs}, respectivamente e se
+@code{metricconvert} for @code{true} então todas as ocorrências da métrica
+com dois índices covariantes (ou contravariantes) irão ser renomeadas para @code{lg}
+(ou @code{ug}). Adicionalmente, ciclos @code{do} irão ser introduzidos adicionando sobre
+todos os índices livres de forma que a
+declaração de atribuição transformada pode ser avaliada através de apenas fazendo
+@code{ev}. Os seguintes exemplos demonstam os recursos dessa
+função.
+
+@example
+(%i1) load(itensor);
+(%o1)      /share/tensor/itensor.lisp
+(%i2) eqn:ishow(t([i,j],[k])=f([],[])*g([l,m],[])*a([],[m],j)*b([i],[l,k]))$
+                             k        m   l k
+(%t2)                       t    = f a   b    g
+                             i j      ,j  i    l m
+(%i3) ic_convert(eqn);
+(%o3) for i thru dim do (for j thru dim 
+
+do (for k thru dim do t        : f sum(sum(diff(a , ct_coords ) b
+                       i, j, k                   m           j   i, l, k
+
+ g    , l, 1, dim), m, 1, dim)))
+  l, m
+(%i4) imetric(g);
+(%o4)                                done
+(%i5) metricconvert:true;
+(%o5)                                true
+(%i6) ic_convert(eqn);
+(%o6) for i thru dim do (for j thru dim 
+
+do (for k thru dim do t        : f sum(sum(diff(a , ct_coords ) b
+                       i, j, k                   m           j   i, l, k
+
+ lg    , l, 1, dim), m, 1, dim)))
+   l, m
+@end example
+
+@end deffn
+
+@subsection Palavras reservadas
+
+As palavras seguintes do Maxima são usadas internamente pelo pacote @code{itensor} e
+não podem ser redefinidas:
+
+@c REFORMAT THIS TABLE USING TEXINFO MARKUP
+@example
+  Keyword    Comments
+  ------------------------------------------
+  indices2() versão interna de @code{indices()}
+  conti      Lista de índices contravariantes
+  covi       Lista de índices covariantes de um objecto indexado
+  deri       Lista de índices de derivada de um objecto indexado
+  name       Retorna o nome de um objecto indexado
+  concan
+  irpmon
+  lc0
+  _lc2kdt0
+  _lcprod
+  _extlc
+@end example
+
+

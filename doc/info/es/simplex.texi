@@ -1,0 +1,148 @@
+@c English version: 2012-11-28
+@menu
+* Introducción a simplex::
+* Funciones y variables para simplex::
+@end menu
+
+@node Introducción a simplex, Funciones y variables para simplex, simplex, simplex
+@section Introducción a simplex
+
+El paquete @code{simplex} utiliza el algoritmo simplex para programación lineal.
+
+Ejemplo:
+
+@c ===beg===
+@c load("simplex")$
+@c minimize_lp(x+y, [3*x+2*y>2, x+4*y>3]);
+@c ===end===
+@example
+(%i1) load("simplex")$
+(%i2) minimize_lp(x+y, [3*x+2*y>2, x+4*y>3]);
+                       9        7       1
+(%o2)                 [--, [y = --, x = -]]
+                       10       10      5
+@end example
+
+@node Funciones y variables para simplex,  , Introducción a simplex, simplex
+@section Funciones y variables para simplex
+
+@defvr {Variable opcional} epsilon_lp
+Valor por defecto: @code{10^-8}
+
+Error epsilon utilizado en los cálculos numéricos de @code{linear_program}.
+
+Véase también @code{linear_program}.
+
+@end defvr
+
+@deffn {Función} linear_program (@var{A}, @var{b}, @var{c})
+
+La función @code{linear_program} es una implementación del algoritmo
+simplex. La instrucción @code{linear_program(A, b, c)} calcula un 
+vector @var{x} tal que minimiza @code{c.x} bajo las restricciones @code{A.x = b}
+y @code{x >= 0}. El argumento @var{A} es una matriz y los argumentos @var{b} y
+@var{c} son listas.
+
+La función @code{linear_program} devuelve una lista que contiene el vector
+solución @var{x} y el valor mínimo de @code{c.x}.
+Si el problema no está acotado, devuelve el mensaje "Problem not bounded!"
+y si el problema no es factible, devuelve el mensaje "Problem not feasible!".
+
+Para usar esta función, cárguese primero el paquete con la
+instrucción @code{load(simplex);}.
+
+Ejemplo:
+
+
+@c ===beg===
+@c A: matrix([1,1,-1,0], [2,-3,0,-1], [4,-5,0,0])$
+@c b: [1,1,6]$
+@c c: [1,-2,0,0]$
+@c linear_program(A, b, c);
+@c ===end===
+@example
+(%i2) A: matrix([1,1,-1,0], [2,-3,0,-1], [4,-5,0,0])$
+(%i3) b: [1,1,6]$
+(%i4) c: [1,-2,0,0]$
+(%i5) linear_program(A, b, c);
+                   13     19        3
+(%o5)            [[--, 4, --, 0], - -]
+                   2      2         2
+@end example
+
+Véanse también @code{minimize_lp}, @code{scale_lp} y @code{epsilon_lp}.
+
+@end deffn
+
+@deffn {Función} maximize_lp (@var{obj}, @var{cond}, [@var{pos}])
+
+Maximiza la función objetivo lineal @var{obj} sujeta a ciertas restricciones
+lineales @var{cond}. Véase @code{minimize_lp} para una descripción detallada
+de los argumentos y de la respuesta dada por esta función.
+
+@end deffn
+
+@deffn {Función} minimize_lp (@var{obj}, @var{cond}, [@var{pos}])
+
+Minimiza la función objetivo lineal @var{obj} sujeta a ciertas restricciones
+lineales @var{cond}, siendo ésta una lista de ecuaciones o inecuaciones lineales.
+En las inecuaciones estrictas se reemplaza @code{>} por @code{>=} y @code{<}
+por @code{<=}. El argumento opcional @var{pos} es una lista de variables de
+decisión que se suponen positivas.
+
+Si el mínimo existe, @code{minimize_lp} devuelve una lista que
+contiene el valor mínimo de la función objetivo y una lista 
+de valores para las variables de decisión con los que se alcanza el 
+mínimo. 
+Si el problema no está acotado, devuelve el mensaje "Problem not bounded!"
+y si el problema no es factible, devuelve el mensaje "Problem not feasible!".
+
+Las variables de decisión no se suponen no negativas. Si todas las 
+variables de decisión son no negativas, asígnese el valor
+@code{true} a la variable @code{nonegative_lp}. Si sólo algunas de las
+variables de decisión son positivas, lístense
+en el argumento opcional @var{pos}, lo cual es más eficiente que 
+añadir restricciones.
+
+La función @code{minimize_lp} utiliza el algoritmo simplex implementado
+en la función @code{linear_program} de Maxima.
+
+Para usar esta función, cárguese primero el paquete con la
+instrucción @code{load(simplex);}.
+
+Ejemplos:
+
+@c ===beg===
+@c minimize_lp(x+y, [3*x+y=0, x+2*y>2]);
+@c minimize_lp(x+y, [3*x+y>0, x+2*y>2]), nonegative_lp=true;
+@c minimize_lp(x+y, [3*x+y=0, x+2*y>2]), nonegative_lp=true;
+@c minimize_lp(x+y, [3*x+y>0]);
+@c ===end===
+@example
+(%i1) minimize_lp(x+y, [3*x+y=0, x+2*y>2]);
+                      4       6        2
+(%o1)                [-, [y = -, x = - -]]
+                      5       5        5
+(%i2) minimize_lp(x+y, [3*x+y>0, x+2*y>2]), nonegative_lp=true;
+(%o2)                [1, [y = 1, x = 0]]
+(%i3) minimize_lp(x+y, [3*x+y=0, x+2*y>2]), nonegative_lp=true;
+(%o3)                Problem not feasible!
+(%i4) minimize_lp(x+y, [3*x+y>0]);
+(%o4)                Problem not bounded!
+@end example
+
+
+Véanse también @code{maximize_lp}, @code{nonegative_lp} y @code{epsilon_lp}.
+
+@end deffn
+
+@defvr {Variable opcional} nonegative_lp
+Valor por defecto: @code{false}
+
+Si @code{nonegative_lp} vale @code{true} todas las variables de decisión
+pasadas a @code{minimize_lp} y a @code{maximize_lp} se suponen positivas.
+
+Véase también @code{minimize_lp}.
+
+@end defvr
+

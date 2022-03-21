@@ -1,0 +1,6 @@
+Makefile
+Makefile.in
+header.tcl
+mgnuplot
+mgnuplot.*
+omplotdata

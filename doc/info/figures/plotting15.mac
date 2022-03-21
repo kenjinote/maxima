@@ -1,0 +1,8 @@
+display2d:false$
+with_stdout ("data.txt", for x:0 thru 10 do print (x, x^2, x^3))$
+data: read_matrix ("data.txt")$
+plot2d ([discrete,transpose(data)[2],transpose(data)[3]], [style,points],
+  [point_type,diamond], [color,red], [pdf_file,"./plotting15.pdf"]);
+plot2d ([discrete,transpose(data)[2],transpose(data)[3]], [style,points],
+  [point_type,diamond], [color,red], [png_file,"./plotting15.png"]);
+
